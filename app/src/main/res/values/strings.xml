@@ -1,6 +1,8 @@
 <resources>
     <string name="app_name">vk-android-vkat</string>
-    <string name="title_home">Home</string>
-    <string name="title_dashboard">Dashboard</string>
-    <string name="title_notifications">Notifications</string>
+    <string name="title_explore">Explore</string>
+    <string name="title_favourite">Favourite</string>
+    <string name="title_add">Add</string>
+    <string name="title_map">Map</string>
+    <string name="title_profile">Profile</string>
 </resources>
