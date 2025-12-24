@@ -2,6 +2,7 @@ package com.example.vk_android_vkat.ui.auth
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.vk_android_vkat.mock_data.delayTime
 import com.example.vk_android_vkat.mock_data.mockEmail
 import com.example.vk_android_vkat.mock_data.mockPassword
 import kotlinx.coroutines.delay
@@ -37,12 +38,24 @@ class LoginViewModel : ViewModel() {
 
     private suspend fun checkIfUserLoggedIn(): Boolean {
         //TODO Сделать простую проверку через SharedPreferences
-        delay(500)
+        delay(delayTime)
         return false // По умолчанию не залогинен
     }
 
     fun setMode(mode: AuthMode) {
-        _state.update { it.copy(mode = mode) }
+        _state.update {
+            it.copy(
+                mode = mode,
+                email = "",
+                password = "",
+                confirmPassword = "",
+                error = null,
+                emailError = null,
+                passwordError = null,
+                confirmPasswordError = null,
+                isLoading = false
+            )
+        }
     }
 
     fun updateEmail(email: String) {
@@ -53,53 +66,114 @@ class LoginViewModel : ViewModel() {
         _state.update { it.copy(password = password) }
     }
 
+    fun updateConfirmPassword(confirmPassword: String) {
+        _state.update { it.copy(confirmPassword = confirmPassword, error = null) }
+    }
+
+    // Сохраняем токен в SharedPreferences
+    private fun saveAuthToken(token: String) {}
+
     fun login() {
-        _state.update { it.copy(isLoading = true) }
+        _state.update { it.copy(isLoading = true, error = null, emailError = null, passwordError = null) }
 
         viewModelScope.launch {
-            try {
-                delay(1000) // Имитация API запроса
+            delay(delayTime)
 
-                // TODO: Реальная логика авторизации
-                val email = state.value.email
-                val password = state.value.password
+            val email = state.value.email
+            val password = state.value.password
 
-                if (email == mockEmail && password == mockPassword)
-                    saveAuthToken("fake_token_123")
-                _state.update {
-                    it.copy(
-                        isLoading = false,
-                        isUserLoggedIn = true // Устанавливаем флаг успешного входа
-                    )
-                }
-            } catch (e: Exception) {
-                _state.update {
-                    it.copy(
-                        isLoading = false,
-                        error = "Ошибка входа: ${e.message}"
-                    )
-                }
+            // Собираем все ошибки сразу
+            val emailErr = when {
+                email.isBlank() -> "Email не может быть пустым"
+                !email.contains("@") -> "Некорректный email"
+                email != mockEmail -> "Пользователь с таким email не найден"
+                else -> null
+            }
+
+            val passwordErr = when {
+                password.isBlank() -> "Пароль не может быть пустым"
+                email == mockEmail && password != mockPassword -> "Неверный пароль"
+                else -> null
+            }
+
+            val hasErrors = emailErr != null || passwordErr != null
+
+            _state.update {
+                it.copy(
+                    isLoading = false,
+                    emailError = emailErr,
+                    passwordError = passwordErr,
+                    isUserLoggedIn = if (!hasErrors) true else false
+                )
             }
         }
     }
 
-    private fun saveAuthToken(token: String) {
-        // Сохраняем токен в SharedPreferences
-
-
-    }
-
     fun register() {
-        _state.update { it.copy(isLoading = true) }
+        _state.update { it.copy(isLoading = true, emailError = null, passwordError = null, confirmPasswordError = null) }
 
         viewModelScope.launch {
-            delay(1000) // Имитация запроса
-            // TODO: Реальная регистрация
-            _state.update { it.copy(isLoading = false) }
+            delay(delayTime)
+
+            val email = state.value.email
+            val password = state.value.password
+            val confirm = state.value.confirmPassword
+
+            val emailErr = when {
+                email.isBlank() -> "Email не может быть пустым"
+                !email.contains("@") -> "Некорректный email"
+                else -> null
+            }
+
+            val passwordErr = when {
+                password.length < 6 -> "Пароль слишком короткий"
+                else -> null
+            }
+
+            val confirmErr = when {
+                password != confirm -> "Пароли не совпадают"
+                else -> null
+            }
+
+            val hasErrors = emailErr != null || passwordErr != null || confirmErr != null
+
+            _state.update {
+                it.copy(
+                    isLoading = false,
+                    emailError = emailErr,
+                    passwordError = passwordErr,
+                    confirmPasswordError = confirmErr,
+                    error = if (!hasErrors) "Регистрация успешна" else null
+                )
+            }
         }
     }
 
-    fun updateConfirmPassword(confirmPassword: String) {
-        _state.update { it.copy(confirmPassword = confirmPassword, error = null) }
+    fun sendPasswordReset() {
+        _state.update { it.copy(isLoading = true, emailError = null, error = null) }
+
+        viewModelScope.launch {
+            delay(2000) // имитация API
+
+            val email = state.value.email
+
+            val newState = when {
+                email.isBlank() -> state.value.copy(
+                    isLoading = false,
+                    emailError = "Email не может быть пустым"
+                )
+                email != mockEmail -> state.value.copy(
+                    isLoading = false,
+                    emailError = "Пользователь с таким email не найден"
+                )
+                else -> state.value.copy(
+                    isLoading = false,
+                    error = "Ссылка на восстановление отправлена"
+                )
+            }
+
+            _state.value = newState
+        }
     }
+
 }

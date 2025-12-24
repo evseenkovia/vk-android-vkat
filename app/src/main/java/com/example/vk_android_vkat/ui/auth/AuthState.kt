@@ -12,7 +12,12 @@ data class AuthState(
     val password: String = "",
     val confirmPassword: String = "",
     val isLoading: Boolean = true, // true по умолчанию для сплеша
-    val error: String? = null,
     val isAuthChecked: Boolean = false, // Проверка авторизации завершена?
-    val isUserLoggedIn: Boolean = false // Результат проверки
+    val isUserLoggedIn: Boolean = false, // Результат проверки
+
+    //Обработка ошибок
+    val error: String? = null,
+    val emailError: String? = null,
+    val passwordError: String? = null,
+    val confirmPasswordError: String? = null,
 )

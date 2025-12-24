@@ -79,3 +79,5 @@ val mockProfile: ProfileState = ProfileState(
 const val mockEmail = "alex@example.com"
 const val mockPassword = "12345678"
 
+//Задержка-имитация API (в мс)
+const val delayTime = 2000L
