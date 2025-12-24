@@ -22,7 +22,7 @@ fun SplashScreen() {
         contentAlignment = Alignment.Center
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            // Твой логотип
+            // Логотип (на будущее)
 //            Icon(
 //                imageVector = Icons.Default.AccountCircle,
 //                contentDescription = "Logo",

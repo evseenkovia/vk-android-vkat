@@ -1,10 +1,62 @@
 <resources>
-    <string name="app_name">vk-android-vkat</string>
-    <string name="title_explore">Explore</string>
-    <string name="title_favourite">Favourite</string>
-    <string name="title_add">Add</string>
-    <string name="title_map">Map</string>
-    <string name="title_profile">Profile</string>
-    <!-- TODO: Remove or change this placeholder text -->
+    <string name="app_name">MyMaps</string>
+    <string name="title_explore">Поиск</string>
+    <string name="title_favourite">Избранное</string>
+    <string name="title_add">Создать</string>
+    <string name="title_map">Карта</string>
+    <string name="title_profile">Профиль</string>
+
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="try_again">Попробовать снова</string>
+
+    <!--    Фильтры поиска-->
+    <string name="target">Цель</string>
+    <string name="location">Местность</string>
+    <string name="day_time">Время суток</string>
+    <string name="duration">Длительность</string>
+    <string name="nearby">Рядом</string>
+
+    <!--    Ошибки загрузки маршрутов-->
+    <string name="no_routes">Нет маршрутов</string>
+    <string name="unknown_error">Неизвестная ошибка</string>
+    <string name="load_route_error">Ошибка загрузки маршрутов</string>
+    <string name="no_image">Нет изображения</string>
+
+    <string name="rating">Rating</string>
+    <string name="account">Аккаунт</string>
+    <string name="email">Email</string>
+    <string name="change_password">Изменить пароль</string>
+    <string name="settings">Настройки</string>
+    <string name="notifications">Уведомления</string>
+    <string name="avatar">Avatar</string>
+    <string name="dark_theme">Темная тема</string>
+    <string name="sign_in">Вход</string>
+    <string name="password">Пароль</string>
+    <string name="sign_in_do">Войти</string>
+    <string name="forgot_password">Забыли пароль?</string>
+    <string name="no_account">Нет аккаунта?</string>
+    <string name="sign_up">Зарегистрироваться</string>
+    <string name="registration">Регистрация</string>
+    <string name="repeat_password">Повторите пароль</string>
+    <string name="already_have_an_account">Уже есть аккаунт?</string>
+    <string name="password_recovery">Восстановление пароля</string>
+    <string name="enter_the_email_for_password_recovery">Введите email для восстановления пароля</string>
+    <string name="send_link">Отправить ссылку</string>
+    <string name="return_to_sign_in">Вернуться к входу</string>
+
+    <!-- Ошибки email -->
+    <string name="email_blank_error">Email не может быть пустым</string>
+    <string name="email_invalid_error">Некорректный email</string>
+    <string name="email_not_found_error">Пользователь с таким email не найден</string>
+
+    <!-- Ошибки пароля -->
+    <string name="password_blank_error">Пароль не может быть пустым</string>
+    <string name="password_invalid_error">Неверный пароль</string>
+    <string name="password_short_error">Пароль слишком короткий</string>
+    <string name="passwords_mismatch_error">Пароли не совпадают</string>
+
+    <!-- Сообщения об успешной операции -->
+    <string name="register_success">Регистрация успешна</string>
+    <string name="password_reset_sent">Ссылка на восстановление отправлена</string>
+
 </resources>

@@ -30,11 +30,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.vk_android_vkat.R
 
 @Composable
 fun AuthScreen(
@@ -89,7 +92,7 @@ fun LoginForm(
         ) {
             // Заголовок
             Text(
-                text = "Вход",
+                text = stringResource(R.string.sign_in),
                 style = MaterialTheme.typography.headlineLarge,
                 modifier = Modifier.padding(bottom = 32.dp)
             )
@@ -99,13 +102,13 @@ fun LoginForm(
                 modifier = Modifier.fillMaxWidth(),
                 value = state.email,
                 onValueChange = viewModel::updateEmail,
-                label = { Text("Email") },
+                label = { Text(stringResource(R.string.email)) },
                 singleLine = true,
                 isError = state.emailError != null,
                 trailingIcon = {
                     Icon(
                         imageVector = Icons.Filled.Email,
-                        contentDescription = "Email"
+                        contentDescription = stringResource(R.string.email)
                     )
                 },
                 shape = RoundedCornerShape(12.dp)
@@ -127,7 +130,7 @@ fun LoginForm(
             OutlinedTextField(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
-                label = { Text("Пароль") },
+                label = { Text(stringResource(R.string.password)) },
                 value = state.password,
                 onValueChange = viewModel::updatePassword,
                 singleLine = true,
@@ -168,9 +171,10 @@ fun LoginForm(
 
             Spacer(modifier = Modifier.height(24.dp))
 
+            val context = LocalContext.current
             // Кнопка входа
             Button(
-                onClick = viewModel::login,
+                onClick = { viewModel.login(context) },
                 modifier = Modifier.fillMaxWidth(),
                 enabled = state.email.isNotBlank() && state.password.isNotBlank(),
                 shape = RoundedCornerShape(12.dp)
@@ -178,7 +182,7 @@ fun LoginForm(
                 if (state.isLoading) {
                     CircularProgressIndicator(color = Color.White, strokeWidth = 2.dp)
                 } else {
-                    Text("Войти")
+                    Text(stringResource(R.string.sign_in_do))
                 }
             }
 
@@ -187,7 +191,7 @@ fun LoginForm(
                 onClick = { viewModel.setMode(AuthMode.ForgotPassword) },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Забыли пароль?")
+                Text(stringResource(R.string.forgot_password))
             }
         }
 
@@ -197,7 +201,7 @@ fun LoginForm(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "Нет аккаунта?",
+                text = stringResource(R.string.no_account),
                 modifier = Modifier.padding(bottom = 8.dp),
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -211,7 +215,7 @@ fun LoginForm(
                 ),
                 shape = RoundedCornerShape(12.dp)
             ) {
-                Text("Зарегистрироваться")
+                Text(stringResource(R.string.sign_up))
             }
         }
     }
@@ -232,8 +236,8 @@ fun RegisterForm(
     viewModel: LoginViewModel
 ) {
     Column(
-        modifier = Modifier.
-            fillMaxSize()
+        modifier = Modifier
+            .fillMaxSize()
             .padding(16.dp),
     ) {
         Column(
@@ -242,7 +246,7 @@ fun RegisterForm(
         ) {
             // Заголовок
             Text(
-                text = "Регистрация",
+                text = stringResource(R.string.registration),
                 style = MaterialTheme.typography.headlineLarge,
                 modifier = Modifier.padding(bottom = 32.dp)
             )
@@ -252,13 +256,13 @@ fun RegisterForm(
                 modifier = Modifier.fillMaxWidth(),
                 value = state.email,
                 onValueChange = viewModel::updateEmail,
-                label = { Text("Email") },
+                label = { Text(stringResource(R.string.email)) },
                 singleLine = true,
                 isError = state.emailError != null,
                 trailingIcon = {
                     Icon(
                         imageVector = Icons.Filled.Email,
-                        contentDescription = "Email"
+                        contentDescription = stringResource(R.string.email)
                     )
                 },
                 shape = RoundedCornerShape(12.dp)
@@ -280,7 +284,7 @@ fun RegisterForm(
             OutlinedTextField(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
-                label = { Text("Пароль") },
+                label = { Text(stringResource(R.string.password)) },
                 value = state.password,
                 onValueChange = viewModel::updatePassword,
                 singleLine = true,
@@ -317,7 +321,7 @@ fun RegisterForm(
             OutlinedTextField(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
-                label = { Text("Повторите пароль") },
+                label = { Text(stringResource(R.string.repeat_password)) },
                 value = state.confirmPassword,
                 isError = state.confirmPasswordError != null,
                 onValueChange = { viewModel.updateConfirmPassword(it) },
@@ -349,8 +353,9 @@ fun RegisterForm(
 
             Spacer(modifier = Modifier.height(24.dp))
 
+            val context = LocalContext.current
             Button(
-                onClick = viewModel::register,
+                onClick = { viewModel.register(context) },
                 modifier = Modifier.fillMaxWidth(),
                 enabled = state.email.isNotBlank() &&
                         state.password.isNotBlank() &&
@@ -359,7 +364,7 @@ fun RegisterForm(
                 if (state.isLoading) {
                     CircularProgressIndicator(color = Color.White, strokeWidth = 2.dp)
                 } else {
-                    Text("Зарегистрироваться")
+                    Text(stringResource(R.string.sign_up))
                 }
             }
         }
@@ -370,7 +375,7 @@ fun RegisterForm(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "Уже есть аккаунт?",
+                text = stringResource(R.string.already_have_an_account),
                 modifier = Modifier.padding(bottom = 8.dp),
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -384,7 +389,7 @@ fun RegisterForm(
                 ),
                 shape = RoundedCornerShape(12.dp)
             ) {
-                Text("Войти")
+                Text(stringResource(R.string.sign_in_do))
             }
         }
     }
@@ -413,14 +418,14 @@ fun ForgotPasswordForm(
     ) {
         // Заголовок
         Text(
-            text = "Восстановление пароля",
+            text = stringResource(R.string.password_recovery),
             style = MaterialTheme.typography.headlineMedium,
             modifier = Modifier.padding(bottom = 16.dp)
         )
 
         // Описание
         Text(
-            text = "Введите email для восстановления пароля",
+            text = stringResource(R.string.enter_the_email_for_password_recovery),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
@@ -431,14 +436,14 @@ fun ForgotPasswordForm(
         OutlinedTextField(
             value = state.email,
             onValueChange = viewModel::updateEmail,
-            label = { Text("Email") },
+            label = { Text(stringResource(R.string.email)) },
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(12.dp),
             singleLine = true,
             isError = state.emailError != null,
             trailingIcon = {
                 Icon(imageVector = Icons.Filled.Email,
-                    contentDescription = "Email icon")
+                    contentDescription = stringResource(R.string.email))
             }
         )
         state.emailError?.let {
@@ -459,7 +464,7 @@ fun ForgotPasswordForm(
             shape = RoundedCornerShape(12.dp),
             enabled = state.email.isNotBlank()
         ) {
-            Text("Отправить ссылку")
+            Text(stringResource(R.string.send_link))
         }
 
         // Кнопка возврата
@@ -467,7 +472,7 @@ fun ForgotPasswordForm(
             onClick = { viewModel.setMode(AuthMode.Login) },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Вернуться к входу")
+            Text(stringResource(R.string.return_to_sign_in))
         }
     }
 }

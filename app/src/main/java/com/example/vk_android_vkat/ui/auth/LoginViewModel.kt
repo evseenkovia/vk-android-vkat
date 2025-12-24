@@ -1,7 +1,9 @@
 package com.example.vk_android_vkat.ui.auth
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.vk_android_vkat.R
 import com.example.vk_android_vkat.mock_data.delayTime
 import com.example.vk_android_vkat.mock_data.mockEmail
 import com.example.vk_android_vkat.mock_data.mockPassword
@@ -17,18 +19,17 @@ class LoginViewModel : ViewModel() {
     val state = _state.asStateFlow()
 
     init {
+        // Проверяем, залогинен ли пользователь при старте
         checkInitialAuth()
     }
 
     private fun checkInitialAuth() {
         viewModelScope.launch {
-            // Проверяем, залогинен ли пользователь
+            // TODO Сделать простую проверку через SharedPreferences
             val isLoggedIn = checkIfUserLoggedIn()
-
             _state.update {
                 it.copy(
                     isLoading = false,
-                    // Добавляем флаг, что проверка завершена
                     isAuthChecked = true,
                     isUserLoggedIn = isLoggedIn
                 )
@@ -37,9 +38,8 @@ class LoginViewModel : ViewModel() {
     }
 
     private suspend fun checkIfUserLoggedIn(): Boolean {
-        //TODO Сделать простую проверку через SharedPreferences
         delay(delayTime)
-        return false // По умолчанию не залогинен
+        return false // По умолчанию пользователь не залогинен
     }
 
     fun setMode(mode: AuthMode) {
@@ -58,117 +58,130 @@ class LoginViewModel : ViewModel() {
         }
     }
 
+    // Обновление email
     fun updateEmail(email: String) {
         _state.update { it.copy(email = email) }
     }
 
+    // Обновление пароля
     fun updatePassword(password: String) {
         _state.update { it.copy(password = password) }
     }
 
+    // Обновление поля подтверждения пароля
     fun updateConfirmPassword(confirmPassword: String) {
         _state.update { it.copy(confirmPassword = confirmPassword, error = null) }
     }
 
     // Сохраняем токен в SharedPreferences
-    private fun saveAuthToken(token: String) {}
+    private fun saveAuthToken(token: String) {
+        // TODO Реализовать сохранение токена
+    }
 
-    fun login() {
+    fun login(context: Context) {
+        // Сбрасываем предыдущие ошибки
         _state.update { it.copy(isLoading = true, error = null, emailError = null, passwordError = null) }
 
         viewModelScope.launch {
-            delay(delayTime)
+            delay(delayTime) // Имитация API запроса
 
             val email = state.value.email
             val password = state.value.password
 
-            // Собираем все ошибки сразу
+            // Проверяем email
             val emailErr = when {
-                email.isBlank() -> "Email не может быть пустым"
-                !email.contains("@") -> "Некорректный email"
-                email != mockEmail -> "Пользователь с таким email не найден"
+                email.isBlank() -> context.getString(R.string.email_blank_error) // Поле пустое
+                !email.contains("@") -> context.getString(R.string.email_invalid_error) // Некорректный формат
+                email != mockEmail -> context.getString(R.string.email_not_found_error) // Email не найден
                 else -> null
             }
 
+            // Проверяем пароль
             val passwordErr = when {
-                password.isBlank() -> "Пароль не может быть пустым"
-                email == mockEmail && password != mockPassword -> "Неверный пароль"
+                password.isBlank() -> context.getString(R.string.password_blank_error) // Пароль пустой
+                email == mockEmail && password != mockPassword -> context.getString(R.string.password_invalid_error) // Неверный пароль
                 else -> null
             }
 
             val hasErrors = emailErr != null || passwordErr != null
 
+            // Обновляем состояние с результатом проверки
             _state.update {
                 it.copy(
                     isLoading = false,
                     emailError = emailErr,
                     passwordError = passwordErr,
-                    isUserLoggedIn = if (!hasErrors) true else false
+                    isUserLoggedIn = !hasErrors
                 )
             }
         }
     }
 
-    fun register() {
+    fun register(context: Context) {
         _state.update { it.copy(isLoading = true, emailError = null, passwordError = null, confirmPasswordError = null) }
 
         viewModelScope.launch {
-            delay(delayTime)
+            delay(delayTime) // Имитация API запроса
 
             val email = state.value.email
             val password = state.value.password
             val confirm = state.value.confirmPassword
 
+            // Проверки email
             val emailErr = when {
-                email.isBlank() -> "Email не может быть пустым"
-                !email.contains("@") -> "Некорректный email"
+                email.isBlank() -> context.getString(R.string.email_blank_error) // Поле пустое
+                !email.contains("@") -> context.getString(R.string.email_invalid_error) // Некорректный формат
                 else -> null
             }
 
+            // Проверки пароля
             val passwordErr = when {
-                password.length < 6 -> "Пароль слишком короткий"
+                password.length < 6 -> context.getString(R.string.password_short_error) // Слишком короткий
                 else -> null
             }
 
+            // Проверка подтверждения пароля
             val confirmErr = when {
-                password != confirm -> "Пароли не совпадают"
+                password != confirm -> context.getString(R.string.passwords_mismatch_error) // Не совпадает с паролем
                 else -> null
             }
 
             val hasErrors = emailErr != null || passwordErr != null || confirmErr != null
 
+            // Обновляем состояние с результатами проверки
             _state.update {
                 it.copy(
                     isLoading = false,
                     emailError = emailErr,
                     passwordError = passwordErr,
                     confirmPasswordError = confirmErr,
-                    error = if (!hasErrors) "Регистрация успешна" else null
+                    error = if (!hasErrors) context.getString(R.string.register_success) else null // Успешная регистрация
                 )
             }
         }
     }
 
-    fun sendPasswordReset() {
+    fun sendPasswordReset(context: Context) {
         _state.update { it.copy(isLoading = true, emailError = null, error = null) }
 
         viewModelScope.launch {
-            delay(2000) // имитация API
+            delay(2000) // Имитация API запроса
 
             val email = state.value.email
 
+            // Проверка email для восстановления пароля
             val newState = when {
                 email.isBlank() -> state.value.copy(
                     isLoading = false,
-                    emailError = "Email не может быть пустым"
+                    emailError = context.getString(R.string.email_blank_error) // Поле пустое
                 )
                 email != mockEmail -> state.value.copy(
                     isLoading = false,
-                    emailError = "Пользователь с таким email не найден"
+                    emailError = context.getString(R.string.email_not_found_error) // Email не найден
                 )
                 else -> state.value.copy(
                     isLoading = false,
-                    error = "Ссылка на восстановление отправлена"
+                    error = context.getString(R.string.password_reset_sent) // Ссылка отправлена
                 )
             }
 

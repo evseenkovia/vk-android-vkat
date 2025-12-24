@@ -32,9 +32,11 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import com.example.vk_android_vkat.R
 import com.example.vk_android_vkat.domain.model.RouteUi
 import com.example.vk_android_vkat.mock_data.mockRoutes
 
@@ -83,7 +85,7 @@ fun RouteCard(
                 ) {
                     Icon(
                         imageVector = Icons.Filled.Image,
-                        contentDescription = "Нет изображения",
+                        contentDescription = stringResource(R.string.no_image),
                         tint = Color.White.copy(alpha = 0.7f),
                         modifier = Modifier.size(48.dp)
                     )
@@ -115,7 +117,7 @@ fun RouteCard(
                             Icons.Filled.Bookmark
                         else
                             Icons.Outlined.BookmarkBorder,
-                        contentDescription = "Favourite",
+                        contentDescription = stringResource(R.id.navigation_favourite),
                         tint = interfaceColor
                     )
                 }
@@ -172,7 +174,7 @@ fun RouteCard(
                         Icon(
                             modifier = Modifier.size(36.dp),
                             imageVector = Icons.Outlined.StarBorder,
-                            contentDescription = "Favourite",
+                            contentDescription = stringResource(R.string.rating),
                             tint = interfaceColor
                         )
                     }

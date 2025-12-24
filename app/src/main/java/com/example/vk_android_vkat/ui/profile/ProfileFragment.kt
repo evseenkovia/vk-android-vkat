@@ -35,12 +35,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import coil.compose.AsyncImage
+import com.example.vk_android_vkat.R
 import com.example.vk_android_vkat.databinding.FragmentProfileBinding
 
 class ProfileFragment : Fragment() {
@@ -93,11 +95,11 @@ class ProfileFragment : Fragment() {
                 )
             }
 
-            item { ProfileSection("Аккаунт") }
+            item { ProfileSection(stringResource(R.string.account)) }
 
             item {
                 ProfileItem(
-                    title = "Email",
+                    title = stringResource(R.string.email),
                     subtitle = state.email,
                     icon = Icons.Filled.Email
                 )
@@ -105,16 +107,16 @@ class ProfileFragment : Fragment() {
 
             item {
                 ProfileItem(
-                    title = "Изменить пароль",
+                    title = stringResource(R.string.change_password),
                     icon = Icons.Filled.Lock
                 )
             }
 
-            item { ProfileSection("Настройки") }
+            item { ProfileSection(stringResource(R.string.settings)) }
 
             item {
                 ProfileItem(
-                    title = "Уведомления",
+                    title = stringResource(R.string.notifications),
                     icon = Icons.Filled.Notifications,
                     trailing = {
                         Switch(checked = state.notificationsEnabled, onCheckedChange = {})
@@ -124,7 +126,7 @@ class ProfileFragment : Fragment() {
 
             item {
                 ProfileItem(
-                    title = "Тёмная тема",
+                    title = stringResource(R.string.dark_theme),
                     icon = Icons.Filled.DarkMode,
                     trailing = {
                         Switch(checked = state.darkThemeEnabled, onCheckedChange = {})
@@ -148,7 +150,7 @@ class ProfileFragment : Fragment() {
         ) {
             AsyncImage(
                 model = avatarUrl,
-                contentDescription = "Avatar",
+                contentDescription = stringResource(R.string.avatar),
                 modifier = Modifier
                     .size(96.dp)
                     .clip(CircleShape),

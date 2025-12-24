@@ -29,9 +29,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import com.example.vk_android_vkat.R
 
 class ExploreFragment : Fragment() {
 
@@ -84,7 +86,7 @@ class ExploreFragment : Fragment() {
                                 Text(text = error ?: "", color = Color.Red)
                                 Spacer(modifier = Modifier.height(8.dp))
                                 Button(onClick = { viewModel.loadRoutes() }) {
-                                    Text("Попробовать снова")
+                                    Text(stringResource(R.string.try_again))
                                 }
                             }
                         }
@@ -95,11 +97,10 @@ class ExploreFragment : Fragment() {
                                 .fillMaxSize(),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text("Нет маршрутов")
+                            Text(stringResource(R.string.no_routes))
                         }
                     }
                     else -> {
-                        // LazyColumn растягивается на весь экран
                         LazyColumn(
                             modifier = Modifier
                                 .fillMaxSize()
@@ -127,16 +128,16 @@ class ExploreFragment : Fragment() {
             item {
                 AssistChip(
                     onClick = { },
-                    label = { Text("Рядом") },
+                    label = { Text(stringResource(R.string.nearby)) },
                     leadingIcon = {
                         Icon(Icons.Default.LocationOn, contentDescription = null)
                     }
                 )
             }
-            item { AssistChip(onClick = { }, label = { Text("Цель") }) }
-            item { AssistChip(onClick = { }, label = { Text("Местность") }) }
-            item { AssistChip(onClick = { }, label = { Text("Время суток") }) }
-            item { AssistChip(onClick = { }, label = { Text("Длительность") }) }
+            item { AssistChip(onClick = { }, label = { Text(stringResource(R.string.target)) }) }
+            item { AssistChip(onClick = { }, label = { Text(stringResource(R.string.location)) }) }
+            item { AssistChip(onClick = { }, label = { Text(stringResource(R.string.day_time)) }) }
+            item { AssistChip(onClick = { }, label = { Text(stringResource(R.string.duration)) }) }
         }
     }
 }
