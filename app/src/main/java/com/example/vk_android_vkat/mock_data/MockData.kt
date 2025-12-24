@@ -1,7 +1,9 @@
 package com.example.vk_android_vkat.mock_data
 
 import com.example.vk_android_vkat.domain.model.RouteUi
+import com.example.vk_android_vkat.ui.profile.ProfileState
 
+// Список маршрутов
 val mockRoutes = listOf(
     RouteUi(
         id = 1,
@@ -63,5 +65,14 @@ val mockRoutes = listOf(
         rating = 4.6f,
         imageUrl = "https://preview.redd.it/irithyll-of-the-boreal-valley-is-amazing-v0-h5pxqkbc5qjf1.jpg?width=640&crop=smart&auto=webp&s=47b38caa075c4cf4fa64a77df29c9572a8256553"
     )
+)
+
+// Данные для профиля
+val mockProfile: ProfileState = ProfileState(
+    name = "Алексей",
+    email = "alex@example.com",
+    avatarUrl = "https://i.pravatar.cc/301",
+    notificationsEnabled = true,
+    darkThemeEnabled = false
 )
 
