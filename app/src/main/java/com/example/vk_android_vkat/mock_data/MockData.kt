@@ -75,4 +75,7 @@ val mockProfile: ProfileState = ProfileState(
     notificationsEnabled = true,
     darkThemeEnabled = false
 )
+//Данные для авторизации
+const val mockEmail = "alex@example.com"
+const val mockPassword = "12345678"
 

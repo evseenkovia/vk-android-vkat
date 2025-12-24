@@ -63,6 +63,15 @@ fun AuthScreen(
     }
 }
 
+@Preview(showBackground = true)
+@Composable
+fun LoginFormPreview(){
+    LoginForm(
+        state = AuthState(mode = AuthMode.Login),
+        viewModel = LoginViewModel()
+    )
+}
+
 @Composable
 fun LoginForm(
     state: AuthState,
@@ -190,6 +199,14 @@ fun LoginForm(
     }
 }
 
+//@Preview(showBackground = true)
+//@Composable
+//fun RegisterFormPreview(){
+//    RegisterForm(
+//        state = AuthState(mode = AuthMode.Register),
+//        viewModel = LoginViewModel()
+//    )
+//}
 
 @Composable
 fun RegisterForm(
@@ -328,11 +345,19 @@ fun RegisterForm(
     }
 }
 
-@Preview(showBackground = true)
+//@Preview(showBackground = true)
+//@Composable
+//fun ForgotPasswordPreview(){
+//    ForgotPasswordForm(
+//        state = AuthState(mode = AuthMode.ForgotPassword),
+//        viewModel = LoginViewModel()
+//    )
+//}
+
 @Composable
 fun ForgotPasswordForm(
-    state: AuthState = AuthState(mode = AuthMode.ForgotPassword),
-    viewModel: LoginViewModel = LoginViewModel()
+    state: AuthState,
+    viewModel: LoginViewModel
 ) {
     Column(
         modifier = Modifier

@@ -34,7 +34,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.example.vk_android_vkat.domain.model.RouteUi
-import com.example.vk_android_vkat.data.mockRoutes
+import com.example.vk_android_vkat.mock_data.mockRoutes
 
 
 @Preview(showBackground = true)

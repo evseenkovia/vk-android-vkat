@@ -2,6 +2,8 @@ package com.example.vk_android_vkat.ui.auth
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.vk_android_vkat.mock_data.mockEmail
+import com.example.vk_android_vkat.mock_data.mockPassword
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -35,9 +37,8 @@ class LoginViewModel : ViewModel() {
 
     private suspend fun checkIfUserLoggedIn(): Boolean {
         //TODO Сделать простую проверку через SharedPreferences
-        // В реальности может быть проверка токена
-        delay(500) // Имитация задержки
-        return true // По умолчанию не залогинен -> false
+        delay(500)
+        return false // По умолчанию не залогинен
     }
 
     fun setMode(mode: AuthMode) {
@@ -60,16 +61,17 @@ class LoginViewModel : ViewModel() {
                 delay(1000) // Имитация API запроса
 
                 // TODO: Реальная логика авторизации
-                // Если успешно:
-                saveAuthToken("fake_token_123")
+                val email = state.value.email
+                val password = state.value.password
 
+                if (email == mockEmail && password == mockPassword)
+                    saveAuthToken("fake_token_123")
                 _state.update {
                     it.copy(
                         isLoading = false,
                         isUserLoggedIn = true // Устанавливаем флаг успешного входа
                     )
                 }
-
             } catch (e: Exception) {
                 _state.update {
                     it.copy(
@@ -83,8 +85,8 @@ class LoginViewModel : ViewModel() {
 
     private fun saveAuthToken(token: String) {
         // Сохраняем токен в SharedPreferences
-        // Это упростит проверку при следующем запуске
-        // TODO: использовать EncryptedSharedPreferences для безопасности
+
+
     }
 
     fun register() {
