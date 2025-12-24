@@ -34,10 +34,10 @@ class LoginViewModel : ViewModel() {
     }
 
     private suspend fun checkIfUserLoggedIn(): Boolean {
-        // Простая проверка через SharedPreferences
+        //TODO Сделать простую проверку через SharedPreferences
         // В реальности может быть проверка токена
         delay(500) // Имитация задержки
-        return false // По умолчанию не залогинен
+        return true // По умолчанию не залогинен -> false
     }
 
     fun setMode(mode: AuthMode) {
