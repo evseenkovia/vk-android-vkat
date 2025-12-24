@@ -1,13 +1,50 @@
 package com.example.vk_android_vkat.ui.explore
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.vk_android_vkat.domain.model.RouteUi
+import com.example.vk_android_vkat.mock_data.delayTime
+import com.example.vk_android_vkat.mock_data.mockRoutes
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 
 class ExploreViewModel : ViewModel() {
 
-    private val _text = MutableLiveData<String>().apply {
-        value = "This is explore Fragment"
+    private val _routes = MutableStateFlow<List<RouteUi>?>(null)
+    val routes: StateFlow<List<RouteUi>?> = _routes.asStateFlow()
+
+    private val _isLoading = MutableStateFlow(true)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+
+    private val _error = MutableStateFlow<String?>(null)
+    val error: StateFlow<String?> = _error.asStateFlow()
+
+    init {
+        loadRoutes()
     }
-    val text: LiveData<String> = _text
+
+    fun loadRoutes() {
+        viewModelScope.launch {
+            _isLoading.value = true
+            _error.value = null
+            delay(delayTime)
+            try {
+                // Можно случайно сгенерировать ошибку для проверки
+                val shouldFail = false
+                if (shouldFail) throw Exception("Ошибка загрузки маршрутов")
+
+                val loadedRoutes = mockRoutes   // Полный список
+//                val loadedRoutes = null         // Пустой список
+                _routes.value = loadedRoutes
+            } catch (e: Exception) {
+                _error.value = e.message ?: "Неизвестная ошибка"
+                _routes.value = emptyList()
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
 }
