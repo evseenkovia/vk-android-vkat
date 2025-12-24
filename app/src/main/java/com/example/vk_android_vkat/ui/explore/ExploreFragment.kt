@@ -27,7 +27,8 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.example.vk_android_vkat.databinding.FragmentExploreBinding
 import com.example.vk_android_vkat.domain.model.RouteUi
-import com.example.vk_android_vkat.data.mockRoutes
+
+import com.example.vk_android_vkat.mock_data.mockRoutes
 
 class ExploreFragment : Fragment() {
 
