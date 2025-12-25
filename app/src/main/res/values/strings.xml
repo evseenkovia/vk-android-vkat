@@ -43,6 +43,7 @@
     <string name="enter_the_email_for_password_recovery">Введите email для восстановления пароля</string>
     <string name="send_link">Отправить ссылку</string>
     <string name="return_to_sign_in">Вернуться к входу</string>
+    <string name="no_favourites">Сейчас в избранном ничего нет</string>
 
     <!-- Ошибки email -->
     <string name="email_blank_error">Email не может быть пустым</string>

@@ -62,7 +62,7 @@ fun RouteCard(
             .clickable(onClick = { onClick() })
             .aspectRatio(1f)
             .padding(8.dp),
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedCornerShape(30.dp),
     ){
         Box(modifier = Modifier.fillMaxSize()) {
             // Фоновое изображение маршрута
@@ -112,12 +112,13 @@ fun RouteCard(
                     onClick = { onFavouriteClick() },
                 ) {
                     Icon(
-                        modifier = Modifier.size(36.dp),
+                        modifier = Modifier
+                            .size(36.dp),
                         imageVector = if (route.isFavourite)
                             Icons.Filled.Bookmark
                         else
                             Icons.Outlined.BookmarkBorder,
-                        contentDescription = stringResource(R.id.navigation_favourite),
+                        contentDescription = stringResource(R.string.title_favourite),
                         tint = interfaceColor
                     )
                 }

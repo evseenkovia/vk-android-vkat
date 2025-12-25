@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.example.vk_android_vkat.R
+import com.example.vk_android_vkat.ui.favourite.FavouriteDataStore
 
 class ExploreFragment : Fragment() {
 
@@ -43,7 +44,9 @@ class ExploreFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         val exploreViewModel =
-            ViewModelProvider(this)[ExploreViewModel::class.java]
+            ViewModelProvider(this,
+                ExploreViewModelFactory(FavouriteDataStore(requireContext()))
+            )[ExploreViewModel::class.java]
 
         return ComposeView(requireContext()).apply {
             setContent {
@@ -107,7 +110,10 @@ class ExploreFragment : Fragment() {
                                 .padding(bottom = 56.dp)
                         ) {
                             items(routes!!, key = { it.id }) { route ->
-                                RouteCard(route = route, onClick = { /* переход */ })
+                                RouteCard(route = route, onClick = { /* переход */ },
+                                    onFavouriteClick = {
+                                        viewModel.toggleFavourite(route.id)
+                                    })
                             }
                         }
                     }
