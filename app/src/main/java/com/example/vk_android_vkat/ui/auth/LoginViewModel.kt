@@ -39,7 +39,7 @@ class LoginViewModel : ViewModel() {
 
     private suspend fun checkIfUserLoggedIn(): Boolean {
         delay(delayTime)
-        return true // По умолчанию пользователь не залогинен
+        return false // По умолчанию пользователь не залогинен
     }
 
     fun setMode(mode: AuthMode) {
