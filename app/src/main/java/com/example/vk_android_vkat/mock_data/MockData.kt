@@ -1,5 +1,6 @@
 package com.example.vk_android_vkat.mock_data
 
+import com.example.vk_android_vkat.domain.model.RoutePoint
 import com.example.vk_android_vkat.domain.model.RouteUi
 import com.example.vk_android_vkat.ui.profile.ProfileState
 
@@ -8,12 +9,21 @@ val mockRoutes = listOf(
     RouteUi(
         id = 1,
         title = "Прогулка по старому городу",
-        description = "Исторический маршрут по центральной части города",
+        description = "Исторический маршрут по центральной части города. Маршрут включает посещение главных достопримечательностей, музеев и уютных улочек старого города.",
         distanceKm = 10,
         durationHours = 2,
         pointsCount = 7,
         rating = 4.7f,
-        imageUrl = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTEHZLEG4vE90aZYXy-YtldelQ7QHWYwwB-NA&s"
+        imageUrl = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTEHZLEG4vE90aZYXy-YtldelQ7QHWYwwB-NA&s",
+        points = listOf(
+            RoutePoint("Старая ратуша", "ул. Центральная, 1", "Историческое здание ратуши с башней и старинными часами."),
+            RoutePoint("Площадь фонтанов", "ул. Площадная, 3", "Красивая площадь с фонтанами и скульптурами, популярное место для прогулок."),
+            RoutePoint("Музей истории города", "ул. Историческая, 5", "Экспозиции о становлении города и его известных жителях."),
+            RoutePoint("Старый мост", "ул. Речная, 2", "Каменный мост через реку с живописными видами на набережную."),
+            RoutePoint("Улица ремесленников", "ул. Мастеров, 7", "Улица с мастерскими и магазинами, где можно посмотреть на традиционные ремесла."),
+            RoutePoint("Церковь Святого Николая", "ул. Церковная, 4", "Старинная церковь с красивыми витражами и колокольней."),
+            RoutePoint("Кафе на углу", "ул. Кофейная, 10", "Уютное кафе для отдыха после прогулки, с традиционной выпечкой.")
+        )
     ),
     RouteUi(
         id = 2,
@@ -23,7 +33,21 @@ val mockRoutes = listOf(
         durationHours = 4,
         pointsCount = 12,
         rating = 4.9f,
-        imageUrl = "https://static.wikia.nocookie.net/darksouls/images/1/19/Поселок_Олачиль_1.jpg/revision/latest/smart/width/386/height/259?cb=20160130220340&path-prefix=ru"
+        imageUrl = "https://static.wikia.nocookie.net/darksouls/images/1/19/Поселок_Олачиль_1.jpg/revision/latest/smart/width/386/height/259?cb=20160130220340&path-prefix=ru",
+        points = listOf(
+            RoutePoint("Вход в лес", "Лесная ул., 1", "Начало маршрута в живописной лесной зоне."),
+            RoutePoint("Старое дерево", "Лесная ул., 2", "Огромное дерево, которое считается символом леса."),
+            RoutePoint("Пруд с утками", "Лесная ул., 3", "Маленький пруд с утками и лягушками."),
+            RoutePoint("Лесная поляна", "Лесная ул., 4", "Поляна с местом для отдыха и пикников."),
+            RoutePoint("Скала орлиного гнезда", "Лесная ул., 5", "Скала с красивым обзором на лес."),
+            RoutePoint("Пещера", "Лесная ул., 6", "Маленькая пещера, безопасная для посещения."),
+            RoutePoint("Водопад", "Лесная ул., 7", "Живописный небольшой водопад."),
+            RoutePoint("Мостик через ручей", "Лесная ул., 8", "Деревянный мост через лесной ручей."),
+            RoutePoint("Старый маяк", "Лесная ул., 9", "Руины маяка посреди леса."),
+            RoutePoint("Ягодная поляна", "Лесная ул., 10", "Поляна с дикорастущими ягодами."),
+            RoutePoint("Лесной домик", "Лесная ул., 11", "Небольшой заброшенный домик."),
+            RoutePoint("Выход из леса", "Лесная ул., 12", "Конец маршрута и выход к дороге.")
+        )
     ),
     RouteUi(
         id = 3,
@@ -33,7 +57,14 @@ val mockRoutes = listOf(
         durationHours = 1,
         pointsCount = 5,
         rating = 4.5f,
-        imageUrl = "https://velid.ru/img/dark-souls/ds-1/sad-tjomnyh-kornej_00.webp"
+        imageUrl = "https://velid.ru/img/dark-souls/ds-1/sad-tjomnyh-kornej_00.webp",
+        points = listOf(
+            RoutePoint("Берег озера", "ул. Озерная, 1", "Начало маршрута на живописном берегу озера."),
+            RoutePoint("Смотровая площадка", "ул. Озерная, 2", "Площадка с отличным видом на озеро."),
+            RoutePoint("Пляж", "ул. Озерная, 3", "Песчаный участок для отдыха."),
+            RoutePoint("Малый остров", "ул. Озерная, 4", "Небольшой островок на озере, виден с берега."),
+            RoutePoint("Конец маршрута", "ул. Озерная, 5", "Заканчиваем маршрут у парковки рядом с озером.")
+        )
     ),
     RouteUi(
         id = 4,
@@ -43,7 +74,19 @@ val mockRoutes = listOf(
         durationHours = 6,
         pointsCount = 10,
         rating = 4.8f,
-        imageUrl = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRDlSdqAl6N1Ggd3KcOO4jpxZwcU9Jqi9NCqw&s"
+        imageUrl = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRDlSdqAl6N1Ggd3KcOO4jpxZwcU9Jqi9NCqw&s",
+        points = listOf(
+            RoutePoint("Начало тропы", "Горная ул., 1", "Старт маршрута у подножия перевала."),
+            RoutePoint("Скалистый выступ", "Горная ул., 2", "Точка с видом на скалы."),
+            RoutePoint("Водопад в горах", "Горная ул., 3", "Небольшой горный водопад."),
+            RoutePoint("Лесная поляна", "Горная ул., 4", "Полянка для отдыха."),
+            RoutePoint("Перевальный перевал", "Горная ул., 5", "Самая высокая точка маршрута."),
+            RoutePoint("Склон с видами", "Горная ул., 6", "Отличные виды на долину."),
+            RoutePoint("Старый хижина", "Горная ул., 7", "Небольшая хижина для отдыха."),
+            RoutePoint("Озеро в горах", "Горная ул., 8", "Маленькое горное озеро."),
+            RoutePoint("Пик", "Горная ул., 9", "Высшая точка маршрута."),
+            RoutePoint("Конец тропы", "Горная ул., 10", "Выход к дороге и парковке.")
+        )
     ),
     RouteUi(
         id = 5,
@@ -53,7 +96,17 @@ val mockRoutes = listOf(
         durationHours = 2,
         pointsCount = 8,
         rating = 4.3f,
-        imageUrl = "https://i.ytimg.com/vi/rLoWP2U2ceg/maxresdefault.jpg"
+        imageUrl = "https://i.ytimg.com/vi/rLoWP2U2ceg/maxresdefault.jpg",
+        points = listOf(
+            RoutePoint("Вход в парк", "ул. Парковая, 1", "Начало маршрута у главного входа в парк."),
+            RoutePoint("Колесо обозрения", "ул. Парковая, 2", "Огромное колесо обозрения с красивым видом."),
+            RoutePoint("Детская площадка", "ул. Парковая, 3", "Игровая зона для детей."),
+            RoutePoint("Кафе", "ул. Парковая, 4", "Место для отдыха и перекуса."),
+            RoutePoint("Фонтан", "ул. Парковая, 5", "Красивый фонтан с подсветкой."),
+            RoutePoint("Площадь аттракционов", "ул. Парковая, 6", "Развлекательная зона с аттракционами."),
+            RoutePoint("Памятник", "ул. Парковая, 7", "Исторический памятник в центре парка."),
+            RoutePoint("Выход из парка", "ул. Парковая, 8", "Конец маршрута, возвращаемся к выходу.")
+        )
     ),
     RouteUi(
         id = 6,
@@ -63,9 +116,21 @@ val mockRoutes = listOf(
         durationHours = 3,
         pointsCount = 9,
         rating = 4.6f,
-        imageUrl = "https://preview.redd.it/irithyll-of-the-boreal-valley-is-amazing-v0-h5pxqkbc5qjf1.jpg?width=640&crop=smart&auto=webp&s=47b38caa075c4cf4fa64a77df29c9572a8256553"
+        imageUrl = "https://preview.redd.it/irithyll-of-the-boreal-valley-is-amazing-v0-h5pxqkbc5qjf1.jpg?width=640&crop=smart&auto=webp&s=47b38caa075c4cf4fa64a77df29c9572a8256553",
+        points = listOf(
+            RoutePoint("Начало маршрута", "ул. Речная, 1", "Старт у набережной."),
+            RoutePoint("Старый мост", "ул. Речная, 2", "Исторический мост через реку."),
+            RoutePoint("Пляжная зона", "ул. Речная, 3", "Место для отдыха и прогулок."),
+            RoutePoint("Парк вдоль реки", "ул. Речная, 4", "Зелёная зона с лавочками."),
+            RoutePoint("Смотровая площадка", "ул. Речная, 5", "Панорамный вид на реку."),
+            RoutePoint("Кафе на набережной", "ул. Речная, 6", "Место для перекуса и кофе."),
+            RoutePoint("Мостик через ручей", "ул. Речная, 7", "Деревянный мост через маленький ручей."),
+            RoutePoint("Старая мельница", "ул. Речная, 8", "Историческая мельница на берегу."),
+            RoutePoint("Конец маршрута", "ул. Речная, 9", "Финиш маршрута, возвращаемся к парковке.")
+        )
     )
 )
+
 
 // Данные для профиля
 val mockProfile: ProfileState = ProfileState(

@@ -42,6 +42,7 @@ android {
 
 dependencies {
 
+    implementation(libs.androidx.runtime)
     // Specify the Compose BOM with a version definition
     val composeBom = platform("androidx.compose:compose-bom:2025.12.00")
     implementation(composeBom)

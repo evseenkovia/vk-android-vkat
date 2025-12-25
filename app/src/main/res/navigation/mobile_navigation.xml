@@ -41,4 +41,13 @@
         android:label="@string/title_profile"
         tools:layout="@layout/fragment_profile" />
 
+    <fragment
+        android:id="@+id/routeDetailFragment"
+        android:name="com.example.vk_android_vkat.route.RouteDetailFragment"
+        android:label="Route Detail">
+    <argument
+        android:name="routeId"
+        app:argType="long" />
+    </fragment>
+
 </navigation>

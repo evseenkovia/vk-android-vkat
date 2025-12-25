@@ -33,6 +33,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.findNavController
 import com.example.vk_android_vkat.R
 import com.example.vk_android_vkat.ui.favourite.FavouriteDataStore
 
@@ -110,7 +111,12 @@ class ExploreFragment : Fragment() {
                                 .padding(bottom = 56.dp)
                         ) {
                             items(routes!!, key = { it.id }) { route ->
-                                RouteCard(route = route, onClick = { /* переход */ },
+                                RouteCard(route = route, onClick = {
+                                    val bundle = Bundle().apply {
+                                        putLong("routeId", route.id)
+                                    }
+                                    findNavController().navigate(R.id.routeDetailFragment, bundle)
+                                },
                                     onFavouriteClick = {
                                         viewModel.toggleFavourite(route.id)
                                     })
