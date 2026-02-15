@@ -12,8 +12,15 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.navigation
+import androidx.navigation.navigation
 import androidx.navigation.toRoute
 import com.example.vk_android_vkat.ui.add.EditorScreen
+import com.example.vk_android_vkat.ui.auth.AuthMode
+import com.example.vk_android_vkat.ui.auth.AuthViewModel
+import com.example.vk_android_vkat.ui.auth.LoginScreen
+import com.example.vk_android_vkat.ui.auth.PasswordRecoveryScreen
+import com.example.vk_android_vkat.ui.auth.RegistrationScreen
 import com.example.vk_android_vkat.ui.explore.ExploreViewModel
 import com.example.vk_android_vkat.ui.explore.SearchScreen
 import com.example.vk_android_vkat.ui.explore.SearchUiEvent
@@ -29,78 +36,78 @@ import com.example.vk_android_vkat.ui.profile.ProfileViewModel
 fun RootNavGraph(
     navController: NavHostController,
     modifier : Modifier,
-    contentPadding: PaddingValues = PaddingValues(0.dp)
+    contentPadding: PaddingValues = PaddingValues(0.dp),
+    isUserLoggedIn: Boolean
 ) {
     NavHost(
         navController = navController,
-        startDestination = Search,
+        startDestination = if (!isUserLoggedIn) AuthGraph else MainGraph,
         modifier = modifier.fillMaxSize(),
         ) {
 
-        composable<Search> {
-            val viewModel: ExploreViewModel = viewModel()
-            val uiState by viewModel.state.collectAsState()
+        navigation<AuthGraph>(startDestination = Login){
 
-            SearchScreen(
-                uiState = uiState,
-                onEvent = { event ->
-                    viewModel.onEvent(event)
-                    when (event) {
-                        is SearchUiEvent.RouteClicked -> navController.navigate(RouteDetails(event.routeId))
-                        is SearchUiEvent.FilterClicked -> TODO("Логика фильтров")
-                        SearchUiEvent.Retry -> TODO()
-                    }
-                }
-            )
-        }
-
-        composable<Profile> {
-            val viewModel: ProfileViewModel = viewModel()
-            val uiState by viewModel.state.collectAsState()
-
-            ProfileScreen(
-                uiState = uiState,
-                onEvent = { event ->
-                    viewModel.onEvent(event)
-                    when (event) {
-                        is ProfileUiEvent.ItemClicked -> {
-                            // Навигация по секциям настроек
-                            when (event.id) {
-                                is ProfileItemUi.Navigation -> {
-                                    val section = event.id.section
-                                    when (section) {
-                                        ProfileSection.Account -> TODO("Account screen")
-                                        ProfileSection.Notifications -> TODO("Notifications screen")
-                                        ProfileSection.Privacy -> TODO("Privacy screen")
-                                        ProfileSection.Appearance -> TODO("Appearance screen")
-                                        ProfileSection.About -> TODO("About screen")
-                                    }
-                                }
-
-                                else -> {}
-                            }
+            composable<Login> { backStackEntry ->
+                val viewModel: AuthViewModel = viewModel()
+                val state by viewModel.state.collectAsState()
+                LoginScreen(
+                    state = state,
+                    onEvent = viewModel::onEvent,
+                    onNavigate = { target ->
+                        when (target) {
+                            AuthMode.Registration -> navController.navigate(Registration)
+                            AuthMode.PasswordRecovery -> navController.navigate(PasswordRecovery)
+                            else -> {}
                         }
-
-                        is ProfileUiEvent.SwitchChanged -> {} // handled inside ViewModel
-                        ProfileUiEvent.Retry -> {}
+                    },
+                    onLoginSuccess = {
+                        navController.navigate(MainGraph) {
+                            popUpTo(AuthGraph) { inclusive = true } // очищаем стек auth
+                        }
                     }
-                }
-            )
+                )
+            }
+
+            composable<Registration> {
+                val viewModel: AuthViewModel = viewModel()
+                val state by viewModel.state.collectAsState()
+                RegistrationScreen(
+                    state = state,
+                    onEvent = viewModel::onEvent,
+                    onNavigate = { target ->
+                        if (target == AuthMode.Login) navController.navigate(Login) {
+                            popUpTo(Registration) { inclusive = true }
+                        }
+                    },
+                    onRegisterSuccess = {
+                        navController.navigate("main_graph") {
+                            popUpTo(AuthGraph) { inclusive = true }
+                        }
+                    }
+                )
+            }
+
+            composable<PasswordRecovery> {
+                val viewModel: AuthViewModel = viewModel()
+                val state by viewModel.state.collectAsState()
+                PasswordRecoveryScreen(
+                    state = state,
+                    onEvent = viewModel::onEvent,
+                    onNavigate = { target ->
+                        if (target == AuthMode.Login) navController.navigate(Login) {
+                            popUpTo(PasswordRecovery) { inclusive = true }
+                        }
+                    }
+                )
+            }
         }
 
-        composable<Map> { backStackEntry ->
-            val details = backStackEntry.toRoute<Map>()
-            MapScreen()
-        }
-
-        composable<Editor> { backStackEntry ->
-            val details = backStackEntry.toRoute<Editor>()
-            EditorScreen()
-        }
-
-        composable<Favourite> { backStackEntry ->
-            val details = backStackEntry.toRoute<Favourite>()
-            FavouriteScreen()
+        navigation<MainGraph>(startDestination = SearchGraph){
+            searchGraph()
+            favouriteGraph()
+            editorGraph()
+            mapGraph()
+            profileGraph()
         }
     }
 }

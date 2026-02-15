@@ -10,12 +10,10 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.viewModels
-import androidx.navigation.fragment.findNavController
-import com.example.vk_android_vkat.R
 
 class LoginFragment : Fragment() {
 
-    private val viewModel: LoginViewModel by viewModels()
+    private val viewModel: AuthViewModel by viewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -35,25 +33,25 @@ class LoginFragment : Fragment() {
                     // Если пользователь уже залогинен - переходим на главный
                     state.isUserLoggedIn -> {
                         LaunchedEffect(Unit) {
-                            navigateToMain()
+//                            navigateToMain()
                         }
                         SplashScreen() // Показываем сплеш во время навигации
                     }
 
                     // Иначе показываем экран авторизации
                     else -> {
-                        AuthScreen(
-                            state = state,
-                            viewModel = viewModel,
-                            onLoginSuccess = { navigateToMain() }
-                        )
+//                        AuthScreen(
+//                            state = state,
+//                            viewModel = viewModel,
+//                            onLoginSuccess = { } //navigateToMain() }
+//                        )
                     }
                 }
             }
         }
     }
 
-    private fun navigateToMain(){
-        findNavController().navigate(R.id.navigation_explore)
-    }
+//    private fun navigateToMain(){
+//        findNavController().navigate(R.id.navigation_explore)
+//    }
 }
