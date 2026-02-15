@@ -37,8 +37,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.example.vk_android_vkat.R
-import com.example.vk_android_vkat.domain.model.RouteUi
-import com.example.vk_android_vkat.mock_data.mockRoutes
+import com.example.vk_android_vkat.domain.model.RouteModel
+import com.example.vk_android_vkat.data.mockRoutes
 
 
 @Preview(showBackground = true)
@@ -52,7 +52,7 @@ fun PreviewCard(){
 
 @Composable
 fun RouteCard(
-    route: RouteUi,
+    route: RouteModel,
     onClick: () -> Unit = {},
     onFavouriteClick: () -> Unit = {}
 ){
@@ -117,7 +117,7 @@ fun RouteCard(
                             Icons.Filled.Bookmark
                         else
                             Icons.Outlined.BookmarkBorder,
-                        contentDescription = stringResource(R.id.navigation_favourite),
+                        contentDescription = stringResource(R.string.title_favourite),
                         tint = interfaceColor
                     )
                 }

@@ -4,9 +4,9 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.vk_android_vkat.R
-import com.example.vk_android_vkat.mock_data.delayTime
-import com.example.vk_android_vkat.mock_data.mockEmail
-import com.example.vk_android_vkat.mock_data.mockPassword
+import com.example.vk_android_vkat.data.delayTime
+import com.example.vk_android_vkat.data.mockEmail
+import com.example.vk_android_vkat.data.mockPassword
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -39,7 +39,7 @@ class LoginViewModel : ViewModel() {
 
     private suspend fun checkIfUserLoggedIn(): Boolean {
         delay(delayTime)
-        return false // По умолчанию пользователь не залогинен
+        return true // По умолчанию пользователь не залогинен
     }
 
     fun setMode(mode: AuthMode) {
@@ -148,17 +148,41 @@ class LoginViewModel : ViewModel() {
 
             val hasErrors = emailErr != null || passwordErr != null || confirmErr != null
 
-            // Обновляем состояние с результатами проверки
-            _state.update {
-                it.copy(
-                    isLoading = false,
-                    emailError = emailErr,
-                    passwordError = passwordErr,
-                    confirmPasswordError = confirmErr,
-                    error = if (!hasErrors) context.getString(R.string.register_success) else null // Успешная регистрация
-                )
+            if (!hasErrors) {
+                saveUserData(context, email, password)
+
+                // обновляем состояние
+                _state.update {
+                    it.copy(
+                        isLoading = false,
+                        isUserLoggedIn = true,
+                        error = context.getString(R.string.register_success)
+                    )
+                }
+            } else {
+                // Обновляем состояние с результатами проверки
+                _state.update {
+                    it.copy(
+                        isLoading = false,
+                        emailError = emailErr,
+                        passwordError = passwordErr,
+                        confirmPasswordError = confirmErr,
+                        error = null
+                    )
+                }
             }
         }
+    }
+
+    private fun saveUserData(context: Context, email: String, password: String) {
+        // TODO: Реальная логика сохранения пользователя
+        // Пока просто моковая реализация
+        val prefs = context.getSharedPreferences("auth", Context.MODE_PRIVATE)
+        prefs.edit()
+            .putString("email", email)
+            .putString("password", password)
+            .putBoolean("is_logged_in", true)
+            .apply()
     }
 
     fun sendPasswordReset(context: Context) {

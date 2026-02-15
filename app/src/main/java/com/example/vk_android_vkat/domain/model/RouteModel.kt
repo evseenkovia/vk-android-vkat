@@ -1,6 +1,6 @@
 package com.example.vk_android_vkat.domain.model
 
-data class RouteUi(
+data class RouteModel(
     val id: Long,
     val title: String,
     val description: String,

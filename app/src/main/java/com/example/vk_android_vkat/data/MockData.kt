@@ -1,11 +1,15 @@
-package com.example.vk_android_vkat.mock_data
+package com.example.vk_android_vkat.data
 
-import com.example.vk_android_vkat.domain.model.RouteUi
-import com.example.vk_android_vkat.ui.profile.ProfileState
+import com.example.vk_android_vkat.domain.model.RouteModel
+import com.example.vk_android_vkat.ui.profile.ProfileContentUi
+import com.example.vk_android_vkat.ui.profile.ProfileHeaderUi
+import com.example.vk_android_vkat.ui.profile.ProfileItemUi
+import com.example.vk_android_vkat.ui.profile.ProfileSection
+import com.example.vk_android_vkat.ui.profile.ProfileUiState
 
 // Список маршрутов
 val mockRoutes = listOf(
-    RouteUi(
+    RouteModel(
         id = 1,
         title = "Прогулка по старому городу",
         description = "Исторический маршрут по центральной части города",
@@ -15,7 +19,7 @@ val mockRoutes = listOf(
         rating = 4.7f,
         imageUrl = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTEHZLEG4vE90aZYXy-YtldelQ7QHWYwwB-NA&s"
     ),
-    RouteUi(
+    RouteModel(
         id = 2,
         title = "Лесной маршрут",
         description = "Приятная прогулка по лесной местности",
@@ -25,7 +29,7 @@ val mockRoutes = listOf(
         rating = 4.9f,
         imageUrl = "https://static.wikia.nocookie.net/darksouls/images/1/19/Поселок_Олачиль_1.jpg/revision/latest/smart/width/386/height/259?cb=20160130220340&path-prefix=ru"
     ),
-    RouteUi(
+    RouteModel(
         id = 3,
         title = "На берегу озера",
         description = "Маршрут вдоль живописного озера",
@@ -35,7 +39,7 @@ val mockRoutes = listOf(
         rating = 4.5f,
         imageUrl = "https://velid.ru/img/dark-souls/ds-1/sad-tjomnyh-kornej_00.webp"
     ),
-    RouteUi(
+    RouteModel(
         id = 4,
         title = "Горный перевал",
         description = "Сложный маршрут через горные тропы",
@@ -45,7 +49,7 @@ val mockRoutes = listOf(
         rating = 4.8f,
         imageUrl = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRDlSdqAl6N1Ggd3KcOO4jpxZwcU9Jqi9NCqw&s"
     ),
-    RouteUi(
+    RouteModel(
         id = 5,
         title = "Парк развлечений",
         description = "Прогулка с посещением достопримечательностей и кафе",
@@ -55,7 +59,7 @@ val mockRoutes = listOf(
         rating = 4.3f,
         imageUrl = "https://i.ytimg.com/vi/rLoWP2U2ceg/maxresdefault.jpg"
     ),
-    RouteUi(
+    RouteModel(
         id = 6,
         title = "Вдоль реки",
         description = "Маршрут с живописными видами на реку и мосты",
@@ -68,13 +72,23 @@ val mockRoutes = listOf(
 )
 
 // Данные для профиля
-val mockProfile: ProfileState = ProfileState(
-    name = "Алексей",
-    email = "alex@example.com",
-    avatarUrl = "https://i.pravatar.cc/301",
-    notificationsEnabled = true,
-    darkThemeEnabled = false
+val mockProfile: ProfileUiState.Content = ProfileUiState.Content(
+    data = ProfileContentUi(
+        header = ProfileHeaderUi(
+            userName = "Алексей",
+            email = "alex@example.com",
+            avatarUrl = "https://i.pravatar.cc/301"
+        ),
+        sections = listOf(
+            ProfileItemUi.Switch(title = "Уведомления", checked = true),
+            ProfileItemUi.Switch(title = "Тёмная тема", checked = false),
+            ProfileItemUi.Info(title = "Email", subtitle = "alex@example.com"),
+            ProfileItemUi.Navigation(title = "Изменить пароль", section = ProfileSection.Account),
+            ProfileItemUi.Navigation(title = "Конфиденциальность", section = ProfileSection.Privacy)
+        )
+    )
 )
+
 //Данные для авторизации
 const val mockEmail = "alex@example.com"
 const val mockPassword = "12345678"

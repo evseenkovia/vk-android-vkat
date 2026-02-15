@@ -1,52 +1,50 @@
 package com.example.vk_android_vkat.ui.explore
 
-import androidx.compose.ui.res.stringResource
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.vk_android_vkat.R
-import com.example.vk_android_vkat.domain.model.RouteUi
-import com.example.vk_android_vkat.mock_data.delayTime
-import com.example.vk_android_vkat.mock_data.mockRoutes
+import com.example.vk_android_vkat.data.mockRoutes
+import com.example.vk_android_vkat.domain.model.RouteModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class ExploreViewModel : ViewModel(){
 
-    private val _routes = MutableStateFlow<List<RouteUi>?>(null)
-    val routes: StateFlow<List<RouteUi>?> = _routes.asStateFlow()
+    private val _state = MutableStateFlow(SearchUiState(isLoading = true))
+    val state: StateFlow<SearchUiState> = _state
 
-    private val _isLoading = MutableStateFlow(true)
-    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
-
-    private val _error = MutableStateFlow<String?>(null)
-    val error: StateFlow<String?> = _error.asStateFlow()
+    private val delayTime = 1000L
 
     init {
         loadRoutes()
     }
 
-    fun loadRoutes() {
+    // Обработка событий с UI
+    fun onEvent(event: SearchUiEvent){
+        when(event) {
+            is SearchUiEvent.FilterClicked -> TODO()
+            SearchUiEvent.Retry -> TODO()
+            is SearchUiEvent.RouteClicked -> TODO()
+        }
+    }
+
+    fun loadRoutes(){
         viewModelScope.launch {
-            _isLoading.value = true
-            _error.value = null
+            _state.update { it.copy(isLoading = true, error = null) }
             delay(delayTime)
             try {
-                // Можно случайно сгенерировать ошибку для проверки
-                val shouldFail = false
-                if (shouldFail) throw Exception("Ошибка загрузки маршрутов")
-
-                val loadedRoutes = mockRoutes   // Полный список
-//                val loadedRoutes = null         // Пустой список
-                _routes.value = loadedRoutes
+                val loadedRoutes: List<RouteModel> = mockRoutes
+                _state.update { it.copy(routes = loadedRoutes, isLoading = false) }
             } catch (e: Exception) {
-                _error.value = (e.message ?: R.string.unknown_error).toString()
-                _routes.value = emptyList()
-            } finally {
-                _isLoading.value = false
+                _state.update {
+                    it.copy(
+                        error = e.message ?: "Unknown error.",
+                        routes = emptyList(),
+                        isLoading = false)
+                }
             }
         }
     }
