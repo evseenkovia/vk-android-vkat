@@ -1,6 +1,7 @@
-package com.example.vk_android_vkat.ui.add
+package com.example.vk_android_vkat.ui.editor
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -12,7 +13,7 @@ import androidx.compose.ui.Modifier
 fun EditorScreen(){
     Scaffold { innerPadding ->
         Box(
-            modifier = Modifier.padding(innerPadding),
+            modifier = Modifier.padding(innerPadding).fillMaxSize(),
             contentAlignment = Alignment.Center
         ){
             Text(

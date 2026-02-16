@@ -1,4 +1,4 @@
-package com.example.vk_android_vkat.ui.auth
+package com.example.vk_android_vkat.ui.auth.login
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -22,7 +22,6 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -30,7 +29,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -38,58 +36,50 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.vk_android_vkat.R
 
-//@Preview(showBackground = true)
-//@Composable
-//fun LoginScreenPreview(){
-//    LoginScreen(
-//        state = AuthState(mode = AuthMode.Login),
-//        onEvent = {}
-//    )
-//}
+@Preview(showBackground = true)
+@Composable
+fun LoginScreenPreview(){
+    LoginScreen(
+        state = LoginState(),
+        onEvent = {}
+    )
+}
 
 @Composable
 fun LoginScreen(
-    state: AuthState,
-    onEvent: (AuthEvent) -> Unit,
-    onNavigate: (AuthMode) -> Unit,
-    onLoginSuccess: () -> Unit
+    state: LoginState,
+    onEvent: (LoginEvent) -> Unit,
 ) {
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        // Основной контент
         Column(
             modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.Center
         ) {
-            // Заголовок
             Text(
                 text = stringResource(R.string.sign_in),
                 style = MaterialTheme.typography.headlineLarge,
                 modifier = Modifier.padding(bottom = 32.dp)
             )
 
-            // Email
             OutlinedTextField(
                 modifier = Modifier.fillMaxWidth(),
                 value = state.email,
-                onValueChange = { onEvent(AuthEvent.EmailChanged(it)) },
+                onValueChange = { onEvent(LoginEvent.EmailChanged(it)) },
                 label = { Text(stringResource(R.string.email)) },
                 singleLine = true,
                 isError = state.emailError != null,
                 trailingIcon = {
-                    Icon(
-                        imageVector = Icons.Filled.Email,
-                        contentDescription = stringResource(R.string.email)
-                    )
+                    Icon(Icons.Filled.Email, contentDescription = stringResource(R.string.email))
                 },
                 shape = RoundedCornerShape(12.dp)
             )
             state.emailError?.let {
                 Text(
-                    text = stringResource(it),
+                    text = stringResource(it.resId),
                     color = Color.Red,
                     style = MaterialTheme.typography.bodySmall,
                     modifier = Modifier.padding(top = 4.dp)
@@ -99,73 +89,58 @@ fun LoginScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             var isPasswordVisible by remember { mutableStateOf(false) }
-
-            // Пароль
             OutlinedTextField(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                label = { Text(stringResource(R.string.password)) },
                 value = state.password,
-                onValueChange = { onEvent(AuthEvent.PasswordChanged(it)) },
+                onValueChange = { onEvent(LoginEvent.PasswordChanged(it)) },
+                label = { Text(stringResource(R.string.password)) },
                 singleLine = true,
                 isError = state.passwordError != null,
-                visualTransformation = if (isPasswordVisible)
-                    VisualTransformation.None
-                else
-                    PasswordVisualTransformation(),
+                visualTransformation = if (isPasswordVisible) VisualTransformation.None
+                else PasswordVisualTransformation(),
                 trailingIcon = {
                     IconButton(onClick = { isPasswordVisible = !isPasswordVisible }) {
                         Icon(
-                            imageVector = if (isPasswordVisible)
-                                Icons.Filled.VisibilityOff
-                            else
-                                Icons.Filled.Visibility,
+                            imageVector = if (isPasswordVisible) Icons.Filled.VisibilityOff
+                            else Icons.Filled.Visibility,
                             contentDescription = "Visibility icon"
                         )
                     }
-                }
+                },
+                shape = RoundedCornerShape(12.dp)
             )
             state.passwordError?.let {
                 Text(
-                    text = stringResource(it),
+                    text = stringResource(it.resId),
                     color = Color.Red,
                     style = MaterialTheme.typography.bodySmall,
                     modifier = Modifier.padding(top = 4.dp)
                 )
             }
 
-            // Ошибка если есть
-            state.error?.let {
-                Text(
-                    text = stringResource(it),
-                    color = Color.Red,
-                    modifier = Modifier.padding(top = 8.dp)
-                )
-            }
-
             Spacer(modifier = Modifier.height(24.dp))
 
-            val context = LocalContext.current
-            // Кнопка входа
             Button(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
                 enabled = state.email.isNotBlank() && state.password.isNotBlank(),
-                onClick = { onEvent(AuthEvent.LoginClicked) }
+                shape = RoundedCornerShape(12.dp),
+                onClick = { onEvent(LoginEvent.LoginClicked) }
             ) {
-                Text(stringResource(R.string.sign_in_do))
+                if (state.isLoading) {
+                    CircularProgressIndicator(color = Color.White, strokeWidth = 2.dp)
+                } else {
+                    Text(stringResource(R.string.sign_in_do))
+                }
             }
 
-            // Забыли пароль?
             TextButton(
-                onClick = { onNavigate(AuthMode.PasswordRecovery) },
+                onClick = { onEvent(LoginEvent.ForgotPasswordClicked) },
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(stringResource(R.string.forgot_password))
             }
         }
 
-        // Кнопка перехода к регистрации
         Column(
             modifier = Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally
@@ -177,7 +152,7 @@ fun LoginScreen(
             )
 
             Button(
-                onClick = { onNavigate(AuthMode.Registration) },
+                onClick = { onEvent(LoginEvent.RegisterClicked) },
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.secondaryContainer,
@@ -186,10 +161,6 @@ fun LoginScreen(
                 shape = RoundedCornerShape(12.dp)
             ) {
                 Text(stringResource(R.string.sign_up))
-            }
-            // Автопереход при успешном логине
-            LaunchedEffect(state.isUserLoggedIn) {
-                if (state.isUserLoggedIn) onLoginSuccess()
             }
         }
     }

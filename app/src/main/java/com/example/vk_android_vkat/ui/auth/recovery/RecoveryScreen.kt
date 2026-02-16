@@ -1,4 +1,4 @@
-package com.example.vk_android_vkat.ui.auth
+package com.example.vk_android_vkat.ui.auth.recovery
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -11,6 +11,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -30,17 +31,15 @@ import com.example.vk_android_vkat.R
 @Composable
 fun ForgotPasswordPreview(){
     PasswordRecoveryScreen(
-        state = AuthState(mode = AuthMode.PasswordRecovery),
+        state = RecoveryState(),
         onEvent = {},
-        onNavigate = {}
     )
 }
 
 @Composable
 fun PasswordRecoveryScreen(
-    state: AuthState,
-    onEvent: (AuthEvent) -> Unit,
-    onNavigate: (AuthMode) -> Unit
+    state: RecoveryState,
+    onEvent: (RecoveryEvent) -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -49,14 +48,12 @@ fun PasswordRecoveryScreen(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Заголовок
         Text(
             text = stringResource(R.string.password_recovery),
             style = MaterialTheme.typography.headlineMedium,
             modifier = Modifier.padding(bottom = 16.dp)
         )
 
-        // Описание
         Text(
             text = stringResource(R.string.enter_the_email_for_password_recovery),
             style = MaterialTheme.typography.bodyMedium,
@@ -65,23 +62,21 @@ fun PasswordRecoveryScreen(
             modifier = Modifier.padding(bottom = 32.dp)
         )
 
-        // Поле email
         OutlinedTextField(
             value = state.email,
-            onValueChange = { onEvent(AuthEvent.EmailChanged(it)) },
+            onValueChange = { onEvent(RecoveryEvent.EmailChanged(it)) },
             label = { Text(stringResource(R.string.email)) },
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(12.dp),
             singleLine = true,
             isError = state.emailError != null,
             trailingIcon = {
-                Icon(imageVector = Icons.Filled.Email,
-                    contentDescription = stringResource(R.string.email))
+                Icon(Icons.Filled.Email, contentDescription = stringResource(R.string.email))
             }
         )
         state.emailError?.let {
             Text(
-                text = stringResource(it),
+                text = stringResource(it.resId),
                 color = Color.Red,
                 style = MaterialTheme.typography.bodySmall,
                 modifier = Modifier.padding(top = 4.dp)
@@ -90,19 +85,21 @@ fun PasswordRecoveryScreen(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Кнопка отправки
         Button(
-            onClick = { /* TODO(Реализовать отправку ссылки на почту) */ },
+            onClick = { onEvent(RecoveryEvent.SendRecoveryClicked) },
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(12.dp),
             enabled = state.email.isNotBlank()
         ) {
-            Text(stringResource(R.string.send_link))
+            if (state.isLoading) {
+                CircularProgressIndicator(color = Color.White, strokeWidth = 2.dp)
+            } else {
+                Text(stringResource(R.string.send_link))
+            }
         }
 
-        // Кнопка возврата
         TextButton(
-            onClick = { onNavigate(AuthMode.Login) },
+            onClick = { onEvent(RecoveryEvent.LoginClicked) },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(stringResource(R.string.return_to_sign_in))

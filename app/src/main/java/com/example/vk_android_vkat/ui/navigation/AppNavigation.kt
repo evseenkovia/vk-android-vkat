@@ -7,7 +7,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
 import androidx.navigation.toRoute
-import com.example.vk_android_vkat.ui.add.EditorScreen
+import com.example.vk_android_vkat.ui.editor.EditorScreen
 import com.example.vk_android_vkat.ui.explore.ExploreViewModel
 import com.example.vk_android_vkat.ui.explore.SearchScreen
 import com.example.vk_android_vkat.ui.explore.SearchUiEvent

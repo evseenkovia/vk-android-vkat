@@ -2,8 +2,8 @@ package com.example.vk_android_vkat.ui.navigation
 
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -12,25 +12,13 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.navigation
 import androidx.navigation.navigation
-import androidx.navigation.toRoute
-import com.example.vk_android_vkat.ui.add.EditorScreen
-import com.example.vk_android_vkat.ui.auth.AuthMode
-import com.example.vk_android_vkat.ui.auth.AuthViewModel
-import com.example.vk_android_vkat.ui.auth.LoginScreen
-import com.example.vk_android_vkat.ui.auth.PasswordRecoveryScreen
-import com.example.vk_android_vkat.ui.auth.RegistrationScreen
-import com.example.vk_android_vkat.ui.explore.ExploreViewModel
-import com.example.vk_android_vkat.ui.explore.SearchScreen
-import com.example.vk_android_vkat.ui.explore.SearchUiEvent
-import com.example.vk_android_vkat.ui.favourite.FavouriteScreen
-import com.example.vk_android_vkat.ui.map.MapScreen
-import com.example.vk_android_vkat.ui.profile.ProfileItemUi
-import com.example.vk_android_vkat.ui.profile.ProfileScreen
-import com.example.vk_android_vkat.ui.profile.ProfileSection
-import com.example.vk_android_vkat.ui.profile.ProfileUiEvent
-import com.example.vk_android_vkat.ui.profile.ProfileViewModel
+import com.example.vk_android_vkat.ui.auth.login.LoginScreen
+import com.example.vk_android_vkat.ui.auth.login.LoginViewModel
+import com.example.vk_android_vkat.ui.auth.recovery.PasswordRecoveryScreen
+import com.example.vk_android_vkat.ui.auth.recovery.RecoveryViewModel
+import com.example.vk_android_vkat.ui.auth.registration.RegistrationScreen
+import com.example.vk_android_vkat.ui.auth.registration.RegistrationViewModel
 
 @Composable
 fun RootNavGraph(
@@ -45,62 +33,80 @@ fun RootNavGraph(
         modifier = modifier.fillMaxSize(),
         ) {
 
-        navigation<AuthGraph>(startDestination = Login){
+        navigation<AuthGraph>(startDestination = Login) {
 
+            // ------------------- LOGIN SCREEN -------------------
             composable<Login> { backStackEntry ->
-                val viewModel: AuthViewModel = viewModel()
+                val viewModel: LoginViewModel = viewModel()
                 val state by viewModel.state.collectAsState()
+                val effect by viewModel.effect.collectAsState(initial = null)
+
+                // Экран только отображает состояние и кидает события
                 LoginScreen(
                     state = state,
-                    onEvent = viewModel::onEvent,
-                    onNavigate = { target ->
-                        when (target) {
-                            AuthMode.Registration -> navController.navigate(Registration)
-                            AuthMode.PasswordRecovery -> navController.navigate(PasswordRecovery)
-                            else -> {}
-                        }
-                    },
-                    onLoginSuccess = {
-                        navController.navigate(MainGraph) {
-                            popUpTo(AuthGraph) { inclusive = true } // очищаем стек auth
-                        }
-                    }
+                    onEvent = viewModel::onEvent
                 )
+
+                // NavHost слушает эффекты и делает навигацию
+                LaunchedEffect(effect) {
+                    when (effect) {
+                        LoginViewModel.LoginEffect.LoginSuccess -> {
+                            navController.navigate(MainGraph) {
+                                popUpTo(AuthGraph) { inclusive = true }
+                            }
+                        }
+                        LoginViewModel.LoginEffect.GoToRegistration -> navController.navigate(Registration)
+                        LoginViewModel.LoginEffect.GoToPasswordRecovery -> navController.navigate(PasswordRecovery)
+                        null -> {}
+                    }
+                }
             }
 
-            composable<Registration> {
-                val viewModel: AuthViewModel = viewModel()
+            // ------------------- REGISTRATION SCREEN -------------------
+            composable<Registration> { backStackEntry ->
+                val viewModel: RegistrationViewModel = viewModel()
                 val state by viewModel.state.collectAsState()
+                val effect by viewModel.effect.collectAsState(initial = null)
+
                 RegistrationScreen(
                     state = state,
-                    onEvent = viewModel::onEvent,
-                    onNavigate = { target ->
-                        if (target == AuthMode.Login) navController.navigate(Login) {
-                            popUpTo(Registration) { inclusive = true }
-                        }
-                    },
-                    onRegisterSuccess = {
-                        navController.navigate("main_graph") {
-                            popUpTo(AuthGraph) { inclusive = true }
-                        }
-                    }
+                    onEvent = viewModel::onEvent
                 )
+
+                LaunchedEffect(effect) {
+                    when (effect) {
+                        RegistrationViewModel.RegistrationEffect.RegistrationSuccess -> {
+                            navController.navigate(MainGraph) {
+                                popUpTo(AuthGraph) { inclusive = true }
+                            }
+                        }
+                        RegistrationViewModel.RegistrationEffect.GoToLogin -> navController.navigate(Login)
+                        null -> {}
+                    }
+                }
             }
 
-            composable<PasswordRecovery> {
-                val viewModel: AuthViewModel = viewModel()
+            // ------------------- PASSWORD RECOVERY SCREEN -------------------
+            composable<PasswordRecovery> { backStackEntry ->
+                val viewModel: RecoveryViewModel = viewModel()
                 val state by viewModel.state.collectAsState()
+                val effect by viewModel.effect.collectAsState(initial = null)
+
                 PasswordRecoveryScreen(
                     state = state,
-                    onEvent = viewModel::onEvent,
-                    onNavigate = { target ->
-                        if (target == AuthMode.Login) navController.navigate(Login) {
-                            popUpTo(PasswordRecovery) { inclusive = true }
-                        }
-                    }
+                    onEvent = viewModel::onEvent
                 )
+
+                LaunchedEffect(effect) {
+                    when (effect) {
+                        null -> {}
+                        RecoveryViewModel.RecoveryEffect.GoToLogin -> navController.navigate(Login)
+                        RecoveryViewModel.RecoveryEffect.EmailSent -> navController.navigate(Login)
+                    }
+                }
             }
         }
+
 
         navigation<MainGraph>(startDestination = SearchGraph){
             searchGraph()

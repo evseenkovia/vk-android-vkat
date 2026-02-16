@@ -1,4 +1,4 @@
-package com.example.vk_android_vkat.ui.auth
+package com.example.vk_android_vkat.ui.auth.registration
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -28,7 +28,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -38,21 +37,17 @@ import com.example.vk_android_vkat.R
 
 @Preview(showBackground = true)
 @Composable
-fun RegisterFormPreview(){
+fun RegistrationScreenPreview(){
     RegistrationScreen(
-        state = AuthState(mode = AuthMode.Registration),
+        state = RegistrationState(),
         onEvent = {},
-        onRegisterSuccess = {},
-        onNavigate = {}
     )
 }
 
 @Composable
 fun RegistrationScreen(
-    state: AuthState,
-    onEvent : (AuthEvent) -> Unit,
-    onNavigate: (AuthMode) -> Unit,
-    onRegisterSuccess: () -> Unit
+    state: RegistrationState,
+    onEvent: (RegistrationEvent) -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -63,32 +58,27 @@ fun RegistrationScreen(
             modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.Center
         ) {
-            // Заголовок
             Text(
                 text = stringResource(R.string.registration),
                 style = MaterialTheme.typography.headlineLarge,
                 modifier = Modifier.padding(bottom = 32.dp)
             )
 
-            // Email
             OutlinedTextField(
                 modifier = Modifier.fillMaxWidth(),
                 value = state.email,
-                onValueChange = { onEvent(AuthEvent.EmailChanged(it)) },
+                onValueChange = { onEvent(RegistrationEvent.EmailChanged(it)) },
                 label = { Text(stringResource(R.string.email)) },
                 singleLine = true,
                 isError = state.emailError != null,
                 trailingIcon = {
-                    Icon(
-                        imageVector = Icons.Filled.Email,
-                        contentDescription = stringResource(R.string.email)
-                    )
+                    Icon(Icons.Filled.Email, contentDescription = stringResource(R.string.email))
                 },
                 shape = RoundedCornerShape(12.dp)
             )
             state.emailError?.let {
                 Text(
-                    text = stringResource(it),
+                    text = stringResource(it.resId),
                     color = Color.Red,
                     style = MaterialTheme.typography.bodySmall,
                     modifier = Modifier.padding(top = 4.dp)
@@ -98,35 +88,29 @@ fun RegistrationScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             var isPasswordVisible by remember { mutableStateOf(false) }
-
-            // Пароль
             OutlinedTextField(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                label = { Text(stringResource(R.string.password)) },
                 value = state.password,
-                onValueChange = { onEvent(AuthEvent.PasswordChanged(it)) },
+                onValueChange = { onEvent(RegistrationEvent.PasswordChanged(it)) },
+                label = { Text(stringResource(R.string.password)) },
                 singleLine = true,
                 isError = state.passwordError != null,
-                visualTransformation = if (isPasswordVisible)
-                    VisualTransformation.None
-                else
-                    PasswordVisualTransformation(),
+                visualTransformation = if (isPasswordVisible) VisualTransformation.None
+                else PasswordVisualTransformation(),
                 trailingIcon = {
                     IconButton(onClick = { isPasswordVisible = !isPasswordVisible }) {
                         Icon(
-                            imageVector = if (isPasswordVisible)
-                                Icons.Filled.VisibilityOff
-                            else
-                                Icons.Filled.Visibility,
+                            imageVector = if (isPasswordVisible) Icons.Filled.VisibilityOff
+                            else Icons.Filled.Visibility,
                             contentDescription = "Visibility icon"
                         )
                     }
-                }
+                },
+                shape = RoundedCornerShape(12.dp)
             )
             state.passwordError?.let {
                 Text(
-                    text = (stringResource(it)),
+                    text = stringResource(it.resId),
                     color = Color.Red,
                     style = MaterialTheme.typography.bodySmall,
                     modifier = Modifier.padding(top = 4.dp)
@@ -135,35 +119,30 @@ fun RegistrationScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            var isPasswordConfirmVisible by remember { mutableStateOf(false) }
-
+            var isConfirmVisible by remember { mutableStateOf(false) }
             OutlinedTextField(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                label = { Text(stringResource(R.string.repeat_password)) },
                 value = state.confirmPassword,
-                isError = state.confirmPasswordError != null,
-                onValueChange = { onEvent(AuthEvent.ConfirmPasswordChanged(it)) },
+                onValueChange = { onEvent(RegistrationEvent.ConfirmPasswordChanged(it)) },
+                label = { Text(stringResource(R.string.repeat_password)) },
                 singleLine = true,
-                visualTransformation = if (isPasswordConfirmVisible)
-                    VisualTransformation.None
-                else
-                    PasswordVisualTransformation(),
+                isError = state.confirmPasswordError != null,
+                visualTransformation = if (isConfirmVisible) VisualTransformation.None
+                else PasswordVisualTransformation(),
                 trailingIcon = {
-                    IconButton(onClick = { isPasswordConfirmVisible = !isPasswordConfirmVisible }) {
+                    IconButton(onClick = { isConfirmVisible = !isConfirmVisible }) {
                         Icon(
-                            imageVector = if (isPasswordConfirmVisible)
-                                Icons.Filled.VisibilityOff
-                            else
-                                Icons.Filled.Visibility,
+                            imageVector = if (isConfirmVisible) Icons.Filled.VisibilityOff
+                            else Icons.Filled.Visibility,
                             contentDescription = "Visibility icon"
                         )
                     }
-                }
+                },
+                shape = RoundedCornerShape(12.dp)
             )
             state.confirmPasswordError?.let {
                 Text(
-                    text = stringResource(it),
+                    text = stringResource(it.resId),
                     color = Color.Red,
                     style = MaterialTheme.typography.bodySmall,
                     modifier = Modifier.padding(top = 4.dp)
@@ -173,7 +152,7 @@ fun RegistrationScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             Button(
-                onClick = { onEvent(AuthEvent.RegisterClicked) },
+                onClick = { onEvent(RegistrationEvent.RegisterClicked) },
                 modifier = Modifier.fillMaxWidth(),
                 enabled = state.email.isNotBlank() &&
                         state.password.isNotBlank() &&
@@ -187,7 +166,6 @@ fun RegistrationScreen(
             }
         }
 
-        // Возврат к авторизации
         Column(
             modifier = Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally
@@ -199,7 +177,7 @@ fun RegistrationScreen(
             )
 
             Button(
-                onClick = { onNavigate(AuthMode.Login) },
+                onClick = { onEvent(RegistrationEvent.LoginClicked) },
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.secondaryContainer,
@@ -209,7 +187,6 @@ fun RegistrationScreen(
             ) {
                 Text(stringResource(R.string.sign_in_do))
             }
-
         }
     }
 }
