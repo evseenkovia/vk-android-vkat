@@ -1,7 +1,9 @@
 package com.example.vk_android_vkat.ui.navigation
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -23,28 +25,32 @@ import com.example.vk_android_vkat.ui.auth.registration.RegistrationViewModel
 @Composable
 fun RootNavGraph(
     navController: NavHostController,
-    modifier : Modifier,
+    modifier: Modifier,
     contentPadding: PaddingValues = PaddingValues(0.dp),
     isUserLoggedIn: Boolean
 ) {
     NavHost(
         navController = navController,
         startDestination = if (!isUserLoggedIn) AuthGraph else MainGraph,
-        modifier = modifier.fillMaxSize(),
-        ) {
+        modifier = modifier.fillMaxSize().padding(contentPadding),
+    ) {
 
         navigation<AuthGraph>(startDestination = Login) {
 
             // ------------------- LOGIN SCREEN -------------------
             composable<Login> { backStackEntry ->
+                fun onBack() {
+                    navController.popBackStack()
+                }
+                BackHandler { onBack() }
+
                 val viewModel: LoginViewModel = viewModel()
                 val state by viewModel.state.collectAsState()
                 val effect by viewModel.effect.collectAsState(initial = null)
 
                 // Экран только отображает состояние и кидает события
                 LoginScreen(
-                    state = state,
-                    onEvent = viewModel::onEvent
+                    state = state, onEvent = viewModel::onEvent
                 )
 
                 // NavHost слушает эффекты и делает навигацию
@@ -55,8 +61,15 @@ fun RootNavGraph(
                                 popUpTo(AuthGraph) { inclusive = true }
                             }
                         }
-                        LoginViewModel.LoginEffect.GoToRegistration -> navController.navigate(Registration)
-                        LoginViewModel.LoginEffect.GoToPasswordRecovery -> navController.navigate(PasswordRecovery)
+
+                        LoginViewModel.LoginEffect.GoToRegistration -> navController.navigate(
+                            Registration
+                        )
+
+                        LoginViewModel.LoginEffect.GoToPasswordRecovery -> navController.navigate(
+                            PasswordRecovery
+                        )
+
                         null -> {}
                     }
                 }
@@ -69,8 +82,7 @@ fun RootNavGraph(
                 val effect by viewModel.effect.collectAsState(initial = null)
 
                 RegistrationScreen(
-                    state = state,
-                    onEvent = viewModel::onEvent
+                    state = state, onEvent = viewModel::onEvent
                 )
 
                 LaunchedEffect(effect) {
@@ -80,7 +92,11 @@ fun RootNavGraph(
                                 popUpTo(AuthGraph) { inclusive = true }
                             }
                         }
-                        RegistrationViewModel.RegistrationEffect.GoToLogin -> navController.navigate(Login)
+
+                        RegistrationViewModel.RegistrationEffect.GoToLogin -> navController.navigate(
+                            Login
+                        )
+
                         null -> {}
                     }
                 }
@@ -93,8 +109,7 @@ fun RootNavGraph(
                 val effect by viewModel.effect.collectAsState(initial = null)
 
                 PasswordRecoveryScreen(
-                    state = state,
-                    onEvent = viewModel::onEvent
+                    state = state, onEvent = viewModel::onEvent
                 )
 
                 LaunchedEffect(effect) {
@@ -108,7 +123,7 @@ fun RootNavGraph(
         }
 
 
-        navigation<MainGraph>(startDestination = SearchGraph){
+        navigation<MainGraph>(startDestination = ExploreGraph) {
             searchGraph()
             favouriteGraph()
             editorGraph()

@@ -2,7 +2,6 @@ package com.example.vk_android_vkat.ui.explore
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.vk_android_vkat.R
 import com.example.vk_android_vkat.data.mockRoutes
 import com.example.vk_android_vkat.domain.model.RouteModel
 import kotlinx.coroutines.delay
@@ -13,8 +12,8 @@ import kotlinx.coroutines.launch
 
 class ExploreViewModel : ViewModel(){
 
-    private val _state = MutableStateFlow(SearchUiState(isLoading = true))
-    val state: StateFlow<SearchUiState> = _state
+    private val _state = MutableStateFlow(ExploreState(isLoading = true))
+    val state: StateFlow<ExploreState> = _state
 
     private val delayTime = 1000L
 
@@ -23,11 +22,11 @@ class ExploreViewModel : ViewModel(){
     }
 
     // Обработка событий с UI
-    fun onEvent(event: SearchUiEvent){
+    fun onEvent(event: ExploreEvent){
         when(event) {
-            is SearchUiEvent.FilterClicked -> TODO()
-            SearchUiEvent.Retry -> TODO()
-            is SearchUiEvent.RouteClicked -> TODO()
+            is ExploreEvent.FilterClicked -> TODO()
+            ExploreEvent.Retry -> TODO()
+            is ExploreEvent.RouteClicked -> TODO()
         }
     }
 

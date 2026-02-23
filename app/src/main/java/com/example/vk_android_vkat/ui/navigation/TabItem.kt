@@ -23,7 +23,7 @@ data class TabItem(
 
 // Список всех табов
 val bottomNavDestinations = listOf(
-    TabItem(SearchGraph, R.drawable.ic_explore_24dp, R.string.title_explore),
+    TabItem(ExploreGraph, R.drawable.ic_explore_24dp, R.string.title_explore),
     TabItem(FavouriteGraph, R.drawable.ic_bookmark_24dp, R.string.title_favourite),
     TabItem(EditorGraph, R.drawable.ic_add_24dp, R.string.title_add),
     TabItem(MapGraph, R.drawable.ic_map_24dp, R.string.title_map),

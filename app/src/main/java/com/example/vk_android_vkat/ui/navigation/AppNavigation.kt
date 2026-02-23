@@ -9,8 +9,8 @@ import androidx.navigation.navigation
 import androidx.navigation.toRoute
 import com.example.vk_android_vkat.ui.editor.EditorScreen
 import com.example.vk_android_vkat.ui.explore.ExploreViewModel
-import com.example.vk_android_vkat.ui.explore.SearchScreen
-import com.example.vk_android_vkat.ui.explore.SearchUiEvent
+import com.example.vk_android_vkat.ui.explore.ExploreScreen
+import com.example.vk_android_vkat.ui.explore.ExploreEvent
 import com.example.vk_android_vkat.ui.favourite.FavouriteScreen
 import com.example.vk_android_vkat.ui.map.MapScreen
 import com.example.vk_android_vkat.ui.profile.ProfileItemUi
@@ -22,7 +22,7 @@ import kotlinx.serialization.Serializable
 
 //------ Графы навигации для табов ------
 @Serializable
-object SearchGraph
+object ExploreGraph
 @Serializable
 object FavouriteGraph
 @Serializable
@@ -40,20 +40,20 @@ object MainGraph
 
 //------ Расширения для графов ------
 fun NavGraphBuilder.searchGraph(){
-    navigation<SearchGraph>(startDestination = Search){
+    navigation<ExploreGraph>(startDestination = Search){
 
         composable<Search> {
             val viewModel: ExploreViewModel = viewModel()
             val uiState by viewModel.state.collectAsState()
 
-            SearchScreen(
+            ExploreScreen(
                 uiState = uiState,
                 onEvent = { event ->
                     viewModel.onEvent(event)
                     when (event) {
-                        is SearchUiEvent.RouteClicked -> {}//navController.navigate(RouteDetails(event.routeId))
-                        is SearchUiEvent.FilterClicked -> TODO("Логика фильтров")
-                        SearchUiEvent.Retry -> TODO()
+                        is ExploreEvent.RouteClicked -> {}//navController.navigate(RouteDetails(event.routeId))
+                        is ExploreEvent.FilterClicked -> TODO("Логика фильтров")
+                        ExploreEvent.Retry -> TODO()
                     }
                 }
             )

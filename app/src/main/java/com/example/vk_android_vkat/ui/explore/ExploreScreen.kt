@@ -7,9 +7,11 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.AssistChip
@@ -31,45 +33,41 @@ import com.example.vk_android_vkat.domain.model.RouteModel
 
 @Preview(showBackground = true)
 @Composable
-fun ScreenSearchPreviewLoading(){
-    SearchScreen(
-        uiState = SearchUiState(
+fun ExploreScreenPreviewLoading(){
+    ExploreScreen(
+        uiState = ExploreState(
             isLoading = false,
-            routes = emptyList(),
-            error = "Не удалось загрузить маршруты"
+            routes = mockRoutes,
+            error = null
         ),
         onEvent = {}
     )
 }
 
 @Composable
-fun SearchScreen(
-    uiState: SearchUiState,
-    onEvent: (SearchUiEvent) -> Unit
+fun ExploreScreen(
+    uiState: ExploreState,
+    onEvent: (ExploreEvent) -> Unit
 ) {
-    Scaffold(
-        topBar = { ToolBar() }
-    ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-        ) {
-            when {
-                uiState.isLoading -> LoadingState()
-                uiState.error != null -> ErrorState(uiState.error, onRetry = { onEvent(SearchUiEvent.Retry) })
-                uiState.routes.isEmpty() -> EmptyState()
-                else -> RoutesList(uiState.routes) { onEvent(SearchUiEvent.RouteClicked(it)) }
-            }
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+    ) {
+        when {
+            uiState.isLoading -> LoadingState()
+            uiState.error != null -> ErrorState(uiState.error, onRetry = { onEvent(ExploreEvent.Retry) })
+            uiState.routes.isEmpty() -> EmptyState()
+            else -> RoutesList(uiState.routes) { onEvent(ExploreEvent.RouteClicked(it)) }
         }
     }
 }
 
 @Composable
-fun ToolBar() {
+fun ExploreScreenTopBar() {
     LazyRow(
-        modifier = Modifier.
-        padding(8.dp),
+        modifier = Modifier
+            .padding(8.dp)
+            .statusBarsPadding(),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -116,11 +114,14 @@ fun EmptyState() = Box(
 
 @Composable
 fun RoutesList(routes: List<RouteModel>, onClick: (Long) -> Unit) {
-    LazyColumn(
-        modifier = Modifier.fillMaxSize().padding(bottom = 56.dp)
-    ) {
-        items(routes, key = { it.id }) { route ->
-            RouteCard(route = route, onClick = { onClick(route.id) }) // RouteCard можно расширять
+    LazyVerticalGrid(
+        modifier = Modifier.fillMaxSize().padding(2.dp),
+        columns = GridCells.Fixed(1),
+        content = {
+            items(routes, key = { it.id }) { route ->
+                RouteCard(route = route, onClick = { onClick(route.id) }) // RouteCard можно расширять
+            }
         }
-    }
+
+    )
 }

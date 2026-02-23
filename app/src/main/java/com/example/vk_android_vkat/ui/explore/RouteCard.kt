@@ -44,11 +44,8 @@ import com.example.vk_android_vkat.data.mockRoutes
 @Preview(showBackground = true)
 @Composable
 fun PreviewCard(){
-    RouteCard(
-        route = mockRoutes[0],
-        )
+    RouteCard(route = mockRoutes[0])
 }
-
 
 @Composable
 fun RouteCard(
@@ -56,12 +53,15 @@ fun RouteCard(
     onClick: () -> Unit = {},
     onFavouriteClick: () -> Unit = {}
 ){
+    val titleTextSize = MaterialTheme.typography.titleSmall
+    val bodyTextSize = MaterialTheme.typography.bodySmall
+    val iconSize = 24.dp
     val interfaceColor = Color.White
     Card(
         modifier = Modifier
             .clickable(onClick = { onClick() })
             .aspectRatio(1f)
-            .padding(8.dp),
+            .padding(2.dp),
         shape = RoundedCornerShape(12.dp),
     ){
         Box(modifier = Modifier.fillMaxSize()) {
@@ -112,7 +112,7 @@ fun RouteCard(
                     onClick = { onFavouriteClick() },
                 ) {
                     Icon(
-                        modifier = Modifier.size(36.dp),
+                        modifier = Modifier.size(iconSize),
                         imageVector = if (route.isFavourite)
                             Icons.Filled.Bookmark
                         else
@@ -127,52 +127,35 @@ fun RouteCard(
                 verticalArrangement = Arrangement.Bottom
             ) {
                 Column(
-                    modifier = Modifier
-                        .padding(16.dp)
+                    modifier = Modifier.padding(start = 12.dp)
                 ) {
                     //Название маршрута
                     Text(
                         text = route.title,
-                        style = MaterialTheme.typography.headlineLarge,
+                        style = titleTextSize,
                         color = interfaceColor
                     )
                     // Дистанция и время
                     Row {
                         Text(
                             text = "${route.distanceKm} км | ${route.durationHours} ч",
-                            style = MaterialTheme.typography.titleMedium,
-                            color = interfaceColor
-                        )
-                        Spacer(modifier = Modifier.width(16.dp))
-                        Icon(
-                            imageVector = Icons.Filled.LocationOn,
-                            contentDescription = "Number of places",
-                            tint = interfaceColor
-                        )
-                        // Кол-во точек
-                        Text(
-                            text = "${route.pointsCount} точек",
-                            style = MaterialTheme.typography.titleMedium,
+                            style = bodyTextSize,
                             color = interfaceColor
                         )
                     }
                 }
                 // Рейтинг
                 Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(
-                            start = 4.dp,
-                            bottom = 8.dp
-                        ),
+                    modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.Start,
                     verticalAlignment = Alignment.CenterVertically
                 ){
                     IconButton(
+                        modifier = Modifier,
                         onClick = {},
                     ) {
                         Icon(
-                            modifier = Modifier.size(36.dp),
+                            modifier = Modifier.size(iconSize),
                             imageVector = Icons.Outlined.StarBorder,
                             contentDescription = stringResource(R.string.rating),
                             tint = interfaceColor
@@ -180,7 +163,20 @@ fun RouteCard(
                     }
                     Text(
                         text = route.rating.toString(),
-                        style = MaterialTheme.typography.titleMedium,
+                        style = bodyTextSize,
+                        color = interfaceColor
+                    )
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Icon(
+                        modifier = Modifier.size(iconSize),
+                        imageVector = Icons.Filled.LocationOn,
+                        contentDescription = "Number of places",
+                        tint = interfaceColor
+                    )
+                    // Кол-во точек
+                    Text(
+                        text = "${route.pointsCount} точек",
+                        style = bodyTextSize,
                         color = interfaceColor
                     )
                 }

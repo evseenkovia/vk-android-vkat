@@ -15,8 +15,10 @@ import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.example.vk_android_vkat.ui.explore.ExploreScreenTopBar
 import com.example.vk_android_vkat.ui.navigation.AuthGraph
 import com.example.vk_android_vkat.ui.navigation.RootNavGraph
+import com.example.vk_android_vkat.ui.navigation.ExploreGraph
 import com.example.vk_android_vkat.ui.navigation.bottomNavDestinations
 
 @Composable
@@ -27,8 +29,11 @@ fun MyMapsApp() {
     val currentDestination = entry?.destination
     // Отображаем панель навигации только на главном экране
     val isAuthScreen = currentDestination?.hierarchy?.any { it.hasRoute(AuthGraph::class) } == true
-
+    val isExploreScreen = currentDestination?.hierarchy?.any { it.hasRoute(ExploreGraph::class) } == true
     Scaffold(
+        topBar = {
+            if (isExploreScreen) ExploreScreenTopBar()
+        },
         bottomBar = {
             if (!isAuthScreen){
                 NavigationBar(
@@ -58,7 +63,7 @@ fun MyMapsApp() {
             navController =  navController,
             modifier = Modifier.fillMaxSize(),
             contentPadding = innerPadding,
-            isUserLoggedIn = false
+            isUserLoggedIn = true
         )
     }
 }

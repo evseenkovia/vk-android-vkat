@@ -28,6 +28,7 @@ class LoginViewModel : ViewModel() {
     private val _state = MutableStateFlow(LoginState())
     val state = _state.asStateFlow()
 
+    // функция определяет
     fun onEvent(event: LoginEvent) {
         when(event) {
             is LoginEvent.EmailChanged -> _state.update { it.copy(email = event.email, emailError = null) }
