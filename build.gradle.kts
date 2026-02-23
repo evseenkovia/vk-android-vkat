@@ -2,4 +2,17 @@
 plugins {
     alias(libs.plugins.android.application) apply false
     alias(libs.plugins.kotlin.android) apply false
+    id("com.google.dagger.hilt.android") version "2.59.2" apply false
+}
+
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        // Для плагинов Gradle
+        classpath(libs.gradle)
+        classpath(libs.com.google.devtools.ksp.gradle.plugin)
+    }
 }

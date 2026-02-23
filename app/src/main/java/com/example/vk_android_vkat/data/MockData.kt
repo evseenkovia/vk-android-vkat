@@ -1,11 +1,11 @@
 package com.example.vk_android_vkat.data
 
 import com.example.vk_android_vkat.domain.model.RouteModel
-import com.example.vk_android_vkat.ui.profile.ProfileContentUi
-import com.example.vk_android_vkat.ui.profile.ProfileHeaderUi
-import com.example.vk_android_vkat.ui.profile.ProfileItemUi
-import com.example.vk_android_vkat.ui.profile.ProfileSection
-import com.example.vk_android_vkat.ui.profile.ProfileUiState
+import com.example.vk_android_vkat.features.profile.ProfileContentUi
+import com.example.vk_android_vkat.features.profile.ProfileHeaderUi
+import com.example.vk_android_vkat.features.profile.ProfileItemUi
+import com.example.vk_android_vkat.features.profile.ProfileSection
+import com.example.vk_android_vkat.features.profile.ProfileUiState
 
 // Список маршрутов
 val mockRoutes = listOf(
