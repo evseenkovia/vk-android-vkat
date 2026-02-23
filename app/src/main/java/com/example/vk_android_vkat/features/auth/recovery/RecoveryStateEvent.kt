@@ -1,6 +1,6 @@
 package com.example.vk_android_vkat.features.auth.recovery
 
-import com.example.vk_android_vkat.ui.auth.AuthError
+import com.example.vk_android_vkat.features.auth.AuthError
 
 data class RecoveryState(
     val email: String = "",

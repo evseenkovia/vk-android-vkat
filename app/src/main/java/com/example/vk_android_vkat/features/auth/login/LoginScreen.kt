@@ -77,14 +77,14 @@ fun LoginScreen(
                 },
                 shape = RoundedCornerShape(12.dp)
             )
-            state.emailError?.let {
-                Text(
-                    text = stringResource(it.resId),
-                    color = Color.Red,
-                    style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.padding(top = 4.dp)
-                )
-            }
+//            state.emailError?.let {
+//                Text(
+//                    text = stringResource(it.resId),
+//                    color = Color.Red,
+//                    style = MaterialTheme.typography.bodySmall,
+//                    modifier = Modifier.padding(top = 4.dp)
+//                )
+//            }
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -109,14 +109,14 @@ fun LoginScreen(
                 },
                 shape = RoundedCornerShape(12.dp)
             )
-            state.passwordError?.let {
-                Text(
-                    text = stringResource(it.resId),
-                    color = Color.Red,
-                    style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.padding(top = 4.dp)
-                )
-            }
+//            state.passwordError?.let {
+//                Text(
+//                    text = stringResource(it.resId),
+//                    color = Color.Red,
+//                    style = MaterialTheme.typography.bodySmall,
+//                    modifier = Modifier.padding(top = 4.dp)
+//                )
+//            }
 
             Spacer(modifier = Modifier.height(24.dp))
 

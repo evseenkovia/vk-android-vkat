@@ -1,6 +1,6 @@
 package com.example.vk_android_vkat.features.auth.registration
 
-import com.example.vk_android_vkat.ui.auth.AuthError
+import com.example.vk_android_vkat.features.auth.AuthError
 
 data class RegistrationState(
     val email: String = "",

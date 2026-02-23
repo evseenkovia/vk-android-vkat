@@ -8,18 +8,22 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 
 @Composable
-fun RouteInfoScreen(
-    state: RouteInfoState? = null,
+fun RouteInfoScreen( //TODO(Реализовать экран для маршрута)
+    state: RouteInfoState,
     onEvent: (RouteInfoEvent) -> Unit
     ){
-
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ){
-        if(state is RouteInfoState.RouteInfoLoaded)
+        var text = ""
+        when(state) {
+            is RouteInfoState.Error -> text = "Error"
+            RouteInfoState.Loading -> { text = "Loading"}
+            is RouteInfoState.RouteInfoLoaded -> { text = "Success"}
+        }
         Text(
-            text = "This is RouteInfoScreen @Composable with an id = ${state.route.id}"
+            text = "State is $text"
         )
     }
 }

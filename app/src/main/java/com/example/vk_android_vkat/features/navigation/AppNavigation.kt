@@ -7,14 +7,15 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
 import androidx.navigation.toRoute
-import com.example.vk_android_vkat.ui.editor.EditorScreen
-import com.example.vk_android_vkat.ui.favourite.FavouriteScreen
-import com.example.vk_android_vkat.ui.map.MapScreen
-import com.example.vk_android_vkat.ui.profile.ProfileItemUi
-import com.example.vk_android_vkat.ui.profile.ProfileScreen
-import com.example.vk_android_vkat.ui.profile.ProfileSection
-import com.example.vk_android_vkat.ui.profile.ProfileUiEvent
-import com.example.vk_android_vkat.ui.profile.ProfileViewModel
+import com.example.vk_android_vkat.features.editor.EditorScreen
+import com.example.vk_android_vkat.features.favourite.FavouriteScreen
+import com.example.vk_android_vkat.features.map.MapScreen
+import com.example.vk_android_vkat.features.profile.ProfileItemUi
+import com.example.vk_android_vkat.features.profile.ProfileScreen
+import com.example.vk_android_vkat.features.profile.ProfileSection
+import com.example.vk_android_vkat.features.profile.ProfileUiEvent
+import com.example.vk_android_vkat.features.profile.ProfileViewModel
+
 import kotlinx.serialization.Serializable
 
 //------ Графы навигации для табов ------

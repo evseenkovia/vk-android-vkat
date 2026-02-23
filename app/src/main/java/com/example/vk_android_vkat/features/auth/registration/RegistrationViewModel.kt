@@ -3,7 +3,7 @@ package com.example.vk_android_vkat.features.auth.registration
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.vk_android_vkat.data.delayTime
-import com.example.vk_android_vkat.ui.auth.AuthError
+import com.example.vk_android_vkat.features.auth.AuthError
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow

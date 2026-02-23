@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -16,16 +17,18 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
 import androidx.navigation.toRoute
-import com.example.vk_android_vkat.ui.auth.login.LoginScreen
-import com.example.vk_android_vkat.ui.auth.login.LoginViewModel
-import com.example.vk_android_vkat.ui.auth.recovery.PasswordRecoveryScreen
-import com.example.vk_android_vkat.ui.auth.recovery.RecoveryViewModel
-import com.example.vk_android_vkat.ui.auth.registration.RegistrationScreen
-import com.example.vk_android_vkat.ui.auth.registration.RegistrationViewModel
-import com.example.vk_android_vkat.ui.explore.ExploreScreen
-import com.example.vk_android_vkat.ui.explore.ExploreViewModel
-import com.example.vk_android_vkat.ui.explore.routeinfo.RouteInfoScreen
-import com.example.vk_android_vkat.ui.explore.routeinfo.RouteInfoViewModel
+import com.example.vk_android_vkat.features.auth.login.LoginScreen
+import com.example.vk_android_vkat.features.auth.login.LoginViewModel
+import com.example.vk_android_vkat.features.auth.recovery.PasswordRecoveryScreen
+import com.example.vk_android_vkat.features.auth.recovery.RecoveryViewModel
+import com.example.vk_android_vkat.features.auth.registration.RegistrationScreen
+import com.example.vk_android_vkat.features.auth.registration.RegistrationViewModel
+import com.example.vk_android_vkat.features.explore.ExploreScreen
+import com.example.vk_android_vkat.features.explore.ExploreViewModel
+import com.example.vk_android_vkat.features.explore.data.RouteRepositoryMock
+import com.example.vk_android_vkat.features.explore.routeinfo.ui.RouteInfoScreen
+import com.example.vk_android_vkat.features.explore.routeinfo.ui.RouteInfoViewModel
+
 
 @Composable
 fun RootNavGraph(
@@ -146,18 +149,12 @@ fun RootNavGraph(
 
                 composable<RouteInfo>{backStackEntry ->
                     val routeId = backStackEntry.toRoute<RouteInfo>().routeId
-                    val exploreViewModel: ExploreViewModel = viewModel()
-                    val viewModel: RouteInfoViewModel = viewModel()
-
-                    LaunchedEffect(routeId) {
-                        viewModel.loadRoute(routeId)
+                    val viewModel = remember {
+                        RouteInfoViewModel(routeId, RouteRepositoryMock())
                     }
 
                     val state by viewModel.state.collectAsState()
-                    RouteInfoScreen(
-                        state = state,
-                        onEvent = viewModel::onEvent
-                    )
+                    RouteInfoScreen(state = state, onEvent = viewModel::onEvent)
                 }
             }
             favouriteGraph()
