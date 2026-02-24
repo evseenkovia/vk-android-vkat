@@ -29,11 +29,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.vk_android_vkat.R
+import com.example.vk_android_vkat.common.theme.EmailField
+import com.example.vk_android_vkat.common.theme.LabelText
+import com.example.vk_android_vkat.common.theme.NameField
+import com.example.vk_android_vkat.common.theme.PasswordField
+import com.example.vk_android_vkat.common.theme.PrimaryButton
+import com.example.vk_android_vkat.common.theme.SecondaryButton
+import com.example.vk_android_vkat.features.auth.login.LoginEvent
 
 @Preview(showBackground = true)
 @Composable
@@ -64,129 +72,64 @@ fun RegistrationScreen(
                 modifier = Modifier.padding(bottom = 32.dp)
             )
 
-            OutlinedTextField(
-                modifier = Modifier.fillMaxWidth(),
+            NameField(
+                value = state.name,
+                onValueChange = { onEvent(RegistrationEvent.NameChanged(it)) },
+//                errorMessage = state.emailError?.let { stringResource(it.resId) },
+                imeAction = ImeAction.Next
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+
+            EmailField(
                 value = state.email,
                 onValueChange = { onEvent(RegistrationEvent.EmailChanged(it)) },
-                label = { Text(stringResource(R.string.email)) },
-                singleLine = true,
-                isError = state.emailError != null,
-                trailingIcon = {
-                    Icon(Icons.Filled.Email, contentDescription = stringResource(R.string.email))
-                },
-                shape = RoundedCornerShape(12.dp)
+                errorMessage = state.emailError?.let { stringResource(it.resId) },
+                imeAction = ImeAction.Next
             )
-            state.emailError?.let {
-                Text(
-                    text = stringResource(it.resId),
-                    color = Color.Red,
-                    style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.padding(top = 4.dp)
-                )
-            }
-
             Spacer(modifier = Modifier.height(16.dp))
 
-            var isPasswordVisible by remember { mutableStateOf(false) }
-            OutlinedTextField(
-                modifier = Modifier.fillMaxWidth(),
+            PasswordField(
                 value = state.password,
                 onValueChange = { onEvent(RegistrationEvent.PasswordChanged(it)) },
-                label = { Text(stringResource(R.string.password)) },
-                singleLine = true,
-                isError = state.passwordError != null,
-                visualTransformation = if (isPasswordVisible) VisualTransformation.None
-                else PasswordVisualTransformation(),
-                trailingIcon = {
-                    IconButton(onClick = { isPasswordVisible = !isPasswordVisible }) {
-                        Icon(
-                            imageVector = if (isPasswordVisible) Icons.Filled.VisibilityOff
-                            else Icons.Filled.Visibility,
-                            contentDescription = "Visibility icon"
-                        )
-                    }
-                },
-                shape = RoundedCornerShape(12.dp)
+                errorMessage = state.passwordError?.let { stringResource(it.resId) },
+                imeAction = ImeAction.Next
             )
-            state.passwordError?.let {
-                Text(
-                    text = stringResource(it.resId),
-                    color = Color.Red,
-                    style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.padding(top = 4.dp)
-                )
-            }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            var isConfirmVisible by remember { mutableStateOf(false) }
-            OutlinedTextField(
-                modifier = Modifier.fillMaxWidth(),
+            PasswordField(
+                label = stringResource(R.string.repeat_password),
                 value = state.confirmPassword,
                 onValueChange = { onEvent(RegistrationEvent.ConfirmPasswordChanged(it)) },
-                label = { Text(stringResource(R.string.repeat_password)) },
-                singleLine = true,
-                isError = state.confirmPasswordError != null,
-                visualTransformation = if (isConfirmVisible) VisualTransformation.None
-                else PasswordVisualTransformation(),
-                trailingIcon = {
-                    IconButton(onClick = { isConfirmVisible = !isConfirmVisible }) {
-                        Icon(
-                            imageVector = if (isConfirmVisible) Icons.Filled.VisibilityOff
-                            else Icons.Filled.Visibility,
-                            contentDescription = "Visibility icon"
-                        )
-                    }
-                },
-                shape = RoundedCornerShape(12.dp)
+                errorMessage = state.confirmPasswordError?.let { stringResource(it.resId) },
+                imeAction = ImeAction.Next
             )
-            state.confirmPasswordError?.let {
-                Text(
-                    text = stringResource(it.resId),
-                    color = Color.Red,
-                    style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.padding(top = 4.dp)
-                )
-            }
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            Button(
+            PrimaryButton(
+                text = stringResource(R.string.sign_up),
                 onClick = { onEvent(RegistrationEvent.RegisterClicked) },
-                modifier = Modifier.fillMaxWidth(),
                 enabled = state.email.isNotBlank() &&
                         state.password.isNotBlank() &&
-                        state.confirmPassword.isNotBlank()
-            ) {
-                if (state.isLoading) {
-                    CircularProgressIndicator(color = Color.White, strokeWidth = 2.dp)
-                } else {
-                    Text(stringResource(R.string.sign_up))
-                }
-            }
+                        state.confirmPassword.isNotBlank() &&
+                        state.name.isNotBlank()
+            )
         }
 
         Column(
             modifier = Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(
-                text = stringResource(R.string.already_have_an_account),
+            LabelText(
                 modifier = Modifier.padding(bottom = 8.dp),
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                text = stringResource(R.string.already_have_an_account),
             )
 
-            Button(
-                onClick = { onEvent(RegistrationEvent.LoginClicked) },
-                modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer
-                ),
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                Text(stringResource(R.string.sign_in_do))
-            }
+            SecondaryButton(
+                text = stringResource(R.string.sign_in_do),
+                onClick = { onEvent(RegistrationEvent.LoginClicked) }
+            )
         }
     }
 }

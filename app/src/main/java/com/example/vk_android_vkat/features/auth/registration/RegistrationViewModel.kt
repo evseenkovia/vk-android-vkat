@@ -27,6 +27,7 @@ class RegistrationViewModel : ViewModel() {
 
     fun onEvent(event: RegistrationEvent) {
         when(event) {
+            is RegistrationEvent.NameChanged -> _state.update { it.copy(name = event.name, nameError = null) }
             is RegistrationEvent.EmailChanged -> _state.update { it.copy(email = event.email, emailError = null) }
             is RegistrationEvent.PasswordChanged -> _state.update { it.copy(password = event.password, passwordError = null) }
             is RegistrationEvent.ConfirmPasswordChanged -> _state.update { it.copy(confirmPassword = event.confirm, confirmPasswordError = null) }

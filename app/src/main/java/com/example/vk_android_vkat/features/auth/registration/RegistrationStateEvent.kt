@@ -3,10 +3,12 @@ package com.example.vk_android_vkat.features.auth.registration
 import com.example.vk_android_vkat.features.auth.AuthError
 
 data class RegistrationState(
+    val name: String = "",
     val email: String = "",
     val password: String = "",
     val confirmPassword: String = "",
     val isLoading: Boolean = false,
+    val nameError: AuthError? = null, //todo -> реализовать описание ошибок для имени
     val emailError: AuthError? = null,
     val passwordError: AuthError? = null,
     val confirmPasswordError: AuthError? = null,
@@ -14,6 +16,7 @@ data class RegistrationState(
 )
 
 sealed class RegistrationEvent {
+    data class NameChanged(val name: String) : RegistrationEvent()
     data class EmailChanged(val email: String) : RegistrationEvent()
     data class PasswordChanged(val password: String) : RegistrationEvent()
     data class ConfirmPasswordChanged(val confirm: String) : RegistrationEvent()

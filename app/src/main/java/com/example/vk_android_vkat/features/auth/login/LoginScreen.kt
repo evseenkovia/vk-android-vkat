@@ -12,15 +12,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -30,11 +26,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.vk_android_vkat.R
+import com.example.vk_android_vkat.common.theme.EmailField
+import com.example.vk_android_vkat.common.theme.LabelText
+import com.example.vk_android_vkat.common.theme.PasswordField
+import com.example.vk_android_vkat.common.theme.PrimaryButton
+import com.example.vk_android_vkat.common.theme.SecondaryButton
+import com.example.vk_android_vkat.common.theme.TextButton
 
 @Preview(showBackground = true)
 @Composable
@@ -65,103 +68,52 @@ fun LoginScreen(
                 modifier = Modifier.padding(bottom = 32.dp)
             )
 
-            OutlinedTextField(
-                modifier = Modifier.fillMaxWidth(),
+            EmailField(
                 value = state.email,
                 onValueChange = { onEvent(LoginEvent.EmailChanged(it)) },
-                label = { Text(stringResource(R.string.email)) },
-                singleLine = true,
-                isError = state.emailError != null,
-                trailingIcon = {
-                    Icon(Icons.Filled.Email, contentDescription = stringResource(R.string.email))
-                },
-                shape = RoundedCornerShape(12.dp)
+                errorMessage = state.emailError?.let { stringResource(it.resId) },
+                imeAction = ImeAction.Next,
+                onImeAction = {}
             )
-//            state.emailError?.let {
-//                Text(
-//                    text = stringResource(it.resId),
-//                    color = Color.Red,
-//                    style = MaterialTheme.typography.bodySmall,
-//                    modifier = Modifier.padding(top = 4.dp)
-//                )
-//            }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            var isPasswordVisible by remember { mutableStateOf(false) }
-            OutlinedTextField(
-                modifier = Modifier.fillMaxWidth(),
+            PasswordField(
                 value = state.password,
                 onValueChange = { onEvent(LoginEvent.PasswordChanged(it)) },
-                label = { Text(stringResource(R.string.password)) },
-                singleLine = true,
-                isError = state.passwordError != null,
-                visualTransformation = if (isPasswordVisible) VisualTransformation.None
-                else PasswordVisualTransformation(),
-                trailingIcon = {
-                    IconButton(onClick = { isPasswordVisible = !isPasswordVisible }) {
-                        Icon(
-                            imageVector = if (isPasswordVisible) Icons.Filled.VisibilityOff
-                            else Icons.Filled.Visibility,
-                            contentDescription = "Visibility icon"
-                        )
-                    }
-                },
-                shape = RoundedCornerShape(12.dp)
+                errorMessage = state.passwordError?.let { stringResource(it.resId) },
+                imeAction = ImeAction.Done,
+                onImeAction = { onEvent(LoginEvent.LoginClicked) }
             )
-//            state.passwordError?.let {
-//                Text(
-//                    text = stringResource(it.resId),
-//                    color = Color.Red,
-//                    style = MaterialTheme.typography.bodySmall,
-//                    modifier = Modifier.padding(top = 4.dp)
-//                )
-//            }
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            Button(
-                modifier = Modifier.fillMaxWidth(),
-                enabled = state.email.isNotBlank() && state.password.isNotBlank(),
-                shape = RoundedCornerShape(12.dp),
-                onClick = { onEvent(LoginEvent.LoginClicked) }
-            ) {
-                if (state.isLoading) {
-                    CircularProgressIndicator(color = Color.White, strokeWidth = 2.dp)
-                } else {
-                    Text(stringResource(R.string.sign_in_do))
-                }
-            }
+            PrimaryButton(
+                text = stringResource(R.string.sign_in_do),
+                onClick = { onEvent(LoginEvent.LoginClicked) },
+                enabled = state.email.isNotBlank() && state.password.isNotBlank()
+            )
 
             TextButton(
-                onClick = { onEvent(LoginEvent.ForgotPasswordClicked) },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(stringResource(R.string.forgot_password))
-            }
+                modifier = Modifier.align(Alignment.CenterHorizontally),
+                text = stringResource(R.string.forgot_password),
+                onClick = { onEvent(LoginEvent.ForgotPasswordClicked) }
+            )
         }
 
         Column(
             modifier = Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(
-                text = stringResource(R.string.no_account),
+            LabelText(
                 modifier = Modifier.padding(bottom = 8.dp),
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                text = stringResource(R.string.no_account),
             )
 
-            Button(
-                onClick = { onEvent(LoginEvent.RegisterClicked) },
-                modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer
-                ),
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                Text(stringResource(R.string.sign_up))
-            }
+            SecondaryButton(
+                text = stringResource(R.string.sign_up),
+                onClick = { onEvent(LoginEvent.RegisterClicked) }
+            )
         }
     }
 }

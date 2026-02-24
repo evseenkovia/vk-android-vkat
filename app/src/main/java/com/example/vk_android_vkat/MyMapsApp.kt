@@ -74,7 +74,7 @@ fun MyMapsApp() {
             navController = navController,
             modifier = Modifier.fillMaxSize(),
             contentPadding = innerPadding,
-            isUserLoggedIn = true
+            isUserLoggedIn = false
         )
     }
 }

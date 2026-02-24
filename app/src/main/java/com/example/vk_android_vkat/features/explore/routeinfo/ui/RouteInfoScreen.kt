@@ -39,6 +39,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.example.vk_android_vkat.R
+import com.example.vk_android_vkat.common.theme.AppFloatingActionButton
 import com.example.vk_android_vkat.data.mockRoutes
 
 @Preview(showBackground = true)
