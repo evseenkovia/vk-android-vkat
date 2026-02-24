@@ -1,5 +1,6 @@
 package com.example.vk_android_vkat
 
+import android.util.Log
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -15,8 +16,10 @@ import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.example.vk_android_vkat.features.explore.ExploreScreen
 import com.example.vk_android_vkat.features.explore.ExploreScreenTopBar
 import com.example.vk_android_vkat.features.navigation.AuthGraph
+import com.example.vk_android_vkat.features.navigation.Explore
 import com.example.vk_android_vkat.features.navigation.RootNavGraph
 import com.example.vk_android_vkat.features.navigation.ExploreGraph
 import com.example.vk_android_vkat.features.navigation.bottomNavDestinations
@@ -28,11 +31,19 @@ fun MyMapsApp() {
     val entry by navController.currentBackStackEntryAsState()
     val currentDestination = entry?.destination
     // Отображаем панель навигации только на главном экране
-    val isAuthScreen = currentDestination?.hierarchy?.any { it.hasRoute(_root_ide_package_.com.example.vk_android_vkat.features.navigation.AuthGraph::class) } == true
-    val isExploreScreen = currentDestination?.hierarchy?.any { it.hasRoute(_root_ide_package_.com.example.vk_android_vkat.features.navigation.ExploreGraph::class) } == true
+    val isAuthScreen = currentDestination?.hierarchy?.any { it.hasRoute(AuthGraph::class) } == true
+
+
+//    Log.d("Navigation", "Current destination: ${currentDestination?.route}")
+//    Log.d("Navigation", "Current destination class: ${currentDestination?.javaClass?.simpleName}")
+
+    val isExploreScreen =  currentDestination?.route == Explore::class.qualifiedName
+
+//    Log.d("Navigation", "isExploreScreen: $isExploreScreen")
+
     Scaffold(
         topBar = {
-            if (isExploreScreen) _root_ide_package_.com.example.vk_android_vkat.features.explore.ExploreScreenTopBar()
+            if (isExploreScreen) ExploreScreenTopBar()
         },
         bottomBar = {
             if (!isAuthScreen){
@@ -41,7 +52,7 @@ fun MyMapsApp() {
                 ) {
 
                     //Через список отображаем все табы
-                    _root_ide_package_.com.example.vk_android_vkat.features.navigation.bottomNavDestinations.forEach { tab ->
+                   bottomNavDestinations.forEach { tab ->
                         NavigationBarItem(
                             selected = currentDestination?.hierarchy?.any {it.hasRoute(tab.graphRoute::class)} == true,
                             onClick = {
@@ -59,7 +70,7 @@ fun MyMapsApp() {
             }
         }
     ) { innerPadding ->
-        _root_ide_package_.com.example.vk_android_vkat.features.navigation.RootNavGraph(
+        RootNavGraph(
             navController = navController,
             modifier = Modifier.fillMaxSize(),
             contentPadding = innerPadding,
