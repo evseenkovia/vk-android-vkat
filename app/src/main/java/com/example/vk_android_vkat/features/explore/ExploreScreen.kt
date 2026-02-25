@@ -120,7 +120,7 @@ fun EmptyState() = Box(
 fun RoutesList(routes: List<RouteModel>, onClick: (Long) -> Unit) {
     LazyVerticalGrid(
         modifier = Modifier.fillMaxSize().padding(2.dp),
-        columns = GridCells.Fixed(1),
+        columns = GridCells.Fixed(2),
         content = {
             items(routes, key = { it.id }) { route ->
                 RouteCard(route = route, onClick = { onClick(route.id) }) // RouteCard можно расширять

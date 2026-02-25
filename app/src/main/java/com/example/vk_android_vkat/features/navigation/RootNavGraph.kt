@@ -147,14 +147,22 @@ fun RootNavGraph(
                     )
                 }
 
-                composable<RouteInfo>{backStackEntry ->
+                composable<RouteInfo>(){backStackEntry ->
+                    fun onBack() {
+                        navController.popBackStack()
+                    }
+
                     val routeId = backStackEntry.toRoute<RouteInfo>().routeId
                     val viewModel = remember {
                         RouteInfoViewModel(routeId, RouteRepositoryMock())
                     }
 
                     val state by viewModel.state.collectAsState()
-                    RouteInfoScreen(state = state, onEvent = viewModel::onEvent)
+                    RouteInfoScreen(
+                        state = state,
+                        onEvent = viewModel::onEvent,
+                        onBack = { onBack() }
+                    )
                 }
             }
             favouriteGraph()

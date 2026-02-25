@@ -33,13 +33,7 @@ fun MyMapsApp() {
     // Отображаем панель навигации только на главном экране
     val isAuthScreen = currentDestination?.hierarchy?.any { it.hasRoute(AuthGraph::class) } == true
 
-
-//    Log.d("Navigation", "Current destination: ${currentDestination?.route}")
-//    Log.d("Navigation", "Current destination class: ${currentDestination?.javaClass?.simpleName}")
-
     val isExploreScreen =  currentDestination?.route == Explore::class.qualifiedName
-
-//    Log.d("Navigation", "isExploreScreen: $isExploreScreen")
 
     Scaffold(
         topBar = {
@@ -74,7 +68,7 @@ fun MyMapsApp() {
             navController = navController,
             modifier = Modifier.fillMaxSize(),
             contentPadding = innerPadding,
-            isUserLoggedIn = false
+            isUserLoggedIn = true
         )
     }
 }

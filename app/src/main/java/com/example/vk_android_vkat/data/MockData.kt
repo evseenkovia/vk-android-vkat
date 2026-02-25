@@ -17,7 +17,7 @@ val mockRoutes = listOf(
         durationHours = 2,
         pointsCount = 7,
         rating = 4.7f,
-        imageUrl = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTEHZLEG4vE90aZYXy-YtldelQ7QHWYwwB-NA&s"
+        imageUrl = "https://7d9e88a8-f178-4098-bea5-48d960920605.selcdn.net/7cdfe127-c49b-4d4b-9fec-78b998cc76f0/"
     ),
     RouteModel(
         id = 2,
@@ -27,7 +27,7 @@ val mockRoutes = listOf(
         durationHours = 4,
         pointsCount = 12,
         rating = 4.9f,
-        imageUrl = "https://static.wikia.nocookie.net/darksouls/images/1/19/Поселок_Олачиль_1.jpg/revision/latest/smart/width/386/height/259?cb=20160130220340&path-prefix=ru"
+        imageUrl = "https://resize.tripster.ru/xLIeXLlZi1JYd0RY9ySRMkXqZAU=/fit-in/1600x900/filters:no_upscale()/https://cdn.tripster.ru/photos/0012df63-66d0-466b-afbd-9b3912170313.jpg?width=1200&height=630"
     ),
     RouteModel(
         id = 3,
@@ -37,7 +37,7 @@ val mockRoutes = listOf(
         durationHours = 1,
         pointsCount = 5,
         rating = 4.5f,
-        imageUrl = "https://velid.ru/img/dark-souls/ds-1/sad-tjomnyh-kornej_00.webp"
+        imageUrl = "https://moya-planeta.ru/upload/images/xl/c7/67/c767f4b9bb0b1f2f130adce886abd98003c9249a.jpg"
     ),
     RouteModel(
         id = 4,
@@ -47,7 +47,7 @@ val mockRoutes = listOf(
         durationHours = 6,
         pointsCount = 10,
         rating = 4.8f,
-        imageUrl = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRDlSdqAl6N1Ggd3KcOO4jpxZwcU9Jqi9NCqw&s"
+        imageUrl = "https://thumbs.dreamstime.com/b/%D0%BC%D0%BE%D1%82%D0%BE%D1%86%D0%B8%D0%BA-%D0%B8%D1%81%D1%82-%D0%BD%D0%B0-%D0%BE%D1%80%D0%BE%D0%B3%D0%B5-%D0%BF%D0%B5%D1%80%D0%B5%D0%B2%D0%B0-%D0%B0-%D0%B2-%D0%B0-%D1%8C%D0%BF%D0%B0%D1%85-68572879.jpg"
     ),
     RouteModel(
         id = 5,
@@ -57,7 +57,7 @@ val mockRoutes = listOf(
         durationHours = 2,
         pointsCount = 8,
         rating = 4.3f,
-        imageUrl = "https://i.ytimg.com/vi/rLoWP2U2ceg/maxresdefault.jpg"
+        imageUrl = "https://kudagid.ru/images/razvlechenia/attrakcion.jpg"
     ),
     RouteModel(
         id = 6,
@@ -67,7 +67,7 @@ val mockRoutes = listOf(
         durationHours = 3,
         pointsCount = 9,
         rating = 4.6f,
-        imageUrl = "https://preview.redd.it/irithyll-of-the-boreal-valley-is-amazing-v0-h5pxqkbc5qjf1.jpg?width=640&crop=smart&auto=webp&s=47b38caa075c4cf4fa64a77df29c9572a8256553"
+        imageUrl = "https://eco-trails.ru/catalog/moskva/chermyanka/img/3.jpg"
     )
 )
 
