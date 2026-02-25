@@ -2,12 +2,19 @@ package com.example.vk_android_vkat.features.navigation
 
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraphBuilder
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
 import androidx.navigation.toRoute
 import com.example.vk_android_vkat.features.editor.EditorScreen
+import com.example.vk_android_vkat.features.explore.ExploreScreen
+import com.example.vk_android_vkat.features.explore.ExploreViewModel
+import com.example.vk_android_vkat.features.explore.data.RouteRepositoryMock
+import com.example.vk_android_vkat.features.explore.routeinfo.ui.RouteInfoScreen
+import com.example.vk_android_vkat.features.explore.routeinfo.ui.RouteInfoViewModel
 import com.example.vk_android_vkat.features.favourite.FavouriteScreen
 import com.example.vk_android_vkat.features.map.MapScreen
 import com.example.vk_android_vkat.features.profile.ProfileItemUi
@@ -66,7 +73,44 @@ data class RouteInfo(val routeId: Long)
 
 //------ Расширения для графов ------
 
-fun NavGraphBuilder.favouriteGraph(){
+fun NavGraphBuilder.exploreGraph(navController : NavHostController){
+
+    navigation<ExploreGraph>(startDestination = Explore) {
+
+        composable<Explore> {
+            val viewModel: ExploreViewModel = viewModel()
+            val uiState by viewModel.state.collectAsState()
+
+            ExploreScreen(
+                state = uiState,
+                onEvent = viewModel::onEvent,
+                onRouteClick = { routeId: Long ->
+                    navController.navigate(RouteInfo(routeId))
+                }
+            )
+        }
+
+        composable<RouteInfo>() { backStackEntry ->
+            fun onBack() {
+                navController.popBackStack()
+            }
+
+            val routeId = backStackEntry.toRoute<RouteInfo>().routeId
+            val viewModel = remember {
+                RouteInfoViewModel(routeId, RouteRepositoryMock())
+            }
+
+            val state by viewModel.state.collectAsState()
+            RouteInfoScreen(
+                state = state,
+                onEvent = viewModel::onEvent,
+                onBack = { onBack() }
+            )
+        }
+    }
+}
+
+fun NavGraphBuilder.favouriteGraph(navController: NavHostController) {
     navigation<FavouriteGraph>(startDestination = Favourite){
 
         composable<Favourite> { backStackEntry ->
@@ -76,7 +120,7 @@ fun NavGraphBuilder.favouriteGraph(){
     }
 }
 
-fun NavGraphBuilder.editorGraph(){
+fun NavGraphBuilder.editorGraph(navController: NavHostController) {
     navigation<EditorGraph>(startDestination = Editor){
 
         composable<Editor> { backStackEntry ->
@@ -86,7 +130,7 @@ fun NavGraphBuilder.editorGraph(){
     }
 }
 
-fun NavGraphBuilder.mapGraph(){
+fun NavGraphBuilder.mapGraph(navController: NavHostController) {
     navigation<MapGraph>(startDestination = Map){
 
         composable<Map> { backStackEntry ->
@@ -96,7 +140,7 @@ fun NavGraphBuilder.mapGraph(){
     }
 }
 
-fun NavGraphBuilder.profileGraph(){
+fun NavGraphBuilder.profileGraph(navController: NavHostController) {
     navigation<ProfileGraph>(startDestination = Profile){
         composable<Profile> {
             val viewModel: ProfileViewModel = viewModel()

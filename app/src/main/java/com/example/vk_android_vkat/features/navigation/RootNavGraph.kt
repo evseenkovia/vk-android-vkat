@@ -12,9 +12,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.navigation
 import androidx.navigation.navigation
 import androidx.navigation.toRoute
 import com.example.vk_android_vkat.features.auth.login.LoginScreen
@@ -28,148 +31,34 @@ import com.example.vk_android_vkat.features.explore.ExploreViewModel
 import com.example.vk_android_vkat.features.explore.data.RouteRepositoryMock
 import com.example.vk_android_vkat.features.explore.routeinfo.ui.RouteInfoScreen
 import com.example.vk_android_vkat.features.explore.routeinfo.ui.RouteInfoViewModel
+import com.example.vk_android_vkat.features.navigation.editorGraph
+import com.example.vk_android_vkat.features.navigation.favouriteGraph
+import com.example.vk_android_vkat.features.navigation.mapGraph
+import com.example.vk_android_vkat.features.navigation.profileGraph
 
 
 @Composable
 fun RootNavGraph(
     navController: NavHostController,
-    modifier: Modifier,
-    contentPadding: PaddingValues = PaddingValues(0.dp),
-    isUserLoggedIn: Boolean
+    isUserLoggedIn: Boolean,
+    modifier: Modifier = Modifier
 ) {
     NavHost(
         navController = navController,
         startDestination = if (!isUserLoggedIn) AuthGraph else MainGraph,
-        modifier = modifier.fillMaxSize().padding(contentPadding),
+        modifier = modifier
     ) {
 
-        navigation<AuthGraph>(startDestination = Login) {
+        // авторизация
+        authGraph(navController)
 
-            // ------------------- LOGIN SCREEN -------------------
-            composable<Login> { backStackEntry ->
-                fun onBack() {
-                    navController.popBackStack()
-                }
-                BackHandler { onBack() }
-
-                val viewModel: LoginViewModel = viewModel()
-                val state by viewModel.state.collectAsState()
-                val effect by viewModel.effect.collectAsState(initial = null)
-
-                // Экран только отображает состояние и кидает события
-                LoginScreen(
-                    state = state, onEvent = viewModel::onEvent
-                )
-
-                // NavHost слушает эффекты и делает навигацию
-                LaunchedEffect(effect) {
-                    when (effect) {
-                        LoginViewModel.LoginEffect.LoginSuccess -> {
-                            navController.navigate(MainGraph) {
-                                popUpTo(AuthGraph) { inclusive = true }
-                            }
-                        }
-
-                        LoginViewModel.LoginEffect.GoToRegistration -> navController.navigate(
-                            Registration
-                        )
-
-                        LoginViewModel.LoginEffect.GoToPasswordRecovery -> navController.navigate(
-                            PasswordRecovery
-                        )
-
-                        null -> {}
-                    }
-                }
-            }
-
-            // ------------------- REGISTRATION SCREEN -------------------
-            composable<Registration> { backStackEntry ->
-                val viewModel: RegistrationViewModel = viewModel()
-                val state by viewModel.state.collectAsState()
-                val effect by viewModel.effect.collectAsState(initial = null)
-
-                RegistrationScreen(
-                    state = state, onEvent = viewModel::onEvent
-                )
-
-                LaunchedEffect(effect) {
-                    when (effect) {
-                        RegistrationViewModel.RegistrationEffect.RegistrationSuccess -> {
-                            navController.navigate(MainGraph) {
-                                popUpTo(AuthGraph) { inclusive = true }
-                            }
-                        }
-
-                        RegistrationViewModel.RegistrationEffect.GoToLogin -> navController.navigate(
-                            Login
-                        )
-
-                        null -> {}
-                    }
-                }
-            }
-
-            // ------------------- PASSWORD RECOVERY SCREEN -------------------
-            composable<PasswordRecovery> { backStackEntry ->
-                val viewModel: RecoveryViewModel = viewModel()
-                val state by viewModel.state.collectAsState()
-                val effect by viewModel.effect.collectAsState(initial = null)
-
-                PasswordRecoveryScreen(
-                    state = state, onEvent = viewModel::onEvent
-                )
-
-                LaunchedEffect(effect) {
-                    when (effect) {
-                        null -> {}
-                        RecoveryViewModel.RecoveryEffect.GoToLogin -> navController.navigate(Login)
-                        RecoveryViewModel.RecoveryEffect.EmailSent -> navController.navigate(Login)
-                    }
-                }
-            }
-        }
-
-
-        navigation<MainGraph>(startDestination = ExploreGraph) {
-            navigation<ExploreGraph>(startDestination = Explore){
-
-                composable<Explore> {
-                    val viewModel: ExploreViewModel = viewModel()
-                    val uiState by viewModel.state.collectAsState()
-
-                    ExploreScreen(
-                        state = uiState,
-                        onEvent = viewModel::onEvent,
-                        onRouteClick = { routeId: Long ->
-                            navController.navigate(RouteInfo(routeId))
-                        }
-                    )
-                }
-
-                composable<RouteInfo>(){backStackEntry ->
-                    fun onBack() {
-                        navController.popBackStack()
-                    }
-
-                    val routeId = backStackEntry.toRoute<RouteInfo>().routeId
-                    val viewModel = remember {
-                        RouteInfoViewModel(routeId, RouteRepositoryMock())
-                    }
-
-                    val state by viewModel.state.collectAsState()
-                    RouteInfoScreen(
-                        state = state,
-                        onEvent = viewModel::onEvent,
-                        onBack = { onBack() }
-                    )
-                }
-            }
-            favouriteGraph()
-            editorGraph()
-            mapGraph()
-            profileGraph()
+        // основной граф
+        navigation<MainGraph>(startDestination = ExploreGraph){
+            exploreGraph(navController)
+            favouriteGraph(navController)
+            editorGraph(navController)
+            mapGraph(navController)
+            profileGraph(navController)
         }
     }
 }
-
