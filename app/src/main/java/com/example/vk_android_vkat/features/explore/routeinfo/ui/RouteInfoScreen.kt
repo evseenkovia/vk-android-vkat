@@ -6,7 +6,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -15,10 +18,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material.icons.outlined.StarBorder
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -27,6 +33,7 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -36,10 +43,12 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.example.vk_android_vkat.R
 import com.example.vk_android_vkat.data.mockRoutes
+import com.example.vk_android_vkat.features.explore.routeinfo.domain.TopBarUiModel
 
 @Preview(showBackground = true)
 @Composable
@@ -49,24 +58,39 @@ fun RouteInfoScreenPreview(){
 //        state = RouteInfoState.Error("Что-то пошло не так((("),
         state = RouteInfoState.RouteInfoLoaded(mockRoutes[1]),
         onEvent = {},
-        onBack = {}
     )
 }
 
 @Composable
-fun RouteInfoScreen( //TODO(Реализовать экран для маршрута)
+fun RouteInfoScreen(
     state: RouteInfoState,
-    onEvent: (RouteInfoEvent) -> Unit,
-    onBack: () -> Unit
+    onEvent: (RouteInfoEvent) -> Unit
 ){
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ){
-        when(state) {
-            RouteInfoState.Loading -> LoadingScreenState()
-            is RouteInfoState.Error -> ErrorScreenState(state)
-            is RouteInfoState.RouteInfoLoaded -> RouteInfoLoadedScreenState(state, onEvent, onBack)
+
+    val topBarUi = when (state) {
+        is RouteInfoState.RouteInfoLoaded -> TopBarUiModel(
+            title = state.route.title,
+            isFavourite = state.route.isFavourite,
+            onFavouriteToggle = { onEvent(RouteInfoEvent.ToggleFavourite) },
+            onBack = { onEvent(RouteInfoEvent.BackClicked) }
+        )
+        else -> null
+    }
+
+    Scaffold(
+        topBar = { topBarUi?.let { RouteInfoTopBar(it) } },
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
+    ){ innerPadding ->
+        Box(
+            modifier = Modifier.padding(innerPadding)
+                .fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ){
+            when(state) {
+                RouteInfoState.Loading -> LoadingScreenState()
+                is RouteInfoState.Error -> ErrorScreenState(state)
+                is RouteInfoState.RouteInfoLoaded -> RouteInfoLoadedScreenState(state, onEvent)
+            }
         }
     }
 }
@@ -112,8 +136,7 @@ fun ErrorScreenState(
 @Composable
 fun RouteInfoLoadedScreenState(
     state: RouteInfoState,
-    onEvent: (RouteInfoEvent) -> Unit,
-    onBack: () -> Unit
+    onEvent: (RouteInfoEvent) -> Unit
 ){
     val currentState = state as RouteInfoState.RouteInfoLoaded
     val route = currentState.route
@@ -144,24 +167,47 @@ fun RouteInfoLoadedScreenState(
                     contentDescription = "Image for route with id = ${state.route.id}",
                     contentScale = ContentScale.Crop
                 )
+//
+//                // Кнопка "назад" поверх изображения
+//                IconButton(
+//                    modifier = Modifier
+//                        .align(Alignment.TopStart)
+//                        .padding(8.dp)
+//                        .background(
+//                            color = Color.White.copy(alpha = 0.8f),
+//                            shape = CircleShape
+//                        ),
+//                    onClick = onBack
+//                ) {
+//                    Icon(
+//                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+//                        contentDescription = "Back",
+//                        tint = interfaceColor
+//                    )
+//                }
 
-                // Кнопка "назад" поверх изображения
-                IconButton(
-                    modifier = Modifier
-                        .align(Alignment.TopStart)
-                        .padding(8.dp)
-                        .background(
-                            color = Color.White.copy(alpha = 0.8f),
-                            shape = CircleShape
-                        ),
-                    onClick = onBack
-                ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Back",
-                        tint = interfaceColor
-                    )
-                }
+//                // Кнопка избранного на изображении
+//                IconButton(
+//                    onClick = {  },
+//                    modifier = Modifier
+//                        .align(Alignment.TopEnd)
+//                        .padding(8.dp)
+//                        .size(32.dp)
+//                        .background(
+//                            color = Color.Black.copy(alpha = 0.3f),
+//                            shape = RoundedCornerShape(8.dp)
+//                        )
+//                ) {
+//                    Icon(
+//                        imageVector = if (route.isFavourite)
+//                            Icons.Filled.Bookmark
+//                        else
+//                            Icons.Outlined.BookmarkBorder,
+//                        contentDescription = stringResource(R.string.title_favourite),
+//                        tint = Color.White,
+//                        modifier = Modifier.size(24.dp)
+//                    )
+//                }
             }
 
             // Контент под изображением
@@ -237,7 +283,8 @@ fun RouteInfoLoadedScreenState(
                 Text(
                     text = route.description,
                     style = bodyTextSize,
-                    color = interfaceColor
+                    color = interfaceColor,
+                    textAlign = TextAlign.Justify
                 )
 
                 // Добавляем отступ внизу, чтобы контент не скрывался за FAB

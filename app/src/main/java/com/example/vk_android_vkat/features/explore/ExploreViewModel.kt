@@ -1,5 +1,6 @@
 package com.example.vk_android_vkat.features.explore
 
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.vk_android_vkat.data.mockRoutes
@@ -49,5 +50,9 @@ class ExploreViewModel : ViewModel(){
             is ExploreState.Routes -> s.data.find { it.id == routeId }
             else -> null
         }
+    }
+
+    fun onSearchQueryChange(query: String){
+        // todo(implement query function)
     }
 }

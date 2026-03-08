@@ -1,6 +1,7 @@
 package com.example.vk_android_vkat.features.navigation
 
 import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarDefaults
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -16,6 +17,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 @Composable
 fun BottomNavigationBar(navController: NavHostController) {
     NavigationBar(
+        windowInsets = NavigationBarDefaults.windowInsets,
         tonalElevation = 4.dp
     ) {
         val entry by navController.currentBackStackEntryAsState()
@@ -23,8 +25,12 @@ fun BottomNavigationBar(navController: NavHostController) {
 
         //Через список отображаем все табы
         bottomNavDestinations.forEach { tab ->
+            val isSelected = currentDestination?.hierarchy?.any {
+                it.hasRoute(tab.graphRoute::class)
+            } == true
+
             NavigationBarItem(
-                selected = currentDestination?.hierarchy?.any {it.hasRoute(tab.graphRoute::class)} == true,
+                selected = isSelected,
                 onClick = {
                     navController.navigate(tab.graphRoute) {
                         launchSingleTop = true
@@ -32,8 +38,8 @@ fun BottomNavigationBar(navController: NavHostController) {
                         popUpTo(navController.graph.findStartDestination().id) { saveState = true }
                     }
                 },
-                icon = { tab.IconComposable() },
-                label = { Text(stringResource(tab.labelRes)) }
+                icon = { tab.IconComposable(isSelected) },
+                label = { Text(text = stringResource(tab.labelRes), maxLines = 1 ) }
             )
         }
     }

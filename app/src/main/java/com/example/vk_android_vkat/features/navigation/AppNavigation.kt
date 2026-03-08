@@ -1,5 +1,6 @@
 package com.example.vk_android_vkat.features.navigation
 
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -13,6 +14,7 @@ import com.example.vk_android_vkat.features.editor.EditorScreen
 import com.example.vk_android_vkat.features.explore.ExploreScreen
 import com.example.vk_android_vkat.features.explore.ExploreViewModel
 import com.example.vk_android_vkat.features.explore.data.RouteRepositoryMock
+import com.example.vk_android_vkat.features.explore.routeinfo.ui.RouteInfoEffect
 import com.example.vk_android_vkat.features.explore.routeinfo.ui.RouteInfoScreen
 import com.example.vk_android_vkat.features.explore.routeinfo.ui.RouteInfoViewModel
 import com.example.vk_android_vkat.features.favourite.FavouriteScreen
@@ -91,20 +93,24 @@ fun NavGraphBuilder.exploreGraph(navController : NavHostController){
         }
 
         composable<RouteInfo>() { backStackEntry ->
-            fun onBack() {
-                navController.popBackStack()
-            }
 
             val routeId = backStackEntry.toRoute<RouteInfo>().routeId
             val viewModel = remember {
                 RouteInfoViewModel(routeId, RouteRepositoryMock())
             }
 
+            val effect by viewModel.effect.collectAsState(initial = null)
+            LaunchedEffect(effect) {
+                when(effect) {
+                    RouteInfoEffect.NavigateBack -> navController.popBackStack()
+                    else -> {}
+                }
+            }
+
             val state by viewModel.state.collectAsState()
             RouteInfoScreen(
                 state = state,
                 onEvent = viewModel::onEvent,
-                onBack = { onBack() }
             )
         }
     }

@@ -172,7 +172,7 @@ val AppTypography = Typography(
 val AppLightColorScheme = lightColorScheme(
     primary = Color(0xFF6200EE),
     onPrimary = Color.White,
-    secondary = Color(0xFF03DAC6),
+    secondary = Color(0xFF3949AB),
     onSecondary = Color.Black,
     background = Color.White,
     onBackground = Color.Black,
@@ -184,9 +184,9 @@ val AppLightColorScheme = lightColorScheme(
 
 // Темная тема
 val AppDarkColorScheme = darkColorScheme(
-    primary = Color(0xFFBB86FC),
+    primary = Color(0xFF3949AB),
     onPrimary = Color.Black,
-    secondary = Color(0xFF03DAC6),
+    secondary = Color(0xFF202B60),
     onSecondary = Color.Black,
     background = Color(0xFF121212),
     onBackground = Color.White,

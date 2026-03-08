@@ -27,6 +27,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
@@ -53,6 +54,7 @@ fun AppTextField(
     readOnly: Boolean = false,
     singleLine: Boolean = true,
     maxLines: Int = 1,
+    shape: Shape = AppTextFieldDefaults.textFieldShape,
     keyboardType: KeyboardType = KeyboardType.Text,
     imeAction: ImeAction = ImeAction.Done,
     onImeAction: () -> Unit = {},
@@ -129,7 +131,7 @@ fun AppTextField(
             } else {
                 VisualTransformation.None
             },
-            shape = AppTextFieldDefaults.textFieldShape,
+            shape = shape,
             colors = AppTextFieldDefaults.textFieldColors()
         )
 
@@ -289,26 +291,28 @@ fun MultilineTextField(
 /**
  * Поле для поиска
  */
-//@Composable
-//fun SearchField(
-//    value: String,
-//    onValueChange: (String) -> Unit,
-//    modifier: Modifier = Modifier,
-//    onClearClick: () -> Unit,
-//    enabled: Boolean = true,
-//    imeAction: ImeAction = ImeAction.Search,
-//    onImeAction: () -> Unit = {}
-//) {
-//    AppTextField(
-//        value = value,
-//        onValueChange = onValueChange,
-//        modifier = modifier,
-//        label = stringResource(R.string.search),
-//        leadingIcon = Icons.Outlined.Search,
-//        trailingIcon = if (value.isNotEmpty()) Icons.Filled.Close else null,
-//        onTrailingIconClick = onClearClick,
-//        enabled = enabled,
-//        imeAction = imeAction,
-//        onImeAction = onImeAction
-//    )
-//}
+@Composable
+fun SearchField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    modifier: Modifier = Modifier,
+    shape: Shape = AppTextFieldDefaults.textFieldShape,
+    onClearClick: () -> Unit,
+    enabled: Boolean = true,
+    imeAction: ImeAction = ImeAction.Search,
+    onImeAction: () -> Unit = {}
+) {
+    AppTextField(
+        value = value,
+        onValueChange = onValueChange,
+        modifier = modifier,
+        shape = shape,
+        label = "Поиск",
+        leadingIcon = Icons.Outlined.Search,
+        trailingIcon = if (value.isNotEmpty()) Icons.Filled.Close else null,
+        onTrailingIconClick = onClearClick,
+        enabled = enabled,
+        imeAction = imeAction,
+        onImeAction = onImeAction
+    )
+}
