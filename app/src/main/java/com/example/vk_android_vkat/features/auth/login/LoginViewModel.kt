@@ -33,7 +33,6 @@ class LoginViewModel : ViewModel() {
         when(event) {
             is LoginEvent.EmailChanged -> _state.update { it.copy(email = event.email, emailError = null) }
             is LoginEvent.PasswordChanged -> _state.update { it.copy(password = event.password, passwordError = null) }
-            LoginEvent.ClearErrors -> _state.update { it.copy(emailError = null, passwordError = null) }
             LoginEvent.LoginClicked -> login()
             LoginEvent.RegisterClicked -> viewModelScope.launch { _effect.send(LoginEffect.GoToRegistration) }
             LoginEvent.ForgotPasswordClicked -> viewModelScope.launch { _effect.send(LoginEffect.GoToPasswordRecovery) }

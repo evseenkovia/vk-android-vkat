@@ -12,7 +12,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
-import com.example.vk_android_vkat.features.explore.routeinfo.domain.TopBarUiModel
+import com.example.vk_android_vkat.features.explore.routeinfo.ui.TopBarUiModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Preview(showBackground = true)

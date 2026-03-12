@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -46,6 +47,7 @@ fun AppTextField(
     onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier,
     label: String,
+    placeholderText: String = "",
     leadingIcon: ImageVector? = null,
     trailingIcon: ImageVector? = null,
     onTrailingIconClick: (() -> Unit)? = null,
@@ -105,6 +107,7 @@ fun AppTextField(
                 }
                 else -> null
             },
+            placeholder = { Text(placeholderText) },
             isError = errorMessage != null,
             enabled = enabled,
             readOnly = readOnly,
@@ -293,26 +296,33 @@ fun MultilineTextField(
  */
 @Composable
 fun SearchField(
-    value: String,
-    onValueChange: (String) -> Unit,
-    modifier: Modifier = Modifier,
-    shape: Shape = AppTextFieldDefaults.textFieldShape,
-    onClearClick: () -> Unit,
-    enabled: Boolean = true,
-    imeAction: ImeAction = ImeAction.Search,
-    onImeAction: () -> Unit = {}
-) {
-    AppTextField(
-        value = value,
-        onValueChange = onValueChange,
-        modifier = modifier,
-        shape = shape,
-        label = "Поиск",
-        leadingIcon = Icons.Outlined.Search,
-        trailingIcon = if (value.isNotEmpty()) Icons.Filled.Close else null,
-        onTrailingIconClick = onClearClick,
-        enabled = enabled,
-        imeAction = imeAction,
-        onImeAction = onImeAction
+    query: String,
+    onQueryChange: (String) -> Unit,
+){
+    OutlinedTextField(
+        value = query,
+        onValueChange = onQueryChange,
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(24.dp),
+        textStyle = AppTypography.bodyLarge,
+        placeholder = { Text("Поиск...") },
+        leadingIcon = {
+            Icon(
+                imageVector = Icons.Outlined.Search,
+                contentDescription = "Поиск"
+            )
+        },
+        trailingIcon = {
+            if (query.isNotEmpty()) {
+                IconButton(onClick = { onQueryChange("") }) {
+                    Icon(
+                        imageVector = Icons.Filled.Close,
+                        contentDescription = "Очистить поиск"
+                    )
+                }
+            }
+        },
+        singleLine = true,
+        colors = AppTextFieldDefaults.textFieldColors()
     )
 }

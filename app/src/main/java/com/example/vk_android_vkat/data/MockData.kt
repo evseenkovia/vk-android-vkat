@@ -1,6 +1,6 @@
 package com.example.vk_android_vkat.data
 
-import com.example.vk_android_vkat.domain.model.RouteModel
+import com.example.vk_android_vkat.features.explore.domain.RouteModel
 import com.example.vk_android_vkat.features.profile.ProfileContentUi
 import com.example.vk_android_vkat.features.profile.ProfileHeaderUi
 import com.example.vk_android_vkat.features.profile.ProfileItemUi

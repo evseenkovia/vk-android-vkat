@@ -1,4 +1,4 @@
-package com.example.vk_android_vkat.features.explore
+package com.example.vk_android_vkat.features.explore.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -9,16 +9,19 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.outlined.FilterAlt
 import androidx.compose.material.icons.outlined.LocationOn
+import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -26,14 +29,11 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -42,7 +42,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.vk_android_vkat.R
 import com.example.vk_android_vkat.common.theme.SearchField
-import com.example.vk_android_vkat.domain.model.RouteModel
+import com.example.vk_android_vkat.features.explore.domain.RouteModel
 
 //@Preview(showBackground = true)
 //@Composable
@@ -61,8 +61,12 @@ fun ExploreScreen(
     onRouteClick: (Long) -> Unit = {}
 ) {
     Scaffold(
+        modifier = Modifier.statusBarsPadding(),
         topBar = {
-            ExploreTopBar()
+            ExploreTopBar(
+                query = state.searchQuery,
+                onQueryChange = { onEvent(ExploreEvent.QueryChanged(it)) }
+            )
         },
         content = { innerPadding ->
             Column(
@@ -70,21 +74,15 @@ fun ExploreScreen(
                     .fillMaxSize()
                     .padding(innerPadding)
             ) {
-                when (state) {
-                    is ExploreState.Loading -> LoadingState()
-                    is ExploreState.Error -> ErrorState(
-                        errorMessage = state.message, onRetry = { onEvent(ExploreEvent.Retry) }
+                if (state.isLoading)
+                    LoadingState()
+                else if (!state.error.isNullOrBlank()) {
+                    ErrorState(
+                        errorMessage = state.error,
+                        onRetry = { onEvent(ExploreEvent.Retry) }
                     )
-
-                    is ExploreState.Routes -> {
-                        if (state.data.isEmpty())
-                            EmptyState()
-                        else
-                            RoutesList(routes = state.data, onClick = onRouteClick)
-                    }
-
-                    else -> {}
                 }
+                RoutesList(routes = state.routeList, onClick = onRouteClick)
             }
         },
         contentWindowInsets = WindowInsets(0.dp)
@@ -94,22 +92,22 @@ fun ExploreScreen(
 @Preview(showBackground = true)
 @Composable
 fun ExploreTopBarPreview() {
-    ExploreTopBar(
-
-    )
+    ExploreTopBar(query = "", onQueryChange = {})
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ExploreTopBar(
-    onSearchQueryChange: (String) -> Unit
+    query: String,
+    onQueryChange: (String) -> Unit
 ) {
     Box(
         contentAlignment = Alignment.Center,
     ) {
         TopAppBar(
-
-            title = {},
+            title = {
+                SearchField(query = query, onQueryChange = onQueryChange)
+            },
             navigationIcon = {
                 IconButton(
                     onClick = {}
@@ -122,7 +120,6 @@ fun ExploreTopBar(
                 }
             },
             actions = {
-
                 IconButton(
                     onClick = {}
                 ) {
@@ -133,22 +130,24 @@ fun ExploreTopBar(
                 }
             },
         )
+        // Поле текстового поиска
 
-        var searchQuery by remember { mutableStateOf("") }
-        SearchField(
-            modifier = Modifier
-                .padding(horizontal = 56.dp)
-                .align(Alignment.Center),
-            shape = RoundedCornerShape(32.dp),
-            value = searchQuery,
-            onValueChange = { searchQuery = it },
-            onClearClick = { }
-        )
+
+//        SearchField(
+//            modifier = Modifier
+//                .padding(horizontal = 56.dp)
+//                .align(Alignment.Center),
+//            shape = RoundedCornerShape(32.dp),
+//            value = query,
+//            onValueChange = onQueryChange,
+//            onClearClick = { onQueryChange("") },
+//            placeholderText = "Поиск..."
+//        )
     }
 }
 
 @Composable
-fun ExploreTopBar() {
+fun ExploreTopBar2() {
     LazyRow(
         modifier = Modifier
             .padding(8.dp)
@@ -211,6 +210,5 @@ fun RoutesList(routes: List<RouteModel>, onClick: (Long) -> Unit) {
                     onClick = { onClick(route.id) }) // RouteCard можно расширять
             }
         }
-
     )
 }

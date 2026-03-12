@@ -1,15 +1,19 @@
-package com.example.vk_android_vkat.features.explore
+package com.example.vk_android_vkat.features.explore.ui
 
-import com.example.vk_android_vkat.data.mockRoutes
-import com.example.vk_android_vkat.domain.model.RouteModel
+import com.example.vk_android_vkat.features.explore.domain.RouteModel
+import com.example.vk_android_vkat.features.explore.FilterItem
+import com.example.vk_android_vkat.features.explore.defaultFilters
 
-sealed interface ExploreState {
-    object Loading: ExploreState
-    data class Error(val message: String): ExploreState
-    data class Routes(val data: List<RouteModel> = emptyList()) : ExploreState
-    data class Filters(val filters : List<FilterItem> = defaultFilters()) : ExploreState
-}
+data class ExploreState(
+    val isLoading: Boolean = true,
+    val error: String? = null,
+    val routeList: List<RouteModel> = emptyList(),
+    val searchQuery: String = "",
+    val filters: List<FilterItem> = defaultFilters()
+)
+
 sealed interface ExploreEvent {
+    data class QueryChanged(val query: String): ExploreEvent
     data class FilterClicked(val filter: FilterItem) : ExploreEvent
     object Retry : ExploreEvent
 }
