@@ -57,9 +57,9 @@ object Editor
 object Map
 @Serializable
 object Profile
-
 @Serializable
 object Settings
+
 
 //------ Экраны авторизации ------
 @Serializable
@@ -110,7 +110,7 @@ fun NavGraphBuilder.exploreGraph(navController : NavHostController){
             val state by viewModel.state.collectAsState()
             RouteInfoScreen(
                 state = state,
-                onEvent = viewModel::onEvent,
+                onEvent = viewModel::onEvent
             )
         }
     }
