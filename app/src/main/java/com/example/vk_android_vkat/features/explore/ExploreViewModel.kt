@@ -1,5 +1,7 @@
 package com.example.vk_android_vkat.features.explore
 
+import android.content.ContentValues.TAG
+import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -25,6 +27,7 @@ class ExploreViewModel : ViewModel(){
     // Обработка событий с UI
     fun onEvent(event: ExploreEvent){
         when(event) {
+            is ExploreEvent.ToggleFavourite -> toggleFavourite(event.routeId)
             is ExploreEvent.FilterClicked -> TODO("Обработка списка маршрутов фильтрами")
             ExploreEvent.Retry -> TODO("Обновление списка маршрутов - еще один запрос на сервер")
         }
@@ -55,4 +58,23 @@ class ExploreViewModel : ViewModel(){
     fun onSearchQueryChange(query: String){
         // todo(implement query function)
     }
+    fun toggleFavourite(routeId: Long) {
+        Log.d("TAG","Toggle favourite")
+        _state.update { currentState ->
+
+            if (currentState is ExploreState.Routes) {
+
+                val updatedRoutes = currentState.data.map { route ->
+                    if (route.id == routeId) {
+                        route.copy(isFavourite = !route.isFavourite)
+
+                    } else route
+                }
+
+                ExploreState.Routes(updatedRoutes)
+
+            } else currentState
+        }
+    }
+
 }

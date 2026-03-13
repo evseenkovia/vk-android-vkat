@@ -11,5 +11,7 @@ sealed interface ExploreState {
 }
 sealed interface ExploreEvent {
     data class FilterClicked(val filter: FilterItem) : ExploreEvent
+
+    data class ToggleFavourite(val routeId: Long) : ExploreEvent
     object Retry : ExploreEvent
 }

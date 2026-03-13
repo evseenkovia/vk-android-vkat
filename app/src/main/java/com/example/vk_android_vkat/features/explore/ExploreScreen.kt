@@ -79,7 +79,7 @@ import com.example.vk_android_vkat.domain.model.RouteModel
 fun ExploreScreen(
     state: ExploreState,
     onEvent: (ExploreEvent) -> Unit,
-    onRouteClick: (Long) -> Unit = {}
+    onRouteClick: (Long) -> Unit = {},
 ) {
     Scaffold(
         topBar = { ExploreTopBar2(
@@ -102,7 +102,8 @@ fun ExploreScreen(
                         if (state.data.isEmpty())
                             EmptyState()
                         else
-                            RoutesList(routes = state.data, onClick = onRouteClick)
+                            RoutesList(routes = state.data, onClick = onRouteClick, onFavouriteClick = {routeID -> onEvent(
+                                ExploreEvent.ToggleFavourite(routeID))})
                     }
                     else -> {}
                 }
@@ -269,7 +270,7 @@ fun EmptyState() = Box(
 
 
 @Composable
-fun RoutesList(routes: List<RouteModel>, onClick: (Long) -> Unit) {
+fun RoutesList(routes: List<RouteModel>, onClick: (Long) -> Unit, onFavouriteClick: (Long) -> Unit) {
     LazyVerticalGrid(
         modifier = Modifier
             .fillMaxSize()
@@ -277,7 +278,7 @@ fun RoutesList(routes: List<RouteModel>, onClick: (Long) -> Unit) {
         columns = GridCells.Fixed(2),
         content = {
             items(routes, key = { it.id }) { route ->
-                RouteCard(route = route, onClick = { onClick(route.id) }) // RouteCard можно расширять
+                RouteCard(route = route, onClick = { onClick(route.id) }, onFavouriteClick = { onFavouriteClick(route.id) }) // RouteCard можно расширять
             }
         }
 

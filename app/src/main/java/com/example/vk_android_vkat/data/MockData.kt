@@ -19,7 +19,8 @@ val mockRoutes = listOf(
         durationHours = 2,
         pointsCount = 7,
         rating = 4.7f,
-        imageUrl = "https://7d9e88a8-f178-4098-bea5-48d960920605.selcdn.net/7cdfe127-c49b-4d4b-9fec-78b998cc76f0/"
+        imageUrl = "https://7d9e88a8-f178-4098-bea5-48d960920605.selcdn.net/7cdfe127-c49b-4d4b-9fec-78b998cc76f0/",
+        isFavourite = true
     ),
     RouteModel(
         id = 2,

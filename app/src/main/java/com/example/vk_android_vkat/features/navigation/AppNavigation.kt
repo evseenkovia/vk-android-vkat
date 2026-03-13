@@ -75,17 +75,17 @@ data class RouteInfo(val routeId: Long)
 
 //------ Расширения для графов ------
 
-fun NavGraphBuilder.exploreGraph(navController : NavHostController){
+fun NavGraphBuilder.exploreGraph(navController : NavHostController,sharedViewModel: ExploreViewModel){
 
     navigation<ExploreGraph>(startDestination = Explore) {
 
         composable<Explore> {
-            val viewModel: ExploreViewModel = viewModel()
-            val uiState by viewModel.state.collectAsState()
+
+            val uiState by sharedViewModel.state.collectAsState()
 
             ExploreScreen(
                 state = uiState,
-                onEvent = viewModel::onEvent,
+                onEvent = sharedViewModel::onEvent,
                 onRouteClick = { routeId: Long ->
                     navController.navigate(RouteInfo(routeId))
                 }
@@ -116,12 +116,20 @@ fun NavGraphBuilder.exploreGraph(navController : NavHostController){
     }
 }
 
-fun NavGraphBuilder.favouriteGraph(navController: NavHostController) {
+fun NavGraphBuilder.favouriteGraph(navController: NavHostController,sharedViewModel: ExploreViewModel) {
     navigation<FavouriteGraph>(startDestination = Favourite){
 
         composable<Favourite> { backStackEntry ->
             val details = backStackEntry.toRoute<Favourite>()
-            FavouriteScreen()
+            val uiState by sharedViewModel.state.collectAsState()
+
+            FavouriteScreen(
+                state = uiState,
+                onEvent = sharedViewModel::onEvent,
+                onRouteClick = { routeId ->
+                    navController.navigate(RouteInfo(routeId))
+                }
+            )
         }
     }
 }

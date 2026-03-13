@@ -7,17 +7,30 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import com.example.vk_android_vkat.features.explore.ExploreEvent
+import com.example.vk_android_vkat.features.explore.ExploreScreen
+import com.example.vk_android_vkat.features.explore.ExploreState
 
 @Composable
-fun FavouriteScreen(){
-    Scaffold { innerPadding ->
-        Box(
-            modifier = Modifier.padding(innerPadding),
-            contentAlignment = Alignment.Center
-        ){
-            Text(
-                text = "This is FavouriteScreen @Composable"
-            )
+fun FavouriteScreen(
+    state: ExploreState,
+    onEvent: (ExploreEvent) -> Unit,
+    onRouteClick: (Long) -> Unit = {},
+) {
+
+    val favouriteState = when (state) {
+
+        is ExploreState.Routes -> {
+            val favouriteRoutes = state.data.filter { it.isFavourite }
+            ExploreState.Routes(favouriteRoutes)
         }
+
+        else -> state
     }
+
+    ExploreScreen(
+        state = favouriteState,
+        onEvent = onEvent,
+        onRouteClick = onRouteClick
+    )
 }
