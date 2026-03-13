@@ -5,6 +5,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
@@ -75,17 +76,18 @@ data class RouteInfo(val routeId: Long)
 
 //------ Расширения для графов ------
 
-fun NavGraphBuilder.exploreGraph(navController : NavHostController,sharedViewModel: ExploreViewModel){
+fun NavGraphBuilder.exploreGraph(navController : NavHostController){
 
     navigation<ExploreGraph>(startDestination = Explore) {
 
         composable<Explore> {
-
-            val uiState by sharedViewModel.state.collectAsState()
+            val parentEntry = navController.getBackStackEntry<MainGraph>()
+            val viewModel: ExploreViewModel = viewModel(parentEntry)
+            val uiState by viewModel.state.collectAsState()
 
             ExploreScreen(
                 state = uiState,
-                onEvent = sharedViewModel::onEvent,
+                onEvent = viewModel::onEvent,
                 onRouteClick = { routeId: Long ->
                     navController.navigate(RouteInfo(routeId))
                 }
@@ -116,16 +118,18 @@ fun NavGraphBuilder.exploreGraph(navController : NavHostController,sharedViewMod
     }
 }
 
-fun NavGraphBuilder.favouriteGraph(navController: NavHostController,sharedViewModel: ExploreViewModel) {
+fun NavGraphBuilder.favouriteGraph(navController: NavHostController) {
     navigation<FavouriteGraph>(startDestination = Favourite){
 
         composable<Favourite> { backStackEntry ->
             val details = backStackEntry.toRoute<Favourite>()
-            val uiState by sharedViewModel.state.collectAsState()
+            val parentEntry = navController.getBackStackEntry<MainGraph>()
+            val viewModel: ExploreViewModel = viewModel(parentEntry)
+            val uiState by viewModel.state.collectAsState()
 
             FavouriteScreen(
                 state = uiState,
-                onEvent = sharedViewModel::onEvent,
+                onEvent = viewModel::onEvent,
                 onRouteClick = { routeId ->
                     navController.navigate(RouteInfo(routeId))
                 }
@@ -133,6 +137,7 @@ fun NavGraphBuilder.favouriteGraph(navController: NavHostController,sharedViewMo
         }
     }
 }
+
 
 fun NavGraphBuilder.editorGraph(navController: NavHostController) {
     navigation<EditorGraph>(startDestination = Editor){

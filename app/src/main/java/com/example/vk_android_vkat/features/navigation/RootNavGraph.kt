@@ -15,7 +15,7 @@ fun RootNavGraph(
     isUserLoggedIn: Boolean,
 ) {
 
-    val sharedViewModel: ExploreViewModel = viewModel()
+
 
     NavHost(
         navController = navController,
@@ -28,8 +28,10 @@ fun RootNavGraph(
         // основной граф
         navigation<MainGraph>(startDestination = ExploreGraph){
 
-            exploreGraph(navController,sharedViewModel)
-            favouriteGraph(navController,sharedViewModel)
+
+
+            exploreGraph(navController)
+            favouriteGraph(navController)
             editorGraph(navController)
             mapGraph(navController)
             profileGraph(navController)
