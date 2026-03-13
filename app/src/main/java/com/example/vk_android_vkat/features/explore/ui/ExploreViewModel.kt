@@ -6,6 +6,7 @@ import com.example.vk_android_vkat.data.mockRoutes
 import com.example.vk_android_vkat.features.explore.data.RouteRepositoryMock
 import com.example.vk_android_vkat.features.explore.domain.RouteModel
 import com.example.vk_android_vkat.features.explore.domain.RouteRepository
+import com.example.vk_android_vkat.features.explore.domain.filter.RouteFilter
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.delay
@@ -30,7 +31,7 @@ class ExploreViewModel : ViewModel() {
         onBufferOverflow = BufferOverflow.DROP_OLDEST
     )
 
-    private val delayTime = 1000L
+    private val delayTime = 500L
     private val latency = 500L
 
     init {
@@ -47,11 +48,54 @@ class ExploreViewModel : ViewModel() {
                 searchQueryFlow.tryEmit(event.query)
             }
 
-            is ExploreEvent.FilterClicked -> TODO("Обработка списка маршрутов фильтрами")
-            ExploreEvent.Retry -> {
-                _state.update { it.copy(searchQuery = "", error = null, isLoading = true) }
-                loadRoutes()
+            is ExploreEvent.FiltersChanged -> {
+                _state.update { it.copy(filters = event.newFilters) }
             }
+
+            ExploreEvent.ApplyFilters -> {
+                _state.update { it.copy(isFiltering = true) }
+                loadFilteredRoutes()
+            }
+
+            is ExploreEvent.Retry -> {
+                _state.update { it.copy(searchQuery = "", error = null, isLoading = true, filters = RouteFilter()) }
+                loadRoutes()
+                event.onComplete()
+            }
+            ExploreEvent.ClearFilters -> {
+                _state.update { it.copy(filters = RouteFilter()) }
+            }
+        }
+    }
+
+    private fun loadFilteredRoutes() {
+        viewModelScope.launch {
+            _state.update { it.copy(isLoading = true, error = null) }
+
+            delay(delayTime)
+
+            val filters = _state.value.filters
+            val filterResult = repository.getRouteByFilter(filters)
+            filterResult
+                .onSuccess { routes ->
+                    _state.update {
+                        it.copy(
+                            routeList = routes,
+                            error = null,
+                            isFiltering = false,
+                            isLoading = false
+                        )
+                    }
+                }
+                .onFailure { exception ->
+                    _state.update {
+                        it.copy(
+                            error = exception.message ?: "Неизвестная ошибка",
+                            isFiltering = false,
+                            isLoading = false
+                        )
+                    }
+                }
         }
     }
 
@@ -69,7 +113,7 @@ class ExploreViewModel : ViewModel() {
     // Загрузка маршрутов
     fun loadRoutes() {
         viewModelScope.launch {
-            _state.update { it.copy(isLoading = true, error = null, filters = emptyList()) }
+            _state.update { it.copy(isLoading = true, error = null) }
 
             delay(delayTime)
 
@@ -88,30 +132,31 @@ class ExploreViewModel : ViewModel() {
     }
 
     // Текстовый поиск маршрута по названию
-    suspend fun findRouteByQuery(query: String?) {
+    fun findRouteByQuery(query: String?) {
+        viewModelScope.launch {
+            _state.update { it.copy(isLoading = true, error = null) }
 
-        _state.update { it.copy(isLoading = true, error = null) }
+            delay(delayTime)
 
-        delay(delayTime)
-
-        val searchResult = repository.findRouteByQuery(query)
-        searchResult
-            .onSuccess { routes ->
-                _state.update {
-                    it.copy(
-                        routeList = routes,
-                        isLoading = false
-                    )
+            val searchResult = repository.findRouteByQuery(query)
+            searchResult
+                .onSuccess { routes ->
+                    _state.update {
+                        it.copy(
+                            routeList = routes,
+                            isLoading = false
+                        )
+                    }
                 }
-            }
-            .onFailure { exception ->
-                _state.update {
-                    it.copy(
-                        error = exception.message,
-                        routeList = emptyList(),
-                        isLoading = false
-                    )
+                .onFailure { exception ->
+                    _state.update {
+                        it.copy(
+                            error = exception.message,
+                            routeList = emptyList(),
+                            isLoading = false
+                        )
+                    }
                 }
-            }
+        }
     }
 }
