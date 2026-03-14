@@ -118,7 +118,7 @@ class ExploreViewModel : ViewModel() {
             delay(delayTime)
 
             try {
-                val loadedRoutes: List<RouteModel> = mockRoutes
+                val loadedRoutes: List<RouteModel> = repository.getRoutes()
                 _state.update { it.copy(routeList = loadedRoutes, isLoading = false) }
             } catch (e: Exception) {
                 _state.update {
