@@ -39,6 +39,7 @@ android {
         viewBinding = true
         compose = true
     }
+    compileSdkMinor = 1
 }
 
 dependencies {
