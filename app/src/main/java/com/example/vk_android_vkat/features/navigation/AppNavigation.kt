@@ -4,6 +4,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavGraphBuilder
@@ -83,7 +84,7 @@ fun NavGraphBuilder.exploreGraph(navController : NavHostController){
         composable<Explore> {
             val parentEntry = navController.getBackStackEntry<MainGraph>()
             val viewModel: ExploreViewModel = viewModel(parentEntry)
-            val uiState by viewModel.state.collectAsState()
+            val uiState by viewModel.state.collectAsStateWithLifecycle()
 
             ExploreScreen(
                 state = uiState,
@@ -125,7 +126,7 @@ fun NavGraphBuilder.favouriteGraph(navController: NavHostController) {
             val details = backStackEntry.toRoute<Favourite>()
             val parentEntry = navController.getBackStackEntry<MainGraph>()
             val viewModel: ExploreViewModel = viewModel(parentEntry)
-            val uiState by viewModel.state.collectAsState()
+            val uiState by viewModel.state.collectAsStateWithLifecycle()
 
             FavouriteScreen(
                 state = uiState,
@@ -163,7 +164,7 @@ fun NavGraphBuilder.profileGraph(navController: NavHostController) {
     navigation<ProfileGraph>(startDestination = Profile){
         composable<Profile> {
             val viewModel: ProfileViewModel = viewModel()
-            val uiState by viewModel.state.collectAsState()
+            val uiState by viewModel.state.collectAsStateWithLifecycle()
 
             ProfileScreen(
                 uiState = uiState,
