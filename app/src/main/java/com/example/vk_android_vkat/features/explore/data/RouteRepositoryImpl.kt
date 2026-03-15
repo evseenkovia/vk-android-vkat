@@ -1,10 +1,8 @@
 package com.example.vk_android_vkat.features.explore.data
 
-import com.example.vk_android_vkat.domain.model.RouteModel
-import com.example.vk_android_vkat.features.explore.routeinfo.domain.RouteRepository
+import com.example.vk_android_vkat.features.explore.domain.RouteModel
+import com.example.vk_android_vkat.features.explore.domain.RouteRepository
 
-class RouteRepositoryImpl() : RouteRepository {
-    override suspend fun getRouteById(id: Long): RouteModel? {
-        TODO("Not yet implemented")
-    }
+class RouteRepositoryImpl() {
+
 }

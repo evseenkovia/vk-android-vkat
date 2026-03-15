@@ -1,6 +1,5 @@
 package com.example.vk_android_vkat
 
-import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -12,26 +11,16 @@ import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.example.vk_android_vkat.features.explore.ExploreTopBar
 import com.example.vk_android_vkat.features.navigation.AuthGraph
 import com.example.vk_android_vkat.features.navigation.BottomNavigationBar
-import com.example.vk_android_vkat.features.navigation.Explore
 import com.example.vk_android_vkat.features.navigation.RootNavGraph
 
 @Composable
 fun MyMapsApp() {
     val navController = rememberNavController()
     val entry by navController.currentBackStackEntryAsState()
-//    val currentRoute = entry?.destination?.route
 
     Scaffold(
-//        topBar = {
-//            when (currentRoute) {
-//                Explore::class.qualifiedName -> ExploreTopBar()
-////                RouteInfo::class.qualifiedName -> RouteInfoTopBar()
-//                else -> null
-//            }
-//        },
         bottomBar = {
             if (entry?.destination?.hierarchy?.any{it.hasRoute(AuthGraph::class) } == false ){
                 BottomNavigationBar(navController)
@@ -44,7 +33,7 @@ fun MyMapsApp() {
         ){
             RootNavGraph(
                 navController = navController,
-                isUserLoggedIn = false,
+                isUserLoggedIn = true,
             )
         }
     }

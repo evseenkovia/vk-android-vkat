@@ -1,4 +1,4 @@
-package com.example.vk_android_vkat.domain.model
+package com.example.vk_android_vkat.features.explore.domain
 
 data class RouteModel(
     val id: Long,

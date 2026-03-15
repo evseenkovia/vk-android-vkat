@@ -1,4 +1,4 @@
-package com.example.vk_android_vkat.features.explore.routeinfo.domain
+package com.example.vk_android_vkat.features.explore.routeinfo.ui
 
 data class TopBarUiModel(
     val title: String = "",

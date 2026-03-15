@@ -1,13 +1,13 @@
 package com.example.vk_android_vkat.features.explore.routeinfo.ui
 
-import com.example.vk_android_vkat.domain.model.RouteModel
+import com.example.vk_android_vkat.features.explore.domain.RouteModel
 
 // Состояние экрана
-sealed interface RouteInfoState {
-    data class Error(val message: String) : RouteInfoState
-    object Loading : RouteInfoState
-    data class RouteInfoLoaded(val route: RouteModel) : RouteInfoState
-}
+data class RouteInfoState(
+    val error: String? = null,
+    val isLoading: Boolean = true,
+    val routeData: RouteModel? = null
+)
 
 // Действия пользователя
 sealed interface RouteInfoEvent {

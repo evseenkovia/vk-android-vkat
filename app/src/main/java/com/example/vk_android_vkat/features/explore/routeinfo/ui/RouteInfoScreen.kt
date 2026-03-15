@@ -1,6 +1,5 @@
 package com.example.vk_android_vkat.features.explore.routeinfo.ui
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -8,8 +7,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.calculateEndPadding
-import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -17,21 +14,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material.icons.outlined.StarBorder
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -43,20 +34,18 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.example.vk_android_vkat.R
 import com.example.vk_android_vkat.data.mockRoutes
-import com.example.vk_android_vkat.features.explore.routeinfo.domain.TopBarUiModel
 
 @Preview(showBackground = true)
 @Composable
 fun RouteInfoScreenPreview(){
     RouteInfoScreen(
-//        state = RouteInfoState.Loading,
-//        state = RouteInfoState.Error("Что-то пошло не так((("),
-        state = RouteInfoState.RouteInfoLoaded(mockRoutes[1]),
+//        state = RouteInfoState(isLoading = true),
+//        state = RouteInfoState(error = "Что-то пошло не так((("),
+        state = RouteInfoState(routeData = mockRoutes[3]),
         onEvent = {},
     )
 }
@@ -67,15 +56,14 @@ fun RouteInfoScreen(
     onEvent: (RouteInfoEvent) -> Unit
 ){
 
-    val topBarUi = when (state) {
-        is RouteInfoState.RouteInfoLoaded -> TopBarUiModel(
-            title = state.route.title,
-            isFavourite = state.route.isFavourite,
+    val topBarUi = if (!state.isLoading && state.error.isNullOrEmpty() && state.routeData != null) {
+        TopBarUiModel(
+            title = state.routeData.title,
+            isFavourite = state.routeData.isFavourite,
             onFavouriteToggle = { onEvent(RouteInfoEvent.ToggleFavourite) },
             onBack = { onEvent(RouteInfoEvent.BackClicked) }
         )
-        else -> null
-    }
+    } else null
 
     Scaffold(
         topBar = { topBarUi?.let { RouteInfoTopBar(it) } },
@@ -86,11 +74,12 @@ fun RouteInfoScreen(
                 .fillMaxSize(),
             contentAlignment = Alignment.Center
         ){
-            when(state) {
-                RouteInfoState.Loading -> LoadingScreenState()
-                is RouteInfoState.Error -> ErrorScreenState(state)
-                is RouteInfoState.RouteInfoLoaded -> RouteInfoLoadedScreenState(state, onEvent)
-            }
+            if (state.isLoading)
+                LoadingScreenState()
+            else if (!state.error.isNullOrEmpty())
+                ErrorScreenState(state)
+            else if (state.routeData != null)
+                RouteInfoLoadedScreenState(state, onEvent)
         }
     }
 }
@@ -138,8 +127,7 @@ fun RouteInfoLoadedScreenState(
     state: RouteInfoState,
     onEvent: (RouteInfoEvent) -> Unit
 ){
-    val currentState = state as RouteInfoState.RouteInfoLoaded
-    val route = currentState.route
+    val route = state.routeData ?: return
 
     val titleTextSize = MaterialTheme.typography.titleLarge
     val bodyTextSize = MaterialTheme.typography.bodyLarge
@@ -163,51 +151,10 @@ fun RouteInfoLoadedScreenState(
                     modifier = Modifier
                         .fillMaxWidth()
                         .aspectRatio(4f / 3f),
-                    model = currentState.route.imageUrl,
-                    contentDescription = "Image for route with id = ${state.route.id}",
+                    model = route.imageUrl,
+                    contentDescription = "Image for route with id = ${route.id}",
                     contentScale = ContentScale.Crop
                 )
-//
-//                // Кнопка "назад" поверх изображения
-//                IconButton(
-//                    modifier = Modifier
-//                        .align(Alignment.TopStart)
-//                        .padding(8.dp)
-//                        .background(
-//                            color = Color.White.copy(alpha = 0.8f),
-//                            shape = CircleShape
-//                        ),
-//                    onClick = onBack
-//                ) {
-//                    Icon(
-//                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-//                        contentDescription = "Back",
-//                        tint = interfaceColor
-//                    )
-//                }
-
-//                // Кнопка избранного на изображении
-//                IconButton(
-//                    onClick = {  },
-//                    modifier = Modifier
-//                        .align(Alignment.TopEnd)
-//                        .padding(8.dp)
-//                        .size(32.dp)
-//                        .background(
-//                            color = Color.Black.copy(alpha = 0.3f),
-//                            shape = RoundedCornerShape(8.dp)
-//                        )
-//                ) {
-//                    Icon(
-//                        imageVector = if (route.isFavourite)
-//                            Icons.Filled.Bookmark
-//                        else
-//                            Icons.Outlined.BookmarkBorder,
-//                        contentDescription = stringResource(R.string.title_favourite),
-//                        tint = Color.White,
-//                        modifier = Modifier.size(24.dp)
-//                    )
-//                }
             }
 
             // Контент под изображением
