@@ -2,9 +2,6 @@ package com.example.vk_android_vkat.features.explore.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.vk_android_vkat.data.mockRoutes
-import com.example.vk_android_vkat.features.explore.data.RouteRepositoryMock
-import com.example.vk_android_vkat.features.explore.domain.RouteModel
 import com.example.vk_android_vkat.features.explore.domain.RouteRepository
 import com.example.vk_android_vkat.features.explore.domain.filter.RouteFilter
 import kotlinx.coroutines.FlowPreview
@@ -19,9 +16,9 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class ExploreViewModel : ViewModel() {
-
-    private val repository: RouteRepository = RouteRepositoryMock()
+class ExploreViewModel(
+    private val repository: RouteRepository
+) : ViewModel() {
 
     private val _state = MutableStateFlow(ExploreState())
     val state: StateFlow<ExploreState> = _state
@@ -58,12 +55,80 @@ class ExploreViewModel : ViewModel() {
             }
 
             is ExploreEvent.Retry -> {
-                _state.update { it.copy(searchQuery = "", error = null, isLoading = true, filters = RouteFilter()) }
+                _state.update {
+                    it.copy(
+                        searchQuery = "",
+                        error = null,
+                        isLoading = true,
+                        filters = RouteFilter()
+                    )
+                }
                 loadRoutes()
                 event.onComplete()
             }
+
             ExploreEvent.ClearFilters -> {
                 _state.update { it.copy(filters = RouteFilter()) }
+            }
+
+            is ExploreEvent.ToggleFavourite -> toggleFavourite(event.routeId)
+            ExploreEvent.ShowFavourites -> {
+                switchToFavouriteMode()
+            }
+        }
+    }
+
+    // Переходим в режим Избранное (все запросы и маршруты фильтруются)
+    private fun switchToFavouriteMode() {
+        viewModelScope.launch {
+            _state.update { it.copy(isFavourite = true, error = null) }
+            val favouriteRoutes = repository.getAllFavourites()
+            favouriteRoutes
+                .onSuccess { routes ->
+                    _state.update {
+                        it.copy(
+                            routeList = routes,
+                            isLoading = false
+                        )
+                    }
+                }
+                .onFailure { exception ->
+                    _state.update {
+                        it.copy(
+                            routeList = emptyList(),
+                            error = exception.message,
+                            isLoading = false
+                        )
+                    }
+                }
+        }
+    }
+
+    // Добавляем маршрут в Избранное
+    private fun toggleFavourite(routeId: Int) {
+        viewModelScope.launch {
+
+            // Находим маршрут для добавления в Избранное
+            val routeToUpdate = _state.value.routeList.find {
+                it.id == routeId
+            }
+
+            routeToUpdate?.let { route ->
+                val updatedRoute = route.copy(isFavourite = !route.isFavourite)
+
+                // Сохраняем/удаляем маршрут локально
+                if (updatedRoute.isFavourite)
+                    repository.addRouteToFavourites(updatedRoute)
+                else
+                    repository.deleteFromFavourites(updatedRoute.id)
+
+                // Обновляем состояние
+                _state.update { currentState ->
+                    val newList = currentState.routeList.map {
+                        if (it.id == routeId) updatedRoute else it
+                    }
+                    currentState.copy(routeList = newList)
+                }
             }
         }
     }
@@ -117,22 +182,30 @@ class ExploreViewModel : ViewModel() {
 
             delay(delayTime)
 
-            try {
-                val loadedRoutes: List<RouteModel> = mockRoutes
-                _state.update { it.copy(routeList = loadedRoutes, isLoading = false) }
-            } catch (e: Exception) {
-                _state.update {
-                    it.copy(
-                        error = e.message ?: "Неизвестная ошибка",
-                        isLoading = false
-                    )
+            val loadedRoutes = repository.getAllRoutes()
+
+            loadedRoutes
+                .onSuccess { routes ->
+                    _state.update {
+                        it.copy(
+                            routeList = routes,
+                            isLoading = false
+                        )
+                    }
                 }
-            }
+                .onFailure { exception ->
+                    _state.update {
+                        it.copy(
+                            error = exception.message ?: "Неизвестная ошибка",
+                            isLoading = false
+                        )
+                    }
+                }
         }
     }
 
     // Текстовый поиск маршрута по названию
-    fun findRouteByQuery(query: String?) {
+    private fun findRouteByQuery(query: String?) {
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true, error = null) }
 

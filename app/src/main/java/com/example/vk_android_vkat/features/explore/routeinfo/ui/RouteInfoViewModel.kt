@@ -2,7 +2,8 @@ package com.example.vk_android_vkat.features.explore.routeinfo.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.vk_android_vkat.features.explore.data.RouteRepositoryMock
+import com.example.vk_android_vkat.features.explore.data.remote.RouteRepositoryMock
+import com.example.vk_android_vkat.features.explore.domain.RouteRepository
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -11,7 +12,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class RouteInfoViewModel(
-    private val routeId: Long, private val repository: RouteRepositoryMock
+    private val routeId: Int,
+    private val repository: RouteRepository
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(RouteInfoState())
@@ -33,7 +35,6 @@ class RouteInfoViewModel(
 
             loadResult
                 .onSuccess { route ->
-                    println("DEBUG: routeId=$routeId, found route=${route}")
                     _state.update { it.copy(routeData = route, isLoading = false) }
                 }
                 .onFailure { exception ->

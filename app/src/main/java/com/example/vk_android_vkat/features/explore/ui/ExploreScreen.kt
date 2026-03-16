@@ -10,18 +10,13 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.outlined.ErrorOutline
 import androidx.compose.material.icons.outlined.FilterAlt
 import androidx.compose.material.icons.outlined.LocationOn
-import androidx.compose.material3.AssistChip
-import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -31,7 +26,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
-import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -39,17 +33,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.vk_android_vkat.R
+import com.example.vk_android_vkat.common.theme.AppLightColorScheme
 import com.example.vk_android_vkat.common.theme.AppTypography
 import com.example.vk_android_vkat.common.theme.PrimaryButton
 import com.example.vk_android_vkat.common.theme.SearchField
 import com.example.vk_android_vkat.features.explore.domain.RouteModel
 import com.example.vk_android_vkat.features.explore.routeinfo.ui.filter.FilterDialog
-import com.example.vk_android_vkat.features.navigation.Explore
 
 @Preview(showBackground = true)
 @Composable
@@ -57,7 +50,7 @@ fun ExploreScreenPreview() {
     ExploreScreen(
         state = ExploreState(
             isLoading = false,
-            error = "ОшибкаОшибкаОшибкаОшибкаОшибкаОшибкаОшибкаОшибкаОшибка"
+            error = null
         ),
         onEvent = {},
         onRouteClick = {}
@@ -68,7 +61,7 @@ fun ExploreScreenPreview() {
 fun ExploreScreen(
     state: ExploreState,
     onEvent: (ExploreEvent) -> Unit,
-    onRouteClick: (Long) -> Unit = {}
+    onRouteClick: (Int) -> Unit = {}
 ) {
     // Состояние для диалога фильтров
     var showFilterDialog by remember { mutableStateOf(false) }
@@ -99,11 +92,17 @@ fun ExploreScreen(
                         LoadingState()
                     else if (!state.error.isNullOrBlank()) {
                         ErrorState(
-                            errorMessage = state.error,
+                            state = state,
                             onRetry = { onEvent(ExploreEvent.Retry({ isRefreshing = false })) }
                         )
                     }
-                    RoutesList(routes = state.routeList, onClick = onRouteClick)
+                    RoutesList(
+                        routes = state.routeList,
+                        onClick = onRouteClick,
+                        onFavouriteClick = { routeID ->
+                            onEvent(ExploreEvent.ToggleFavourite(routeID))
+                        }
+                    )
                 }
             },
             contentWindowInsets = WindowInsets(0.dp)
@@ -168,44 +167,6 @@ fun ExploreTopBar(
                 }
             },
         )
-        // Поле текстового поиска
-
-
-//        SearchField(
-//            modifier = Modifier
-//                .padding(horizontal = 56.dp)
-//                .align(Alignment.Center),
-//            shape = RoundedCornerShape(32.dp),
-//            value = query,
-//            onValueChange = onQueryChange,
-//            onClearClick = { onQueryChange("") },
-//            placeholderText = "Поиск..."
-//        )
-    }
-}
-
-@Composable
-fun ExploreTopBar2() {
-    LazyRow(
-        modifier = Modifier
-            .padding(8.dp)
-            .statusBarsPadding(),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        item {
-            AssistChip(
-                onClick = { },
-                label = { Text(stringResource(R.string.nearby)) },
-                leadingIcon = {
-                    Icon(Icons.Default.LocationOn, contentDescription = null)
-                }
-            )
-        }
-        item { AssistChip(onClick = { }, label = { Text(stringResource(R.string.target)) }) }
-        item { AssistChip(onClick = { }, label = { Text(stringResource(R.string.location)) }) }
-        item { AssistChip(onClick = { }, label = { Text(stringResource(R.string.day_time)) }) }
-        item { AssistChip(onClick = { }, label = { Text(stringResource(R.string.duration)) }) }
     }
 }
 
@@ -217,9 +178,13 @@ fun LoadingState() = Box(
 
 @Composable
 fun ErrorState(
-    errorMessage: String,
+    state: ExploreState,
     onRetry: () -> Unit
 ){
+    val color = if (state.isFavourite)
+        AppLightColorScheme.onSurface
+    else
+        AppLightColorScheme.error
     Box(
         modifier = Modifier.fillMaxSize().padding(32.dp),
         contentAlignment = Alignment.Center
@@ -229,41 +194,42 @@ fun ErrorState(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Icon(
-                modifier = Modifier.size(128.dp),
-                imageVector = Icons.Outlined.ErrorOutline,
-                contentDescription = "Error",
-                tint = Color.Red,
-            )
+            if (!state.isFavourite){
+                Icon(
+                    modifier = Modifier.size(128.dp),
+                    imageVector = Icons.Outlined.ErrorOutline,
+                    contentDescription = "Error",
+                    tint = color,
+                )
+                Text(
+                    text = "Ошибка",
+                    style = AppTypography.headlineLarge,
+                    color = color
+                )
+                Spacer(modifier = Modifier.height(18.dp))
+            }
             Text(
-                text = "Ошибка",
-                style = AppTypography.headlineLarge,
-                color = Color.Red
-            )
-            Spacer(modifier = Modifier.height(18.dp))
-            Text(
-                text = errorMessage,
-                color = Color.Red,
+                text = state.error.toString(),
+                color = color,
                 style = AppTypography.titleLarge
             )
-            Spacer(Modifier.height(8.dp))
-            PrimaryButton(
-                text = stringResource(R.string.try_again),
-                onClick = onRetry
-            )
+            if (!state.isFavourite){
+                Spacer(Modifier.height(8.dp))
+                PrimaryButton(
+                    text = stringResource(R.string.try_again),
+                    onClick = onRetry
+                )
+            }
         }
     }
 }
 
 @Composable
-fun EmptyState() = Box(
-    modifier = Modifier.fillMaxSize(),
-    contentAlignment = Alignment.Center
-) { Text(stringResource(R.string.no_routes)) }
-
-
-@Composable
-fun RoutesList(routes: List<RouteModel>, onClick: (Long) -> Unit) {
+fun RoutesList(
+    routes: List<RouteModel>,
+    onClick: (Int) -> Unit,
+    onFavouriteClick: (Int) -> Unit
+) {
     LazyVerticalGrid(
         modifier = Modifier
             .fillMaxSize()
@@ -273,7 +239,9 @@ fun RoutesList(routes: List<RouteModel>, onClick: (Long) -> Unit) {
             items(routes, key = { it.id }) { route ->
                 RouteCard(
                     route = route,
-                    onClick = { onClick(route.id) }) // RouteCard можно расширять
+                    onClick = { onClick(route.id) },
+                    onFavouriteClick = { onFavouriteClick(route.id)}
+                )
             }
         }
     )

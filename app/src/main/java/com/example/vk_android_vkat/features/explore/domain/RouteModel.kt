@@ -1,7 +1,7 @@
 package com.example.vk_android_vkat.features.explore.domain
 
 data class RouteModel(
-    val id: Long,
+    val id: Int,
     val title: String,
     val description: String,
     val distanceKm: Int,
@@ -9,5 +9,5 @@ data class RouteModel(
     val pointsCount: Int,   // заглушка для списка мест
     val rating: Float,      // заглушка для рейтинга
     val imageUrl: String? = null,
-    val isFavourite: Boolean = false
+    var isFavourite: Boolean = false
 )
