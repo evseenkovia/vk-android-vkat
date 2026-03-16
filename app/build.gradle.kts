@@ -42,6 +42,11 @@ android {
         compose = true
     }
     compileSdkMinor = 1
+
+    configurations.all {
+        // Исключаем старую версию аннотаций IntelliJ
+        exclude(group = "com.intellij", module = "annotations")
+    }
 }
 
 dependencies {
@@ -64,4 +69,10 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.kotlinx.serialization.json)
+    implementation(libs.androidx.room)
+    implementation(libs.androidx.room.ktx)
+    implementation(libs.androidx.room.paging)
+    ksp(libs.androidx.room.compiler)
+    implementation(libs.koin.android)
+    implementation(libs.koin.androidx.compose)
 }
