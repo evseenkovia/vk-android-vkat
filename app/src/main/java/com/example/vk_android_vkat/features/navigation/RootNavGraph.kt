@@ -6,7 +6,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.navigation
-import com.example.vk_android_vkat.features.explore.ExploreViewModel
+import com.example.vk_android_vkat.features.explore.ui.ExploreViewModel
 
 
 @Composable

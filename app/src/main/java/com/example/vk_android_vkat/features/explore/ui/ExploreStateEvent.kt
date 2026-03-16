@@ -1,7 +1,8 @@
-package com.example.vk_android_vkat.features.explore
+package com.example.vk_android_vkat.features.explore.ui
 
-import com.example.vk_android_vkat.data.mockRoutes
 import com.example.vk_android_vkat.domain.model.RouteModel
+import com.example.vk_android_vkat.features.explore.FilterItem
+import com.example.vk_android_vkat.features.explore.defaultFilters
 
 sealed interface ExploreState {
     object Loading: ExploreState

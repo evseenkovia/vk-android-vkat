@@ -6,15 +6,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
 import androidx.navigation.toRoute
 import com.example.vk_android_vkat.features.editor.EditorScreen
-import com.example.vk_android_vkat.features.explore.ExploreScreen
-import com.example.vk_android_vkat.features.explore.ExploreViewModel
+import com.example.vk_android_vkat.features.explore.ui.ExploreScreen
+import com.example.vk_android_vkat.features.explore.ui.ExploreViewModel
 import com.example.vk_android_vkat.features.explore.data.RouteRepositoryMock
 import com.example.vk_android_vkat.features.explore.routeinfo.ui.RouteInfoEffect
 import com.example.vk_android_vkat.features.explore.routeinfo.ui.RouteInfoScreen
