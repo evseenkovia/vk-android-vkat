@@ -1,10 +1,8 @@
 package com.example.vk_android_vkat.features.explore.ui
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.example.vk_android_vkat.data.mockRoutes
-import com.example.vk_android_vkat.features.explore.data.RouteRepositoryMock
-import com.example.vk_android_vkat.features.explore.domain.RouteModel
 import com.example.vk_android_vkat.features.explore.domain.RouteRepository
 import com.example.vk_android_vkat.features.explore.domain.filter.RouteFilter
 import kotlinx.coroutines.FlowPreview
@@ -19,9 +17,23 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class ExploreViewModel : ViewModel() {
 
-    private val repository: RouteRepository = RouteRepositoryMock()
+class ExploreViewModelFactory(
+    private val routeRepository: RouteRepository
+) : ViewModelProvider.Factory {
+
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        if (modelClass.isAssignableFrom(ExploreViewModel::class.java)) {
+            return ExploreViewModel(routeRepository) as T
+        }
+        throw IllegalArgumentException("Unknown ViewModel class")
+    }
+}
+
+class ExploreViewModel(
+    val repository: RouteRepository
+) : ViewModel() {
+
 
     private val _state = MutableStateFlow(ExploreState())
     val state: StateFlow<ExploreState> = _state
@@ -117,17 +129,27 @@ class ExploreViewModel : ViewModel() {
 
             delay(delayTime)
 
-            try {
-                val loadedRoutes: List<RouteModel> = repository.getRoutes()
-                _state.update { it.copy(routeList = loadedRoutes, isLoading = false) }
-            } catch (e: Exception) {
-                _state.update {
-                    it.copy(
-                        error = e.message ?: "Неизвестная ошибка",
-                        isLoading = false
-                    )
+            val routes = repository.getRoutes()
+            routes
+                .onSuccess { routes ->
+                    _state.update {
+                        it.copy(
+                            routeList = routes,
+                            error = null,
+                            isFiltering = false,
+                            isLoading = false
+                        )
+                    }
                 }
-            }
+                .onFailure { exception ->
+                    _state.update {
+                        it.copy(
+                            error = exception.message ?: "Неизвестная ошибка",
+                            isFiltering = false,
+                            isLoading = false
+                        )
+                    }
+                }
         }
     }
 

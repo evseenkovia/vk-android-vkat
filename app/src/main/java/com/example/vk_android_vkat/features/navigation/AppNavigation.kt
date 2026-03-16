@@ -4,6 +4,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
@@ -11,12 +12,17 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navigation
 import androidx.navigation.toRoute
 import com.example.vk_android_vkat.features.editor.EditorScreen
+import com.example.vk_android_vkat.features.explore.data.RepositoryProvider
+import com.example.vk_android_vkat.features.explore.data.RouteRepositoryImpl
 import com.example.vk_android_vkat.features.explore.ui.ExploreScreen
 import com.example.vk_android_vkat.features.explore.ui.ExploreViewModel
 import com.example.vk_android_vkat.features.explore.data.RouteRepositoryMock
+import com.example.vk_android_vkat.features.explore.data.local.LocalDataSourceMock
+import com.example.vk_android_vkat.features.explore.data.remote.RemoteDataSourceMock
 import com.example.vk_android_vkat.features.explore.routeinfo.ui.RouteInfoEffect
 import com.example.vk_android_vkat.features.explore.routeinfo.ui.RouteInfoScreen
 import com.example.vk_android_vkat.features.explore.routeinfo.ui.RouteInfoViewModel
+import com.example.vk_android_vkat.features.explore.ui.ExploreViewModelFactory
 import com.example.vk_android_vkat.features.favourite.FavouriteScreen
 import com.example.vk_android_vkat.features.map.MapScreen
 import com.example.vk_android_vkat.features.profile.ProfileItemUi
@@ -80,7 +86,9 @@ fun NavGraphBuilder.exploreGraph(navController : NavHostController){
     navigation<ExploreGraph>(startDestination = Explore) {
 
         composable<Explore> {
-            val viewModel: ExploreViewModel = viewModel()
+            val viewModel: ExploreViewModel = viewModel(
+                factory = ExploreViewModelFactory(RepositoryProvider.routeRepository)
+            )
             val uiState by viewModel.state.collectAsState()
 
             ExploreScreen(
@@ -96,7 +104,7 @@ fun NavGraphBuilder.exploreGraph(navController : NavHostController){
 
             val routeId = backStackEntry.toRoute<RouteInfo>().routeId
             val viewModel = remember {
-                RouteInfoViewModel(routeId, RouteRepositoryMock())
+                RouteInfoViewModel(routeId, RepositoryProvider.routeRepository)
             }
 
             val effect by viewModel.effect.collectAsState(initial = null)

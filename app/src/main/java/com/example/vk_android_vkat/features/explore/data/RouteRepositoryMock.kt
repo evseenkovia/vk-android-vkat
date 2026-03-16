@@ -55,9 +55,9 @@ class RouteRepositoryMock : RouteRepository {
         }
     }
 
-    override suspend fun getRoutes(): List<RouteModel> {
+    override suspend fun getRoutes(): Result<List<RouteModel>> {
         delay(delayTime)
-        return routes.toList()
+        return Result.success(routes.toList())
     }
 
 }

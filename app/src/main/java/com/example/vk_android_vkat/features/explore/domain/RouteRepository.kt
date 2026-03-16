@@ -8,5 +8,5 @@ interface RouteRepository {
     suspend fun getRouteByFilter(filter: RouteFilter): Result<List<RouteModel>>
 
     suspend fun findRouteByQuery(query: String?): Result<List<RouteModel>>
-    suspend fun getRoutes(): List<RouteModel>
+    suspend fun getRoutes(): Result<List<RouteModel>>
 }
