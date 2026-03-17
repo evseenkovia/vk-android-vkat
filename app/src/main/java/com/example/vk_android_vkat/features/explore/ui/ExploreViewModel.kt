@@ -199,6 +199,23 @@ class ExploreViewModel(
                         )
                     }
                 }
+            loadedRoutes
+                .onSuccess { routes ->
+                    _state.update {
+                        it.copy(
+                            routeList = routes,
+                            isLoading = false
+                        )
+                    }
+                }
+                .onFailure { exception ->
+                    _state.update {
+                        it.copy(
+                            error = exception.message ?: "Неизвестная ошибка",
+                            isLoading = false
+                        )
+                    }
+                }
         }
     }
 

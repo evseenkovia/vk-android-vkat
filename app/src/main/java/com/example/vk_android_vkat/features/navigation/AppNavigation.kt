@@ -3,8 +3,6 @@ package com.example.vk_android_vkat.features.navigation
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
-import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraphBuilder
@@ -12,23 +10,20 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
 import androidx.navigation.toRoute
-import com.example.vk_android_vkat.config.MyMapsApplication
 import com.example.vk_android_vkat.features.editor.EditorScreen
-import com.example.vk_android_vkat.features.explore.ui.ExploreScreen
-import com.example.vk_android_vkat.features.explore.ui.ExploreViewModel
-import com.example.vk_android_vkat.features.explore.data.remote.RouteRepositoryMock
 import com.example.vk_android_vkat.features.explore.routeinfo.ui.RouteInfoEffect
 import com.example.vk_android_vkat.features.explore.routeinfo.ui.RouteInfoScreen
 import com.example.vk_android_vkat.features.explore.routeinfo.ui.RouteInfoViewModel
 import com.example.vk_android_vkat.features.explore.ui.ExploreEvent
+import com.example.vk_android_vkat.features.explore.ui.ExploreScreen
+import com.example.vk_android_vkat.features.explore.ui.ExploreViewModel
+import com.example.vk_android_vkat.features.favourite.ui.FavouriteScreen
 import com.example.vk_android_vkat.features.map.MapScreen
 import com.example.vk_android_vkat.features.profile.ProfileItemUi
 import com.example.vk_android_vkat.features.profile.ProfileScreen
 import com.example.vk_android_vkat.features.profile.ProfileSection
 import com.example.vk_android_vkat.features.profile.ProfileUiEvent
 import com.example.vk_android_vkat.features.profile.ProfileViewModel
-import com.example.vk_android_vkat.features.favourite.ui.FavouriteScreen
-
 import kotlinx.serialization.Serializable
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
