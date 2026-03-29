@@ -66,8 +66,7 @@ fun FilterDialog(
             onDismissRequest = onDismiss,
             modifier = Modifier.fillMaxHeight(),
             sheetState = sheetState,
-            containerColor = AppLightColorScheme.secondaryContainer,
-            contentColor = AppLightColorScheme.onSecondaryContainer,
+            containerColor = MaterialTheme.colorScheme.background,
             tonalElevation = 4.dp,
         ) {
             Column(
@@ -200,8 +199,8 @@ fun FilterRangeSlider(
             colors = SliderDefaults.colors(
                 activeTrackColor = AppLightColorScheme.primary,
                 activeTickColor = AppLightColorScheme.onPrimary,
-                inactiveTrackColor = AppLightColorScheme.secondaryContainer,
-                inactiveTickColor = AppLightColorScheme.onSecondaryContainer,
+                inactiveTrackColor = AppLightColorScheme.secondary,
+                inactiveTickColor = AppLightColorScheme.onSecondary,
                 thumbColor = AppLightColorScheme.primary
             ),
             startInteractionSource = startInteractionSource,

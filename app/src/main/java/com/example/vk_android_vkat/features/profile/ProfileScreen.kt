@@ -16,10 +16,14 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
@@ -100,17 +104,35 @@ fun ContentState(
         }
 
         // Разделы настроек
-        content.sections.forEach { item ->
-            item {
-                when (item) {
-                    is ProfileItemUi.Info -> InfoItem(item)
-                    is ProfileItemUi.Switch -> SwitchItem(item, onEvent)
-                    is ProfileItemUi.Navigation -> NavigationItem(item, onEvent)
+
+        item {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                shape = RoundedCornerShape(12.dp),
+
+
+            ) {
+                Column(
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    content.sections.forEach { item ->
+                        when (item) {
+                            is ProfileItemUi.Info -> InfoItem(item)
+                            is ProfileItemUi.Switch -> SwitchItem(item, onEvent)
+                            is ProfileItemUi.Navigation -> NavigationItem(item, onEvent)
+                        }
+
+
+
+                        }
+                    }
                 }
             }
         }
     }
-}
+
 
 @Composable
 fun ProfileHeader(
@@ -152,7 +174,12 @@ fun ProfileHeader(
 fun InfoItem(item: ProfileItemUi.Info) {
     ListItem(
         headlineContent = { Text(item.title) },
-        supportingContent = { item.subtitle?.let { Text(it) } }
+        supportingContent = { item.subtitle?.let { Text(it) } },
+        colors = ListItemDefaults.colors(
+            containerColor = MaterialTheme.colorScheme.secondary
+        )
+
+
     )
 }
 
@@ -165,7 +192,11 @@ fun SwitchItem(item: ProfileItemUi.Switch, onEvent: (ProfileUiEvent) -> Unit) {
                 checked = item.checked,
                 onCheckedChange = { onEvent(ProfileUiEvent.SwitchChanged(item, it)) }
             )
-        }
+        },
+        colors = ListItemDefaults.colors(
+            containerColor = MaterialTheme.colorScheme.secondary
+        )
+
     )
 }
 
@@ -173,6 +204,11 @@ fun SwitchItem(item: ProfileItemUi.Switch, onEvent: (ProfileUiEvent) -> Unit) {
 fun NavigationItem(item: ProfileItemUi.Navigation, onEvent: (ProfileUiEvent) -> Unit) {
     ListItem(
         headlineContent = { Text(item.title) },
-        modifier = Modifier.clickable { onEvent(ProfileUiEvent.ItemClicked(item)) }
+        modifier = Modifier.clickable { onEvent(ProfileUiEvent.ItemClicked(item)) },
+        colors = ListItemDefaults.colors(
+            containerColor = MaterialTheme.colorScheme.secondary
+        )
+
+
     )
 }
