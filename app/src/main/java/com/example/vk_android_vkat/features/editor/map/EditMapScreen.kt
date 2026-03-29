@@ -27,6 +27,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
+import androidx.navigation.NavHostController
 import com.yandex.mapkit.MapKitFactory
 import com.yandex.mapkit.geometry.Point
 import com.yandex.mapkit.location.LocationListener
@@ -43,10 +44,12 @@ import com.yandex.mapkit.map.PlacemarkMapObject
 import com.yandex.mapkit.mapview.MapView
 import com.yandex.mapkit.user_location.UserLocationLayer
 import com.yandex.runtime.image.ImageProvider
+import com.example.vk_android_vkat.features.navigation.EditPointScreen
 
 @Composable
 fun EditMapScreen(
     state: MapState,
+    navController: NavHostController,
     onEvent: (MapEvent) -> Unit
 ) {
     val context = LocalContext.current
@@ -183,6 +186,7 @@ fun EditMapScreen(
             FloatingActionButton(
                 onClick = {
                     onEventState(MapEvent.ConfirmPlacemark(map.cameraPosition.zoom.toInt()))
+                    navController.navigate(EditPointScreen)
                 },
                 modifier = Modifier
                     .align(Alignment.BottomEnd)

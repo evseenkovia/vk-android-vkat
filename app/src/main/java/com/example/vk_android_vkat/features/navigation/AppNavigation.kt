@@ -10,6 +10,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
 import androidx.navigation.toRoute
+import com.example.vk_android_vkat.features.editor.EditPointScreen
 import com.example.vk_android_vkat.features.editor.map.EditMapScreen
 import com.example.vk_android_vkat.features.editor.EditorScreen
 import com.example.vk_android_vkat.features.editor.map.AddressPoint
@@ -175,8 +176,13 @@ fun NavGraphBuilder.editorGraph(navController: NavHostController) {
             viewModel.setInitialPoints(points)
             val state by viewModel.state.collectAsStateWithLifecycle()
 
-            EditMapScreen(state, viewModel::reducer)
+            EditMapScreen(state, navController, viewModel::reducer)
 
+
+        }
+
+        composable<EditPointScreen>{
+            EditPointScreen()
         }
     }
 }
