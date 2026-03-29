@@ -35,10 +35,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import coil.compose.rememberAsyncImagePainter
+import androidx.navigation.NavHostController
+import com.example.vk_android_vkat.features.navigation.EditMapScreen
 
 
 @Composable
-fun EditorScreen() {
+fun EditorScreen(navController: NavHostController) {
     var routeName by rememberSaveable { mutableStateOf("") }
     var routeDescription by rememberSaveable { mutableStateOf("") }
     val scrollState = rememberScrollState()
@@ -121,7 +123,9 @@ fun EditorScreen() {
             )
 
             Button(
-                onClick = { /* добавление точки */ },
+                onClick = {
+                    navController.navigate(EditMapScreen(emptyList(),emptyList(),emptyList()))   // <-- переход на новый экран
+                },
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("Добавить точку")

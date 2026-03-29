@@ -10,7 +10,10 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
 import androidx.navigation.toRoute
+import com.example.vk_android_vkat.features.editor.map.EditMapScreen
 import com.example.vk_android_vkat.features.editor.EditorScreen
+import com.example.vk_android_vkat.features.editor.map.AddressPoint
+import com.example.vk_android_vkat.features.editor.map.MapViewModel
 import com.example.vk_android_vkat.features.explore.routeinfo.ui.RouteInfoEffect
 import com.example.vk_android_vkat.features.explore.routeinfo.ui.RouteInfoScreen
 import com.example.vk_android_vkat.features.explore.routeinfo.ui.RouteInfoViewModel
@@ -73,6 +76,15 @@ object PasswordRecovery
 //------ Экраны деталей ------
 @Serializable
 data class RouteInfo(val routeId: Int)
+@Serializable
+data class EditMapScreen(
+    val addresses: List<String>,
+    val latitudes: List<Double>,
+    val longitudes: List<Double>
+)
+
+@Serializable
+object EditPointScreen
 
 //------ Расширения для графов ------
 
@@ -143,11 +155,28 @@ fun NavGraphBuilder.favouriteGraph(navController: NavHostController) {
 }
 
 fun NavGraphBuilder.editorGraph(navController: NavHostController) {
-    navigation<EditorGraph>(startDestination = Editor){
+    navigation<EditorGraph>(startDestination = Editor) {
 
-        composable<Editor> { backStackEntry ->
-            val details = backStackEntry.toRoute<Editor>()
-            EditorScreen()
+        composable<Editor> {
+            EditorScreen(navController = navController)
+        }
+
+        composable<EditMapScreen> { backStackEntry ->
+            val route = backStackEntry.toRoute<EditMapScreen>()
+            val points = route.addresses.indices.map { index ->
+                AddressPoint(
+                    address = route.addresses[index],
+                    latitude = route.latitudes[index],
+                    longitude = route.longitudes[index]
+                )
+            }
+
+            val viewModel: MapViewModel = viewModel()
+            viewModel.setInitialPoints(points)
+            val state by viewModel.state.collectAsStateWithLifecycle()
+
+            EditMapScreen(state, viewModel::reducer)
+
         }
     }
 }
