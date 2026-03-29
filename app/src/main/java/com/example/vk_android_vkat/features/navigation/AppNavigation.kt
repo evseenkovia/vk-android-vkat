@@ -3,6 +3,7 @@ package com.example.vk_android_vkat.features.navigation
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraphBuilder
@@ -10,10 +11,15 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
 import androidx.navigation.toRoute
+import com.example.vk_android_vkat.features.editor.EditorEffect
+import com.example.vk_android_vkat.features.editor.EditorEvent
 import com.example.vk_android_vkat.features.editor.EditPointScreen
 import com.example.vk_android_vkat.features.editor.map.EditMapScreen
 import com.example.vk_android_vkat.features.editor.EditorScreen
+import com.example.vk_android_vkat.features.editor.EditorViewModel
+import com.example.vk_android_vkat.features.editor.RoutePointUi
 import com.example.vk_android_vkat.features.editor.map.AddressPoint
+import com.example.vk_android_vkat.features.editor.map.MapEffect
 import com.example.vk_android_vkat.features.editor.map.MapViewModel
 import com.example.vk_android_vkat.features.explore.routeinfo.ui.RouteInfoEffect
 import com.example.vk_android_vkat.features.explore.routeinfo.ui.RouteInfoScreen
@@ -158,8 +164,38 @@ fun NavGraphBuilder.favouriteGraph(navController: NavHostController) {
 fun NavGraphBuilder.editorGraph(navController: NavHostController) {
     navigation<EditorGraph>(startDestination = Editor) {
 
-        composable<Editor> {
-            EditorScreen(navController = navController)
+        composable<Editor> {backStackEntry ->
+
+            val viewModel: EditorViewModel = viewModel()
+            val state by viewModel.state.collectAsStateWithLifecycle()
+            LaunchedEffect(backStackEntry) {
+                snapshotFlow {
+                    backStackEntry.savedStateHandle.get<RoutePointUi>("selectedPoint")
+                }.collect { point ->
+                    if (point != null) {
+                        viewModel.onEvent(EditorEvent.PointAdded(point))
+                        backStackEntry.savedStateHandle.remove<RoutePointUi>("selectedPoint")
+                    }
+                }
+            }
+            LaunchedEffect(Unit) {
+
+
+                viewModel.effect.collect { effect ->
+                    when (effect) {
+                        is EditorEffect.NavigateToEditMap -> {
+                            navController.navigate(
+                                EditMapScreen(
+                                    emptyList(),
+                                    emptyList(),
+                                    emptyList()
+                                )
+                            )
+                        }
+                    }
+                }
+            }
+            EditorScreen(state, viewModel::onEvent)
         }
 
         composable<EditMapScreen> { backStackEntry ->
