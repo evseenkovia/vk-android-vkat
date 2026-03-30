@@ -22,6 +22,7 @@ import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material.icons.outlined.StarBorder
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -35,6 +36,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -45,6 +47,7 @@ import coil.compose.AsyncImage
 import com.example.vk_android_vkat.R
 import com.example.vk_android_vkat.features.explore.domain.RouteModel
 import com.example.vk_android_vkat.data.mockRoutes
+import org.koin.core.parameter.parametersOf
 
 
 @Preview(showBackground = true)
@@ -64,7 +67,10 @@ fun RouteCard(
         modifier = Modifier
             .fillMaxWidth()
             .aspectRatio(0.7f)
-            .padding(2.dp)
+            .padding(2.dp),
+        colors = CardDefaults.elevatedCardColors(
+            containerColor = MaterialTheme.colorScheme.secondary
+        )
     ) {
         Column(
             modifier = Modifier.fillMaxSize()
@@ -165,10 +171,10 @@ fun RouteCard(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
-                            imageVector = Icons.Filled.Star,
+                            painter = painterResource(R.drawable.ic_star),
                             contentDescription = stringResource(R.string.rating),
-                            tint = Color(0xFFFFC107), // Желтый цвет для звезды
-                            modifier = Modifier.size(24.dp)
+                            tint = MaterialTheme.colorScheme.onBackground, //  цвет для звезды
+                            modifier = Modifier.size(20.dp)
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
@@ -184,10 +190,10 @@ fun RouteCard(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
-                            imageVector = Icons.Filled.LocationOn,
+                            painter = painterResource(R.drawable.ic_map_pin_24dp),
                             contentDescription = "Number of places",
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.size(24.dp)
+                            tint = MaterialTheme.colorScheme.onBackground,
+                            modifier = Modifier.size(20.dp)
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
