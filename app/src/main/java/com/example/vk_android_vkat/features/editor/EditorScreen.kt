@@ -18,9 +18,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddPhotoAlternate
 import androidx.compose.material.icons.filled.Delete
@@ -71,7 +69,7 @@ fun EditorScreen(
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(120.dp)
+                        .height(340.dp)
                         .clickable { galleryLauncher.launch("image/*") },
                     border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
                 ) {
