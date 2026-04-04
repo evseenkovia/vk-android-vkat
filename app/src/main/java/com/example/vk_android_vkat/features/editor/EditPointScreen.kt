@@ -26,6 +26,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -36,18 +37,28 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter
-import com.example.vk_android_vkat.features.navigation.EditMapScreen
-
-
+import com.example.vk_android_vkat.features.editor.domain.RoutePointModel
+import com.example.vk_android_vkat.features.navigation.Editor
 @Composable
-fun EditPointScreen(){
-    var routeNamePoint by rememberSaveable { mutableStateOf("") }
-    var routeDescriptionPoint by rememberSaveable { mutableStateOf("") }
+fun EditPointScreen(
+    state: EditorState,
+    navController: NavHostController,
+    onEvent: (EditorEvent) -> Unit
+) {
     val scrollState = rememberScrollState()
+    val draft = state.draftPoint ?: return
 
-    // Сохраняем URI как строку, чтобы переживать повороты экрана
-    var selectedImageUriStringPoint by rememberSaveable { mutableStateOf<String?>(null) }
-    val selectedImageUriPoint = selectedImageUriStringPoint?.let { Uri.parse(it) }
+    var routeNamePoint by rememberSaveable(draft.latitude, draft.longitude) {
+        mutableStateOf(draft.pointName)
+    }
+    var routeDescriptionPoint by rememberSaveable(draft.latitude, draft.longitude) {
+        mutableStateOf(draft.pointDescription)
+    }
+    var selectedImageUriStringPoint by rememberSaveable(draft.latitude, draft.longitude) {
+        mutableStateOf(draft.photoUri?.toString())
+    }
+
+    val selectedImageUriPoint = selectedImageUriStringPoint?.let(Uri::parse)
 
     val galleryLauncherPoint = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -74,9 +85,7 @@ fun EditPointScreen(){
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(120.dp)
-                    .clickable {
-                        galleryLauncherPoint.launch("image/*")
-                    },
+                    .clickable { galleryLauncherPoint.launch("image/*") },
                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
             ) {
                 Box(
@@ -86,7 +95,7 @@ fun EditPointScreen(){
                     if (selectedImageUriPoint != null) {
                         Image(
                             painter = rememberAsyncImagePainter(selectedImageUriPoint),
-                            contentDescription = "Выбранное фото маршрута",
+                            contentDescription = "Выбранное фото точки",
                             modifier = Modifier.fillMaxSize(),
                             contentScale = ContentScale.Crop
                         )
@@ -108,7 +117,7 @@ fun EditPointScreen(){
             OutlinedTextField(
                 value = routeNamePoint,
                 onValueChange = { routeNamePoint = it },
-                label = { Text("Название маршрута") },
+                label = { Text("Название точки") },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true
             )
@@ -116,7 +125,7 @@ fun EditPointScreen(){
             OutlinedTextField(
                 value = routeDescriptionPoint,
                 onValueChange = { routeDescriptionPoint = it },
-                label = { Text("Описание маршрута") },
+                label = { Text("Описание точки") },
                 modifier = Modifier.fillMaxWidth(),
                 minLines = 3,
                 maxLines = 5
@@ -124,6 +133,14 @@ fun EditPointScreen(){
 
             Button(
                 onClick = {
+                    val finalPoint = draft.copy(
+                        pointName = routeNamePoint,
+                        pointDescription = routeDescriptionPoint,
+                        photoUri = selectedImageUriPoint
+                    )
+
+                    onEvent(EditorEvent.ConfirmDraftPoint(finalPoint))
+                    navController.popBackStack(route = Editor, inclusive = false)
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {

@@ -35,11 +35,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter
+import com.example.vk_android_vkat.features.editor.domain.RoutePointModel
+import com.example.vk_android_vkat.features.navigation.EditMapScreen
 
 @Composable
 fun EditorScreen(
     state: EditorState,
+    navController: NavHostController,
     onEvent: (EditorEvent) -> Unit
 ) {
     val galleryLauncher = rememberLauncherForActivityResult(
@@ -132,7 +136,7 @@ fun EditorScreen(
 
             item {
                 Button(
-                    onClick = { onEvent(EditorEvent.AddPointClicked) },
+                    onClick = { navController.navigate(EditMapScreen) },
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text("Добавить точку")
@@ -145,7 +149,7 @@ fun EditorScreen(
 @Composable
 fun RoutePointItem(
     index: Int,
-    point: RoutePointUi,
+    point: RoutePointModel,
     onDelete: () -> Unit
 ) {
     Card(

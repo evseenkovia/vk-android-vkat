@@ -1,11 +1,9 @@
 package com.example.vk_android_vkat.features.editor.map
 
 import android.Manifest
-import com.example.vk_android_vkat.R
 import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.PointF
-import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -17,9 +15,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableDoubleStateOf
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -28,6 +29,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavHostController
+import com.example.vk_android_vkat.R
+import com.example.vk_android_vkat.features.editor.EditorEvent
+import com.example.vk_android_vkat.features.editor.EditorState
+import com.example.vk_android_vkat.features.editor.domain.RoutePointModel
+import com.example.vk_android_vkat.features.navigation.EditPointScreen
 import com.yandex.mapkit.MapKitFactory
 import com.yandex.mapkit.geometry.Point
 import com.yandex.mapkit.location.LocationListener
@@ -44,38 +50,33 @@ import com.yandex.mapkit.map.PlacemarkMapObject
 import com.yandex.mapkit.mapview.MapView
 import com.yandex.mapkit.user_location.UserLocationLayer
 import com.yandex.runtime.image.ImageProvider
-import com.example.vk_android_vkat.features.navigation.EditPointScreen
 
 @Composable
 fun EditMapScreen(
-    state: MapState,
-    navController: NavHostController,
-    onEvent: (MapEvent) -> Unit
+    state: EditorState,
+    onEvent: (EditorEvent) -> Unit,
 ) {
     val context = LocalContext.current
     val mapView = remember { MapView(context) }
     val map = mapView.mapWindow.map
-
     val onEventState by rememberUpdatedState(onEvent)
 
-    //Location stuff
+    var cameraLat by rememberSaveable { mutableDoubleStateOf(55.753089) }
+    var cameraLon by rememberSaveable { mutableDoubleStateOf(37.622651) }
+    var cameraZoom by rememberSaveable { mutableFloatStateOf(10f) }
+    var initialLocationSet by rememberSaveable { mutableStateOf(false) }
+
     var userLocationLayer by remember { mutableStateOf<UserLocationLayer?>(null) }
     val locationManager = remember {
         MapKitFactory.getInstance().createLocationManager()
     }
-    //permissions
+
     val hasLocationPermission = ContextCompat.checkSelfPermission(
         context,
         Manifest.permission.ACCESS_FINE_LOCATION
     ) == PackageManager.PERMISSION_GRANTED
 
-
-    //placemarks
-    var lastMarker: PlacemarkMapObject? by remember { mutableStateOf(null) }
-
     DisposableEffect(hasLocationPermission) {
-        Log.d("mymap", "hasLocationPermission")
-
         if (hasLocationPermission) {
             userLocationLayer = createUserLocationLayer(mapView)
         }
@@ -83,26 +84,32 @@ fun EditMapScreen(
         val listener = object : LocationListener {
             override fun onLocationUpdated(location: com.yandex.mapkit.location.Location) {
                 val point = location.position
-
-                Log.d("mymap", "REAL LOCATION: ${point.latitude}, ${point.longitude}")
-
-                onEventState(MapEvent.OnCurrentLocation(point))
+                if (!initialLocationSet) {
+                    cameraLat = point.latitude
+                    cameraLon = point.longitude
+                    cameraZoom = 15f
+                    initialLocationSet = true
+                }
             }
-
             override fun onLocationStatusUpdated(status: LocationStatus) {
-                Log.d("mymap", "Location status: $status")
             }
         }
-        val settings = SubscriptionSettings(UseInBackground.DISALLOW,Purpose.STATIC_DISPLAY_LOCATION)
-        locationManager.subscribeForLocationUpdates(
-            settings,
-            listener
+        val settings = SubscriptionSettings(
+            UseInBackground.DISALLOW,
+            Purpose.STATIC_DISPLAY_LOCATION
         )
+
+        locationManager.subscribeForLocationUpdates(settings, listener)
+
         onDispose {
             locationManager.unsubscribe(listener)
+
+            val currentCamera = map.cameraPosition
+            cameraLat = currentCamera.target.latitude
+            cameraLon = currentCamera.target.longitude
+            cameraZoom = currentCamera.zoom
         }
     }
-
 
     LaunchedEffect(userLocationLayer) {
         userLocationLayer?.apply {
@@ -116,62 +123,64 @@ fun EditMapScreen(
     DisposableEffect(Unit) {
         val inputListener = object : InputListener {
             override fun onMapTap(map: Map, point: Point) {}
+
             override fun onMapLongTap(map: Map, point: Point) {
-                onEventState(MapEvent.LongTap(point))
+                onEventState(
+                    EditorEvent.DraftPointSelected(
+                        RoutePointModel(
+                            address = "",
+                            pointName = "",
+                            pointDescription = "",
+                            photoUri = null,
+                            latitude = point.latitude,
+                            longitude = point.longitude
+                        )
+                    )
+                )
             }
         }
+
         map.addInputListener(inputListener)
 
         MapKitFactory.getInstance().onStart()
         mapView.onStart()
 
         onDispose {
-            onEventState(MapEvent.CameraSave(map.cameraPosition.target, map.cameraPosition.zoom)) //save last pos
             map.removeInputListener(inputListener)
             mapView.onStop()
             MapKitFactory.getInstance().onStop()
         }
     }
-    LaunchedEffect(state.cameraPosition, state.zoom) {
+
+    LaunchedEffect(cameraLat, cameraLon, cameraZoom) {
         map.move(
-            CameraPosition(state.cameraPosition, state.zoom, 0f, 0f)
+            CameraPosition(
+                Point(cameraLat, cameraLon),
+                cameraZoom,
+                0f,
+                0f
+            )
         )
     }
 
-    LaunchedEffect(state.lastPlacemark) {
-        Log.d("mymap", "lastPlacemark change")
-        if (state.lastPlacemark != null){
-            val mapObjects = map.mapObjects
-            lastMarker?.let { mapObjects.remove(it) }
-            lastMarker = addMarker(
-                mapObjects = map.mapObjects,
-                point = state.lastPlacemark,
-                context = context,
-                isSaved = false,
-                isLast = false
-            )
-        }
-    }
-    LaunchedEffect(state.placemarks) {
-        //Камера на последней точке
-        state.placemarks.lastOrNull()?.let { lastPoint ->
-            onEvent(MapEvent.OnCurrentLocation(lastPoint))
-        }
+    LaunchedEffect(state.points, state.draftPoint) {
         val mapObjects = map.mapObjects
+        mapObjects.clear()
 
-        state.placemarks.forEachIndexed { index, point ->
+        state.points.forEachIndexed { index, point ->
             addMarker(
                 mapObjects = mapObjects,
-                point = point,
+                point = Point(point.latitude, point.longitude),
                 context = context,
                 isSaved = true,
-                isLast = index == state.placemarks.lastIndex
+                isLast = index == state.points.lastIndex
             )
         }
-        state.lastPlacemark?.let { point ->
+
+        state.draftPoint?.let { draft ->
             addMarker(
                 mapObjects = mapObjects,
-                point = point,
+                point = Point(draft.latitude, draft.longitude),
                 context = context,
                 isSaved = false,
                 isLast = false
@@ -182,11 +191,10 @@ fun EditMapScreen(
     Box(modifier = Modifier.fillMaxSize()) {
         AndroidView(factory = { mapView })
 
-        if (state.lastPlacemark != null) {
+        if (state.draftPoint != null) {
             FloatingActionButton(
                 onClick = {
-                    onEventState(MapEvent.ConfirmPlacemark(map.cameraPosition.zoom.toInt()))
-                    navController.navigate(EditPointScreen)
+                    onEvent(EditorEvent.ConfirmMapPoint)
                 },
                 modifier = Modifier
                     .align(Alignment.BottomEnd)

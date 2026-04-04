@@ -3,6 +3,7 @@ package com.example.vk_android_vkat.features.navigation
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -17,9 +18,8 @@ import com.example.vk_android_vkat.features.editor.EditPointScreen
 import com.example.vk_android_vkat.features.editor.map.EditMapScreen
 import com.example.vk_android_vkat.features.editor.EditorScreen
 import com.example.vk_android_vkat.features.editor.EditorViewModel
-import com.example.vk_android_vkat.features.editor.RoutePointUi
+import com.example.vk_android_vkat.features.editor.domain.RoutePointModel
 import com.example.vk_android_vkat.features.editor.map.AddressPoint
-import com.example.vk_android_vkat.features.editor.map.MapEffect
 import com.example.vk_android_vkat.features.editor.map.MapViewModel
 import com.example.vk_android_vkat.features.explore.routeinfo.ui.RouteInfoEffect
 import com.example.vk_android_vkat.features.explore.routeinfo.ui.RouteInfoScreen
@@ -84,11 +84,7 @@ object PasswordRecovery
 @Serializable
 data class RouteInfo(val routeId: Int)
 @Serializable
-data class EditMapScreen(
-    val addresses: List<String>,
-    val latitudes: List<Double>,
-    val longitudes: List<Double>
-)
+object EditMapScreen
 
 @Serializable
 object EditPointScreen
@@ -164,61 +160,51 @@ fun NavGraphBuilder.favouriteGraph(navController: NavHostController) {
 fun NavGraphBuilder.editorGraph(navController: NavHostController) {
     navigation<EditorGraph>(startDestination = Editor) {
 
-        composable<Editor> {backStackEntry ->
-
-            val viewModel: EditorViewModel = viewModel()
+        composable<Editor> { backStackEntry ->
+            val parentEntry = remember(backStackEntry) {
+                navController.getBackStackEntry(EditorGraph)
+            }
+            val viewModel: EditorViewModel = viewModel(
+                viewModelStoreOwner = parentEntry
+            )
             val state by viewModel.state.collectAsStateWithLifecycle()
-            LaunchedEffect(backStackEntry) {
-                snapshotFlow {
-                    backStackEntry.savedStateHandle.get<RoutePointUi>("selectedPoint")
-                }.collect { point ->
-                    if (point != null) {
-                        viewModel.onEvent(EditorEvent.PointAdded(point))
-                        backStackEntry.savedStateHandle.remove<RoutePointUi>("selectedPoint")
-                    }
-                }
-            }
-            LaunchedEffect(Unit) {
-
-
-                viewModel.effect.collect { effect ->
-                    when (effect) {
-                        is EditorEffect.NavigateToEditMap -> {
-                            navController.navigate(
-                                EditMapScreen(
-                                    emptyList(),
-                                    emptyList(),
-                                    emptyList()
-                                )
-                            )
-                        }
-                    }
-                }
-            }
-            EditorScreen(state, viewModel::onEvent)
+            EditorScreen(
+                state = state,
+                navController,
+                onEvent = viewModel::onEvent,
+            )
         }
 
         composable<EditMapScreen> { backStackEntry ->
-            val route = backStackEntry.toRoute<EditMapScreen>()
-            val points = route.addresses.indices.map { index ->
-                AddressPoint(
-                    address = route.addresses[index],
-                    latitude = route.latitudes[index],
-                    longitude = route.longitudes[index]
-                )
+            val parentEntry = remember(backStackEntry) {
+                navController.getBackStackEntry(EditorGraph)
             }
-
-            val viewModel: MapViewModel = viewModel()
-            viewModel.setInitialPoints(points)
+            val viewModel: EditorViewModel = viewModel(
+                viewModelStoreOwner = parentEntry
+            )
             val state by viewModel.state.collectAsStateWithLifecycle()
-
-            EditMapScreen(state, navController, viewModel::reducer)
-
-
+            val effect by viewModel.effect.collectAsState(initial = null)
+            LaunchedEffect(effect) {
+                when(effect) {
+                    EditorEffect.NavigateToEditPoint -> navController.navigate(EditPointScreen)
+                    null -> {}
+                }
+            }
+            EditMapScreen(
+                state = state,
+                onEvent = viewModel::onEvent
+            )
         }
 
-        composable<EditPointScreen>{
-            EditPointScreen()
+        composable<EditPointScreen>{backStackEntry->
+            val parentEntry = remember(backStackEntry) {
+                navController.getBackStackEntry(EditorGraph)
+            }
+            val viewModel: EditorViewModel = viewModel(
+                viewModelStoreOwner = parentEntry
+            )
+            val state by viewModel.state.collectAsStateWithLifecycle()
+            EditPointScreen(state = state,navController,viewModel::onEvent)
         }
     }
 }
