@@ -56,21 +56,31 @@ fun EditMapScreen(
     state: EditorState,
     onEvent: (EditorEvent) -> Unit,
 ) {
+
     val context = LocalContext.current
     val mapView = remember { MapView(context) }
     val map = mapView.mapWindow.map
+
     val onEventState by rememberUpdatedState(onEvent)
 
+    //Состояние карты
     var cameraLat by rememberSaveable { mutableDoubleStateOf(55.753089) }
     var cameraLon by rememberSaveable { mutableDoubleStateOf(37.622651) }
     var cameraZoom by rememberSaveable { mutableFloatStateOf(10f) }
     var initialLocationSet by rememberSaveable { mutableStateOf(false) }
+    val defaultZoom = 15f
+    fun setLocation(point: Point){
+        cameraLat = point.latitude
+        cameraLon = point.longitude
+        cameraZoom = defaultZoom
+        initialLocationSet = true
+    }
 
+    //Отображение Локции
     var userLocationLayer by remember { mutableStateOf<UserLocationLayer?>(null) }
     val locationManager = remember {
         MapKitFactory.getInstance().createLocationManager()
     }
-
     val hasLocationPermission = ContextCompat.checkSelfPermission(
         context,
         Manifest.permission.ACCESS_FINE_LOCATION
@@ -84,12 +94,7 @@ fun EditMapScreen(
         val listener = object : LocationListener {
             override fun onLocationUpdated(location: com.yandex.mapkit.location.Location) {
                 val point = location.position
-                if (!initialLocationSet) {
-                    cameraLat = point.latitude
-                    cameraLon = point.longitude
-                    cameraZoom = 15f
-                    initialLocationSet = true
-                }
+                if (!initialLocationSet) {setLocation(point)}
             }
             override fun onLocationStatusUpdated(status: LocationStatus) {
             }
@@ -164,6 +169,14 @@ fun EditMapScreen(
     }
 
     LaunchedEffect(state.points, state.draftPoint) {
+        if (!initialLocationSet && state.points.isNotEmpty()){
+            setLocation(
+                Point(
+                    state.points.last().latitude,
+                    state.points.last().longitude
+                )
+            )
+        }
         val mapObjects = map.mapObjects
         mapObjects.clear()
 

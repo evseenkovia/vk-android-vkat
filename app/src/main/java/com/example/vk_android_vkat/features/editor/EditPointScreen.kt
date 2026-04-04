@@ -60,6 +60,11 @@ fun EditPointScreen(
 
     val selectedImageUriPoint = selectedImageUriStringPoint?.let(Uri::parse)
 
+    val isFormValid =
+        routeNamePoint.trim().isNotEmpty() &&
+                routeDescriptionPoint.trim().isNotEmpty() &&
+                selectedImageUriPoint != null
+
     val galleryLauncherPoint = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
@@ -134,17 +139,18 @@ fun EditPointScreen(
             Button(
                 onClick = {
                     val finalPoint = draft.copy(
-                        pointName = routeNamePoint,
-                        pointDescription = routeDescriptionPoint,
+                        pointName = routeNamePoint.trim(),
+                        pointDescription = routeDescriptionPoint.trim(),
                         photoUri = selectedImageUriPoint
                     )
 
                     onEvent(EditorEvent.ConfirmDraftPoint(finalPoint))
                     navController.popBackStack(route = Editor, inclusive = false)
                 },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                enabled = isFormValid
             ) {
-                Text("Добавить точку")
+                Text("Сохранить точку")
             }
         }
     }

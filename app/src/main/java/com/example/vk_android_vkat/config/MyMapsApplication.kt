@@ -21,6 +21,7 @@ class MyMapsApplication : Application() {
         super.onCreate()
         // Инициализация MapKit один раз для всего приложения
         MapKitFactory.setApiKey(BuildConfig.MAPKIT_API_KEY)
+        MapKitFactory.setLocale("ru_RU") //Для Русского текста в адресах
         MapKitFactory.initialize(this)
 
         startKoin {

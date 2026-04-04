@@ -19,8 +19,6 @@ import com.example.vk_android_vkat.features.editor.map.EditMapScreen
 import com.example.vk_android_vkat.features.editor.EditorScreen
 import com.example.vk_android_vkat.features.editor.EditorViewModel
 import com.example.vk_android_vkat.features.editor.domain.RoutePointModel
-import com.example.vk_android_vkat.features.editor.map.AddressPoint
-import com.example.vk_android_vkat.features.editor.map.MapViewModel
 import com.example.vk_android_vkat.features.explore.routeinfo.ui.RouteInfoEffect
 import com.example.vk_android_vkat.features.explore.routeinfo.ui.RouteInfoScreen
 import com.example.vk_android_vkat.features.explore.routeinfo.ui.RouteInfoViewModel
