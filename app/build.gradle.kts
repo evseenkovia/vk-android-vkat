@@ -69,7 +69,7 @@ dependencies {
     val composeBom = platform("androidx.compose:compose-bom:2026.03.00")
     implementation(composeBom)
     androidTestImplementation(composeBom)
-    implementation("com.yandex.android:maps.mobile:4.33.1-full")
+    implementation(libs.maps.mobile)
     implementation(libs.androidx.material.icons.extended)
     implementation(libs.coil.compose)
     implementation(libs.androidx.lifecycle.livedata.ktx)

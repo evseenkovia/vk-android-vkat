@@ -34,9 +34,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter
+import com.example.vk_android_vkat.R
 import com.example.vk_android_vkat.features.editor.domain.RoutePointModel
 import com.example.vk_android_vkat.features.navigation.EditMapScreen
 
@@ -63,7 +65,7 @@ fun EditorScreen(
 
             item {
                 Text(
-                    text = "Создание маршрута",
+                    text = stringResource(R.string.route_creation),
                     style = MaterialTheme.typography.headlineMedium,
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -84,19 +86,19 @@ fun EditorScreen(
                         if (state.selectedImageUri != null) {
                             Image(
                                 painter = rememberAsyncImagePainter(state.selectedImageUri),
-                                contentDescription = "Выбранное фото маршрута",
+                                contentDescription = stringResource(R.string.selected_route_photo),
                                 modifier = Modifier.fillMaxSize(),
                                 contentScale = ContentScale.Crop
                             )
                         } else {
                             Icon(
                                 imageVector = Icons.Default.AddPhotoAlternate,
-                                contentDescription = "Прикрепить фото",
+                                contentDescription = stringResource(R.string.attach_photo),
                                 modifier = Modifier.size(40.dp),
                                 tint = MaterialTheme.colorScheme.primary
                             )
                             Text(
-                                text = "Прикрепить фото",
+                                text = stringResource(R.string.attach_photo),
                                 modifier = Modifier.align(Alignment.BottomCenter)
                             )
                         }
@@ -108,7 +110,7 @@ fun EditorScreen(
                 OutlinedTextField(
                     value = state.routeName,
                     onValueChange = { onEvent(EditorEvent.RouteNameChanged(it)) },
-                    label = { Text("Название маршрута") },
+                    label = { Text(stringResource(R.string.route_name)) },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true
                 )
@@ -118,7 +120,7 @@ fun EditorScreen(
                 OutlinedTextField(
                     value = state.routeDescription,
                     onValueChange = { onEvent(EditorEvent.RouteDescriptionChanged(it)) },
-                    label = { Text("Описание маршрута") },
+                    label = { Text(stringResource(R.string.route_description)) },
                     modifier = Modifier.fillMaxWidth(),
                     minLines = 3,
                     maxLines = 5
@@ -139,7 +141,7 @@ fun EditorScreen(
                     onClick = { navController.navigate(EditMapScreen) },
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("Добавить точку")
+                    Text(stringResource(R.string.add_point))
                 }
             }
         }
@@ -157,70 +159,64 @@ fun RoutePointItem(
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
         shape = RoundedCornerShape(16.dp)
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "Точка ${index + 1}",
-                    style = MaterialTheme.typography.titleMedium
-                )
 
-                IconButton(onClick = onDelete) {
-                    Icon(
-                        imageVector = Icons.Default.Delete,
-                        contentDescription = "Удалить точку"
-                    )
-                }
-            }
-
+            // Левая часть — картинка (маленькая)
             Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(140.dp),
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
+                modifier = Modifier.size(72.dp),
+                shape = RoundedCornerShape(12.dp)
             ) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    if (point.photoUri != null) {
-                        Image(
-                            painter = rememberAsyncImagePainter(point.photoUri),
-                            contentDescription = "Фото точки",
-                            modifier = Modifier.fillMaxSize(),
-                            contentScale = ContentScale.Crop
-                        )
-                    } else {
+                if (point.photoUri != null) {
+                    Image(
+                        painter = rememberAsyncImagePainter(point.photoUri),
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
                         Icon(
                             imageVector = Icons.Default.AddPhotoAlternate,
-                            contentDescription = "Фото точки отсутствует",
-                            modifier = Modifier.size(36.dp),
-                            tint = MaterialTheme.colorScheme.primary
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.outline
                         )
                     }
                 }
             }
 
-            Text(
-                text = "Адрес: ${point.address}",
-                style = MaterialTheme.typography.bodyMedium
-            )
+            // Правая часть — текст
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Text(
+                    text = point.pointName.ifBlank { stringResource(R.string.point_is, index + 1) },
+                    style = MaterialTheme.typography.titleMedium
+                )
 
-            Text(
-                text = "Название точки: ${point.pointName}",
-                style = MaterialTheme.typography.bodyMedium
-            )
+                Text(
+                    text = point.address.ifBlank { stringResource(R.string.address_is_not_stated) },
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
 
-            Text(
-                text = "Описание точки: ${point.pointDescription}",
-                style = MaterialTheme.typography.bodyMedium
-            )
+            // Кнопка удаления
+            IconButton(onClick = onDelete) {
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = "Удалить"
+                )
+            }
         }
     }
 }

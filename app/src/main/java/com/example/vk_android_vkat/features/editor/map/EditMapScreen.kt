@@ -76,7 +76,7 @@ fun EditMapScreen(
         initialLocationSet = true
     }
 
-    //Отображение Локции
+    //Отображение Локации
     var userLocationLayer by remember { mutableStateOf<UserLocationLayer?>(null) }
     val locationManager = remember {
         MapKitFactory.getInstance().createLocationManager()

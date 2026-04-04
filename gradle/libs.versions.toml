@@ -11,6 +11,7 @@ espressoCore = "3.7.0"
 kotlinxSerializationJson = "1.10.0"
 lifecycleLivedataKtx = "2.10.0"
 lifecycleViewmodelKtx = "2.10.0"
+mapsMobile = "4.33.1-full"
 materialIconsExtended = "1.7.8"
 navigationCompose = "2.9.7"
 navigationUiKtx = "2.9.7"
@@ -45,6 +46,7 @@ androidx-room = {group = "androidx.room", name = "room-runtime", version.ref = "
 androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room-version" }
 androidx-room-ktx = {group = "androidx.room", name = "room-ktx", version.ref = "room-version"}
 androidx-room-paging = {group = "androidx.room", name = "room-paging", version.ref = "room-version"}
+maps-mobile = { module = "com.yandex.android:maps.mobile", version.ref = "mapsMobile" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

@@ -34,9 +34,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter
+import com.example.vk_android_vkat.R
 import com.example.vk_android_vkat.features.editor.domain.RoutePointModel
 import com.example.vk_android_vkat.features.navigation.Editor
 @Composable
@@ -81,7 +83,7 @@ fun EditPointScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Text(
-                text = "Задание точки маршрута",
+                text = stringResource(R.string.route_point_selection),
                 style = MaterialTheme.typography.headlineMedium,
                 modifier = Modifier.fillMaxWidth()
             )
@@ -100,19 +102,19 @@ fun EditPointScreen(
                     if (selectedImageUriPoint != null) {
                         Image(
                             painter = rememberAsyncImagePainter(selectedImageUriPoint),
-                            contentDescription = "Выбранное фото точки",
+                            contentDescription = stringResource(R.string.selected_point_photo),
                             modifier = Modifier.fillMaxSize(),
                             contentScale = ContentScale.Crop
                         )
                     } else {
                         Icon(
                             imageVector = Icons.Default.AddPhotoAlternate,
-                            contentDescription = "Прикрепить фото",
+                            contentDescription = stringResource(R.string.attach_photo),
                             modifier = Modifier.size(40.dp),
                             tint = MaterialTheme.colorScheme.primary
                         )
                         Text(
-                            text = "Прикрепить фото",
+                            text = stringResource(R.string.attach_photo),
                             modifier = Modifier.align(Alignment.BottomCenter)
                         )
                     }
@@ -122,7 +124,7 @@ fun EditPointScreen(
             OutlinedTextField(
                 value = routeNamePoint,
                 onValueChange = { routeNamePoint = it },
-                label = { Text("Название точки") },
+                label = { Text(stringResource(R.string.point_name)) },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true
             )
@@ -130,7 +132,7 @@ fun EditPointScreen(
             OutlinedTextField(
                 value = routeDescriptionPoint,
                 onValueChange = { routeDescriptionPoint = it },
-                label = { Text("Описание точки") },
+                label = { Text(stringResource(R.string.point_description)) },
                 modifier = Modifier.fillMaxWidth(),
                 minLines = 3,
                 maxLines = 5
@@ -150,7 +152,7 @@ fun EditPointScreen(
                 modifier = Modifier.fillMaxWidth(),
                 enabled = isFormValid
             ) {
-                Text("Сохранить точку")
+                Text(stringResource(R.string.save_point))
             }
         }
     }

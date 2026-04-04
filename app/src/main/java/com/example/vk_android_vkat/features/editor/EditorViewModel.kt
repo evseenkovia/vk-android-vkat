@@ -53,9 +53,7 @@ class EditorViewModel : ViewModel() {
             }
 
             is EditorEvent.ConfirmMapPoint -> {
-                Log.d("mymaps","got1")
                 val draft = _state.value.draftPoint ?: return
-                Log.d("mymaps","got2")
 
                 viewModelScope.launch {
                     val address = searchAddress(Point(draft.latitude, draft.longitude))
