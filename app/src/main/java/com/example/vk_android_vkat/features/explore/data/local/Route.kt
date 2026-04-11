@@ -13,5 +13,6 @@ data class Route(
     val pointsCount: Int,   // заглушка для списка мест (возможно новая Entity - переделать под API)
     val rating: Float,      // расчет из разных отзывов и тд.
     val imageUrl: String? = null,
+    val authorID: String,
     val isFavourite: Boolean
 )

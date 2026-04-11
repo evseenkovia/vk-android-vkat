@@ -23,7 +23,10 @@ android {
         versionCode = 1
         versionName = "1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+
     }
+
 
     buildTypes {
         release {
@@ -47,6 +50,9 @@ android {
         // Исключаем старую версию аннотаций IntelliJ
         exclude(group = "com.intellij", module = "annotations")
     }
+}
+ksp {
+    arg("room.schemaLocation", "$projectDir/schemas")
 }
 
 dependencies {

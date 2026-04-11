@@ -33,6 +33,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -65,8 +66,10 @@ fun FavouriteScreen(
     onRouteClick: (Int) -> Unit = {},
     onEnter: () -> Unit
 ) {
-    // Меняем состояние (показываем только Избранные)
-    onEnter.invoke()
+
+    LaunchedEffect(Unit) {
+        onEnter()
+    }
 
     var showFilterDialog by remember { mutableStateOf(false) }
     var isRefreshing by remember { mutableStateOf(false) }

@@ -19,6 +19,7 @@ val mockRoutes = listOf(
         durationHours = 2,
         pointsCount = 7,
         rating = 4.7f,
+        authorID = "1",
         imageUrl = "https://7d9e88a8-f178-4098-bea5-48d960920605.selcdn.net/7cdfe127-c49b-4d4b-9fec-78b998cc76f0/"
     ),
     RouteModel(
@@ -31,6 +32,7 @@ val mockRoutes = listOf(
         durationHours = 4,
         pointsCount = 12,
         rating = 4.9f,
+        authorID = "1",
         imageUrl = "https://resize.tripster.ru/xLIeXLlZi1JYd0RY9ySRMkXqZAU=/fit-in/1600x900/filters:no_upscale()/https://cdn.tripster.ru/photos/0012df63-66d0-466b-afbd-9b3912170313.jpg?width=1200&height=630"
     ),
     RouteModel(
@@ -47,6 +49,7 @@ val mockRoutes = listOf(
         durationHours = 1,
         pointsCount = 5,
         rating = 4.5f,
+        authorID = "1",
         imageUrl = "https://moya-planeta.ru/upload/images/xl/c7/67/c767f4b9bb0b1f2f130adce886abd98003c9249a.jpg"
     ),
     RouteModel(
@@ -61,6 +64,7 @@ val mockRoutes = listOf(
         durationHours = 6,
         pointsCount = 10,
         rating = 4.8f,
+        authorID = "1",
         imageUrl = "https://thumbs.dreamstime.com/b/%D0%BC%D0%BE%D1%82%D0%BE%D1%86%D0%B8%D0%BA-%D0%B8%D1%81%D1%82-%D0%BD%D0%B0-%D0%BE%D1%80%D0%BE%D0%B3%D0%B5-%D0%BF%D0%B5%D1%80%D0%B5%D0%B2%D0%B0-%D0%B0-%D0%B2-%D0%B0-%D1%8C%D0%BF%D0%B0%D1%85-68572879.jpg"
     ),
     RouteModel(
@@ -77,6 +81,7 @@ val mockRoutes = listOf(
         durationHours = 2,
         pointsCount = 8,
         rating = 4.3f,
+        authorID = "1",
         imageUrl = "https://kudagid.ru/images/razvlechenia/attrakcion.jpg"
     ),
     RouteModel(
@@ -91,6 +96,7 @@ val mockRoutes = listOf(
         durationHours = 3,
         pointsCount = 9,
         rating = 4.6f,
+        authorID = "1",
         imageUrl = "https://eco-trails.ru/catalog/moskva/chermyanka/img/3.jpg"
     )
 )

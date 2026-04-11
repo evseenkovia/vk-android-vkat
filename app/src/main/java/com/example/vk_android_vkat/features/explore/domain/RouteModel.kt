@@ -9,5 +9,6 @@ data class RouteModel(
     val pointsCount: Int,   // заглушка для списка мест
     val rating: Float,      // заглушка для рейтинга
     val imageUrl: String? = null,
+    val authorID: String,
     var isFavourite: Boolean = false
 )

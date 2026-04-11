@@ -1,7 +1,9 @@
 package com.example.vk_android_vkat.features.explore.ui
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.vk_android_vkat.features.explore.data.local.RouteDao
 import com.example.vk_android_vkat.features.explore.domain.RouteRepository
 import com.example.vk_android_vkat.features.explore.domain.filter.RouteFilter
 import kotlinx.coroutines.FlowPreview
@@ -140,7 +142,7 @@ class ExploreViewModel(
             delay(delayTime)
 
             val filters = _state.value.filters
-            val filterResult = repository.getRouteByFilter(filters)
+            val filterResult = repository.getRouteByFilter(filters, _state.value.isFavourite)
             filterResult
                 .onSuccess { routes ->
                     _state.update {
@@ -226,7 +228,9 @@ class ExploreViewModel(
 
             delay(delayTime)
 
-            val searchResult = repository.findRouteByQuery(query)
+            val searchResult =
+                 repository.findRouteByQuery(query, _state.value.isFavourite)
+
             searchResult
                 .onSuccess { routes ->
                     _state.update {
@@ -235,6 +239,8 @@ class ExploreViewModel(
                             isLoading = false
                         )
                     }
+
+
                 }
                 .onFailure { exception ->
                     _state.update {
