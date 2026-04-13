@@ -5,13 +5,21 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.PointF
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Remove
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -34,7 +42,10 @@ import com.example.vk_android_vkat.R
 import com.example.vk_android_vkat.features.editor.EditorEvent
 import com.example.vk_android_vkat.features.editor.EditorState
 import com.example.vk_android_vkat.features.editor.domain.RoutePointModel
-import com.example.vk_android_vkat.features.navigation.EditPointScreen
+import com.example.vk_android_vkat.features.map.CameraState
+import com.example.vk_android_vkat.features.map.moveMap
+import com.example.vk_android_vkat.features.map.rememberLocationPermissionState
+import com.yandex.mapkit.Animation
 import com.yandex.mapkit.MapKitFactory
 import com.yandex.mapkit.geometry.Point
 import com.yandex.mapkit.location.LocationListener
@@ -77,54 +88,69 @@ fun EditMapScreen(
         initialLocationSet = true
     }
 
-    //Отображение Локации
-    var userLocationLayer by remember { mutableStateOf<UserLocationLayer?>(null) }
     val locationManager = remember {
         MapKitFactory.getInstance().createLocationManager()
     }
-    val hasLocationPermission = ContextCompat.checkSelfPermission(
-        context,
-        Manifest.permission.ACCESS_FINE_LOCATION
-    ) == PackageManager.PERMISSION_GRANTED
+    val permissionState = rememberLocationPermissionState()
 
-    DisposableEffect(hasLocationPermission) {
-        if (hasLocationPermission) {
+    var permissionRequested by rememberSaveable { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        if (!permissionState.hasPermission && !permissionRequested) {
+            permissionRequested = true
+            permissionState.requestPermission()
+        }
+    }
+
+    var userLocation by remember { mutableStateOf<Point?>(null) }
+
+    var userLocationLayer by remember { mutableStateOf<UserLocationLayer?>(null) }
+
+    DisposableEffect(permissionState.hasPermission) {
+        if (!permissionState.hasPermission) {
+            onDispose { }
+        } else {
+
             userLocationLayer = createUserLocationLayer(mapView)
-        }
 
-        val listener = object : LocationListener {
-            override fun onLocationUpdated(location: com.yandex.mapkit.location.Location) {
-                val point = location.position
-                if (!initialLocationSet) {setLocation(point)}
+            userLocationLayer?.apply {
+                setDefaultSource()
+                isVisible = true
+                isAutoZoomEnabled = true
+                isHeadingModeActive = false
             }
-            override fun onLocationStatusUpdated(status: LocationStatus) {
+
+            val listener = object : LocationListener {
+                override fun onLocationUpdated(location: com.yandex.mapkit.location.Location) {
+                    val point = location.position
+                    userLocation = point
+
+                    if (!initialLocationSet) {
+                        setLocation(point)
+                    }
+                }
+
+                override fun onLocationStatusUpdated(status: LocationStatus) = Unit
             }
-        }
-        val settings = SubscriptionSettings(
-            UseInBackground.DISALLOW,
-            Purpose.STATIC_DISPLAY_LOCATION
-        )
 
-        locationManager.subscribeForLocationUpdates(settings, listener)
+            val settings = SubscriptionSettings(
+                UseInBackground.DISALLOW,
+                Purpose.STATIC_DISPLAY_LOCATION
+            )
 
-        onDispose {
-            locationManager.unsubscribe(listener)
+            locationManager.subscribeForLocationUpdates(settings, listener)
 
-            val currentCamera = map.cameraPosition
-            cameraLat = currentCamera.target.latitude
-            cameraLon = currentCamera.target.longitude
-            cameraZoom = currentCamera.zoom
+            onDispose {
+                locationManager.unsubscribe(listener)
+
+                val currentCamera = map.cameraPosition
+                cameraLat = currentCamera.target.latitude
+                cameraLon = currentCamera.target.longitude
+                cameraZoom = currentCamera.zoom
+            }
         }
     }
 
-    LaunchedEffect(userLocationLayer) {
-        userLocationLayer?.apply {
-            setDefaultSource()
-            isVisible = true
-            isAutoZoomEnabled = true
-            isHeadingModeActive = false
-        }
-    }
 
     DisposableEffect(Unit) {
         val inputListener = object : InputListener {
@@ -159,13 +185,10 @@ fun EditMapScreen(
     }
 
     LaunchedEffect(cameraLat, cameraLon, cameraZoom) {
-        map.move(
-            CameraPosition(
-                Point(cameraLat, cameraLon),
-                cameraZoom,
-                0f,
-                0f
-            )
+        moveMap(
+            map,
+            Point(cameraLat, cameraLon),
+            cameraZoom,
         )
     }
 
@@ -202,22 +225,90 @@ fun EditMapScreen(
         }
     }
 
+
     Box(modifier = Modifier.fillMaxSize()) {
         AndroidView(factory = { mapView })
 
-        if (state.draftPoint != null) {
-            FloatingActionButton(
-                onClick = {
-                    onEvent(EditorEvent.ConfirmMapPoint)
-                },
+        Box(modifier = Modifier.fillMaxSize()){
+            Row(
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
                     .padding(16.dp)
-                    .padding(bottom = 16.dp)
-            ) {
-                Icon(Icons.Default.Check, contentDescription = "Подтвердить")
+                    .padding(bottom = 48.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ){
+                if (state.draftPoint != null) {
+                    FloatingActionButton(
+                        onClick = { onEvent(EditorEvent.ConfirmMapPoint) }
+                    ) {
+                        Icon(Icons.Default.Check, contentDescription = "Подтвердить")
+                    }
+                }
+                // FAB: моя локация
+                FloatingActionButton(
+                    onClick = {
+                        if (permissionState.hasPermission) {
+                            userLocation?.let {
+                                moveMap(
+                                    map,
+                                    CameraState(
+                                        latitude = it.latitude,
+                                        longitude = it.longitude,
+                                        zoom = defaultZoom,
+                                        azimuth = 0.0f,
+                                        tilt = 0.0f
+                                    )
+                                )
+                                cameraLat = it.latitude
+                                cameraLon = it.longitude
+                                cameraZoom = defaultZoom
+                            }
+                        } else {
+                            permissionState.requestPermission()
+                        }
+                    }
+                ) {
+                    Icon(Icons.Default.LocationOn, contentDescription = null)
+                    if (userLocation == null && permissionState.hasPermission) {
+                        CircularProgressIndicator()
+                    }
+                }
+
             }
+            Column(
+                modifier = Modifier
+                    .align(Alignment.CenterEnd)
+                    .padding(16.dp)
+                    .padding(bottom = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                SmallFloatingActionButton(
+                    onClick = {
+                        cameraZoom = (cameraZoom + 1f).coerceAtMost(19f)
+                        val target = map.cameraPosition.target
+                        cameraLat = target.latitude
+                        cameraLon = target.longitude
+                    }
+                ) {
+                    Icon(Icons.Default.Add, contentDescription = "Приблизить")
+                }
+                SmallFloatingActionButton(
+                    onClick = {
+                        cameraZoom = (cameraZoom - 1f).coerceAtLeast(3f)
+                        val target = map.cameraPosition.target
+                        cameraLat = target.latitude
+                        cameraLon = target.longitude
+
+                    }
+                ) {
+                    Icon(Icons.Default.Remove, contentDescription = "Отдалить")
+                }
+
+
+            }
+
         }
+
     }
     // Темная тема
     val isDark = isSystemInDarkTheme()

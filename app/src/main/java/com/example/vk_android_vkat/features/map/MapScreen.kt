@@ -1,8 +1,7 @@
+
 package com.example.vk_android_vkat.features.map
 
-import android.Manifest
 import android.content.Context
-import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
@@ -10,9 +9,20 @@ import android.graphics.Paint
 import android.graphics.PointF
 import android.util.Log
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Remove
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -21,14 +31,16 @@ import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.core.content.ContextCompat
+import androidx.core.graphics.createBitmap
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -45,15 +57,22 @@ import com.yandex.mapkit.map.CameraPosition
 import com.yandex.mapkit.map.Cluster
 import com.yandex.mapkit.map.ClusterListener
 import com.yandex.mapkit.map.ClusterTapListener
-import com.yandex.mapkit.map.ClusterizedPlacemarkCollection
 import com.yandex.mapkit.map.IconStyle
 import com.yandex.mapkit.map.MapObjectTapListener
 import com.yandex.mapkit.map.TextStyle
 import com.yandex.mapkit.mapview.MapView
 import com.yandex.runtime.image.ImageProvider
+import kotlin.math.PI
+import kotlin.math.abs
+import kotlin.math.atan
+import kotlin.math.ln
+import kotlin.math.log2
+import kotlin.math.min
+import kotlin.math.sinh
 
 private const val CLUSTER_RADIUS = 60.0
 private const val CLUSTER_MIN_ZOOM = 15
+
 
 @Composable
 fun MapScreen(
@@ -64,66 +83,112 @@ fun MapScreen(
 
     val mapView = remember {
         Log.d("MapScreen", "Creating new MapView")
-        MapView(context.applicationContext)
+        MapView(context)
     }
     val map = mapView.mapWindow.map
 
-    val tapListeners = remember { mutableListOf<MapObjectTapListener>() }
-    val userLocationLayer = remember {
-        Log.d("MapScreen", "Creating UserLocationLayer")
-        MapKitFactory.getInstance().createUserLocationLayer(mapView.mapWindow)
-    }
-
-    LaunchedEffect(userLocationLayer) {
-        userLocationLayer.apply {
-            setDefaultSource()
-            isVisible = true
-            isAutoZoomEnabled = true
-            isHeadingModeActive = false
-        }
-    }
-
     var cameraLat by rememberSaveable { mutableDoubleStateOf(55.753089) }
-    var cameraLng by rememberSaveable { mutableDoubleStateOf(37.622651) }
+    var cameraLon by rememberSaveable { mutableDoubleStateOf(37.622651) }
     var cameraZoom by rememberSaveable { mutableFloatStateOf(10f) }
+    var cameraAzimuth by rememberSaveable { mutableFloatStateOf(0f) }
+    var cameraTilt by rememberSaveable { mutableFloatStateOf(0f) }
+
     var initialLocationSet by rememberSaveable { mutableStateOf(false) }
     val defaultZoom = 15f
 
+    var cameraState = CameraState(
+        latitude = cameraLat,
+        longitude = cameraLon,
+        zoom = cameraZoom,
+        azimuth = cameraAzimuth,
+        tilt = cameraTilt
+    )
+
+    fun updateCameraState(newState: CameraState) {
+        cameraLat = newState.latitude
+        cameraLon = newState.longitude
+        cameraZoom = newState.zoom
+        cameraAzimuth = newState.azimuth
+        cameraTilt = newState.tilt
+        cameraState = CameraState(
+            latitude = cameraLat,
+            longitude = cameraLon,
+            zoom = cameraZoom,
+            azimuth = cameraAzimuth,
+            tilt = cameraTilt
+        )
+    }
+
     fun setLocation(point: Point) {
-        cameraLat = point.latitude
-        cameraLng = point.longitude
-        cameraZoom = defaultZoom
+        updateCameraState(
+            cameraState.copy(
+                latitude = point.latitude,
+                longitude = point.longitude,
+                zoom = defaultZoom,
+                azimuth = 0f,
+                tilt = 0f
+            )
+        )
         initialLocationSet = true
     }
 
+    LaunchedEffect(cameraState) {
+        moveMap(map, cameraState)
+    }
+
+    var userLocation by remember { mutableStateOf<Point?>(null) }
     val locationManager = remember {
         MapKitFactory.getInstance().createLocationManager()
     }
-    val hasLocationPermission = ContextCompat.checkSelfPermission(
-        context,
-        Manifest.permission.ACCESS_FINE_LOCATION
-    ) == PackageManager.PERMISSION_GRANTED
 
-    DisposableEffect(hasLocationPermission) {
-        if (!hasLocationPermission) return@DisposableEffect onDispose {}
+    val permissionState = rememberLocationPermissionState()
+    var permissionRequested by rememberSaveable { mutableStateOf(false) }
 
-        val listener = object : LocationListener {
-            override fun onLocationUpdated(location: com.yandex.mapkit.location.Location) {
-                val point = location.position
-                if (!initialLocationSet) {
-                    setLocation(point)
-                }
-            }
-            override fun onLocationStatusUpdated(status: LocationStatus) = Unit
+    LaunchedEffect(Unit) {
+        if (!permissionState.hasPermission && !permissionRequested) {
+            permissionRequested = true
+            permissionState.requestPermission()
         }
+    }
 
-        val settings = SubscriptionSettings(
-            UseInBackground.DISALLOW,
-            Purpose.STATIC_DISPLAY_LOCATION
-        )
-        locationManager.subscribeForLocationUpdates(settings, listener)
-        onDispose {
-            locationManager.unsubscribe(listener)
+    val userLocationLayer = remember {
+        MapKitFactory.getInstance()
+            .createUserLocationLayer(mapView.mapWindow)
+            .apply { isVisible = false }
+    }
+
+    DisposableEffect(permissionState.hasPermission) {
+        if (!permissionState.hasPermission) {
+            userLocationLayer.isVisible = false
+            onDispose { }
+        } else {
+            userLocationLayer.setDefaultSource()
+            userLocationLayer.isVisible = true
+            userLocationLayer.isAutoZoomEnabled = true
+            userLocationLayer.isHeadingModeActive = false
+
+            val listener = object : LocationListener {
+                override fun onLocationUpdated(location: com.yandex.mapkit.location.Location) {
+                    val point = location.position
+                    userLocation = point
+                    if (!initialLocationSet) {
+                        setLocation(point)
+                    }
+                }
+
+                override fun onLocationStatusUpdated(status: LocationStatus) = Unit
+            }
+
+            val settings = SubscriptionSettings(
+                UseInBackground.DISALLOW,
+                Purpose.STATIC_DISPLAY_LOCATION
+            )
+
+            locationManager.subscribeForLocationUpdates(settings, listener)
+
+            onDispose {
+                locationManager.unsubscribe(listener)
+            }
         }
     }
 
@@ -135,48 +200,55 @@ fun MapScreen(
                     Log.d("MapScreen", "ON_START: MapView")
                     mapView.onStart()
                 }
+
                 Lifecycle.Event.ON_STOP -> {
                     Log.d("MapScreen", "ON_STOP: MapView")
                     mapView.onStop()
 
                     val current = map.cameraPosition
-                    cameraLat = current.target.latitude
-                    cameraLng = current.target.longitude
-                    cameraZoom = current.zoom
+                    updateCameraState(
+                        CameraState(
+                            latitude = current.target.latitude,
+                            longitude = current.target.longitude,
+                            zoom = current.zoom,
+                            azimuth = current.azimuth,
+                            tilt = current.tilt
+                        )
+                    )
                 }
+
                 else -> Unit
             }
         }
+
         lifecycleOwner.lifecycle.addObserver(observer)
+
         onDispose {
             lifecycleOwner.lifecycle.removeObserver(observer)
         }
     }
 
-    LaunchedEffect(cameraLat, cameraLng, cameraZoom) {
-        map.move(
-            CameraPosition(
-                Point(cameraLat, cameraLng),
-                cameraZoom,
-                0f,
-                0f
-            )
-        )
-    }
-
-    val haloColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.8f).toArgb()
-
-    val clusterTapListener = remember {
-        ClusterTapListener { cluster ->
-            zoomToCluster(map, cluster)
-            true
-        }
-    }
-
-    //Цвета
     val clusterBgColor = MaterialTheme.colorScheme.primary.toArgb()
     val textColor = MaterialTheme.colorScheme.onSurface.toArgb()
     val clusterStrokeColor = MaterialTheme.colorScheme.onSurface.toArgb()
+    val haloColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.8f).toArgb()
+
+    val currentCameraState by rememberUpdatedState(cameraState)
+
+    val clusterTapListener = remember(mapView) {
+        ClusterTapListener { cluster ->
+            zoomToCluster(
+                mapView = mapView,
+                cameraState = currentCameraState,
+                onCameraStateChange = ::updateCameraState,
+                cluster = cluster,
+                paddingPx = 96 * 3,
+                minZoom = 3f,
+                maxZoom = 19f
+            )
+            true
+        }
+    }
 
     val clusterListener = remember(context, clusterBgColor, textColor) {
         ClusterListener { cluster ->
@@ -187,7 +259,7 @@ fun MapScreen(
                     textColor = textColor,
                     context = context,
                     strokeColor = clusterStrokeColor,
-                    strokeWidthDp = 4.0f,
+                    strokeWidthDp = 4.0f
                 )
             )
             cluster.addClusterTapListener(clusterTapListener)
@@ -197,11 +269,12 @@ fun MapScreen(
     val routeClusterCollection = remember(map) {
         map.mapObjects.addClusterizedPlacemarkCollection(clusterListener)
     }
-    LaunchedEffect(state.markers) {
+
+    val tapListeners = remember { mutableListOf<MapObjectTapListener>() }
+    DisposableEffect(state.markers) {
         Log.d("MapScreen", "Updating markers: ${state.markers.size}")
 
         routeClusterCollection.clear()
-        tapListeners.clear()
 
         state.markers.forEach { marker ->
             val routeId = marker.id
@@ -211,8 +284,6 @@ fun MapScreen(
                 onRouteClick(routeId)
                 true
             }
-
-            tapListeners.add(listener)
 
             routeClusterCollection.addPlacemark().apply {
                 geometry = Point(marker.lat, marker.lng)
@@ -239,10 +310,21 @@ fun MapScreen(
                 )
 
                 addTapListener(listener)
+                tapListeners.add(listener)
             }
         }
 
         routeClusterCollection.clusterPlacemarks(CLUSTER_RADIUS, CLUSTER_MIN_ZOOM)
+
+        onDispose {
+            routeClusterCollection.clear()
+            tapListeners.clear()
+        }
+    }
+
+    val isDark = isSystemInDarkTheme()
+    LaunchedEffect(isDark) {
+        map.isNightModeEnabled = isDark
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -250,37 +332,212 @@ fun MapScreen(
             factory = { mapView },
             modifier = Modifier.fillMaxSize()
         )
-    }
 
-    // Темная тема
-    val isDark = isSystemInDarkTheme()
-    LaunchedEffect(isDark) {
-        map.isNightModeEnabled = isDark
+        Box(modifier = Modifier.fillMaxSize()) {
+            Column(
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(16.dp)
+                    .padding(bottom = 48.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                FloatingActionButton(
+                    onClick = {
+                        if (permissionState.hasPermission) {
+                            userLocation?.let {
+                                moveMap(
+                                    map,
+                                    CameraState(
+                                        latitude = it.latitude,
+                                        longitude = it.longitude,
+                                        zoom = defaultZoom,
+                                        azimuth = cameraState.azimuth,
+                                        tilt = cameraState.tilt
+                                    )
+                                )
+                                updateCameraState(
+                                    CameraState(
+                                        latitude = it.latitude,
+                                        longitude = it.longitude,
+                                        zoom = defaultZoom,
+                                        azimuth = cameraState.azimuth,
+                                        tilt = cameraState.tilt
+                                    )
+                                )
+                            } ?: permissionState.requestPermission()
+                        } else {
+                            permissionState.requestPermission()
+                        }
+                    }
+                ) {
+                    Icon(Icons.Default.LocationOn, contentDescription = null)
+                    if (userLocation == null && permissionState.hasPermission) {
+                        CircularProgressIndicator()
+                    }
+                }
+            }
+
+            Column(
+                modifier = Modifier
+                    .align(Alignment.CenterEnd)
+                    .padding(16.dp)
+                    .padding(bottom = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                SmallFloatingActionButton(
+                    onClick = {
+                        updateCameraState(
+                            cameraState.copy(
+                                zoom = (cameraState.zoom + 1f).coerceAtMost(19f),
+                                latitude = map.cameraPosition.target.latitude,
+                                longitude = map.cameraPosition.target.longitude
+                            )
+                        )
+                    }
+                ) {
+                    Icon(Icons.Default.Add, contentDescription = "Приблизить")
+                }
+
+                SmallFloatingActionButton(
+                    onClick = {
+                        updateCameraState(
+                            cameraState.copy(
+                                zoom = (cameraState.zoom - 1f).coerceAtLeast(3f),
+                                latitude = map.cameraPosition.target.latitude,
+                                longitude = map.cameraPosition.target.longitude
+                            )
+                        )
+                    }
+                ) {
+                    Icon(Icons.Default.Remove, contentDescription = "Отдалить")
+                }
+            }
+        }
     }
 }
+
 private fun zoomToCluster(
-    map: com.yandex.mapkit.map.Map,
+    mapView: MapView,
+    cameraState: CameraState,
+    onCameraStateChange: (CameraState) -> Unit,
     cluster: Cluster,
-    zoomOffset: Float = 1.5f,
+    paddingPx: Int = 96,
+    minZoom: Float = 3f,
     maxZoom: Float = 19f
 ) {
     val points = cluster.placemarks.map { it.geometry }
     if (points.isEmpty()) return
 
-    val (minLat, maxLat) = points.minOf { it.latitude } to points.maxOf { it.latitude }
-    val (minLon, maxLon) = points.minOf { it.longitude } to points.maxOf { it.longitude }
+    val minLat = points.minOf { it.latitude }
+    val maxLat = points.maxOf { it.latitude }
+    val minLon = points.minOf { it.longitude }
+    val maxLon = points.maxOf { it.longitude }
 
-    val center = Point(
-        (minLat + maxLat) / 2.0,
-        (minLon + maxLon) / 2.0
+    val width = mapView.width
+    val height = mapView.height
+
+    val squareSide = if (width > 0 && height > 0) {
+        (minOf(width, height) - 2 * paddingPx).coerceAtLeast(1)
+    } else {
+        1
+    }
+
+    val zoom = calculateZoomForBounds(
+        minLat = minLat,
+        maxLat = maxLat,
+        minLon = minLon,
+        maxLon = maxLon,
+        viewWidthPx = squareSide,
+        viewHeightPx = squareSide,
+        minZoom = minZoom,
+        maxZoom = maxZoom
     )
 
-    val newZoom = (map.cameraPosition.zoom + zoomOffset).coerceAtMost(maxZoom)
+    val center = mercatorCenter(
+        minLat = minLat,
+        maxLat = maxLat,
+        minLon = minLon,
+        maxLon = maxLon
+    )
 
-    moveMap(map, center, newZoom)
+    onCameraStateChange(
+        cameraState.copy(
+            latitude = center.latitude,
+            longitude = center.longitude,
+            zoom = zoom
+        )
+    )
 }
 
-private fun moveMap(
+private fun calculateZoomForBounds(
+    minLat: Double,
+    maxLat: Double,
+    minLon: Double,
+    maxLon: Double,
+    viewWidthPx: Int,
+    viewHeightPx: Int,
+    minZoom: Float,
+    maxZoom: Float
+): Float {
+    val (x1, y1) = latLonToWorld(minLat, minLon)
+    val (x2, y2) = latLonToWorld(maxLat, maxLon)
+
+    val dx = abs(x2 - x1).coerceAtLeast(1e-9)
+    val dy = abs(y2 - y1).coerceAtLeast(1e-9)
+
+    val zoomX = log2(viewWidthPx / (256.0 * dx))
+    val zoomY = log2(viewHeightPx / (256.0 * dy))
+
+    return min(zoomX, zoomY).toFloat().coerceIn(minZoom, maxZoom)
+}
+
+private fun latLonToWorld(lat: Double, lon: Double): Pair<Double, Double> {
+    val x = (lon + 180.0) / 360.0
+    val sinLat = kotlin.math.sin(Math.toRadians(lat)).coerceIn(-0.9999, 0.9999)
+    val y = 0.5 - ln((1.0 + sinLat) / (1.0 - sinLat)) / (4.0 * PI)
+    return x to y
+}
+
+private fun worldToLatLon(x: Double, y: Double): Point {
+    val lon = x * 360.0 - 180.0
+    val n = PI - 2.0 * PI * y
+    val lat = Math.toDegrees(atan(sinh(n)))
+    return Point(lat, lon)
+}
+
+private fun mercatorCenter(
+    minLat: Double,
+    maxLat: Double,
+    minLon: Double,
+    maxLon: Double
+): Point {
+    val (x1, y1) = latLonToWorld(minLat, minLon)
+    val (x2, y2) = latLonToWorld(maxLat, maxLon)
+
+    val centerX = (x1 + x2) / 2.0
+    val centerY = (y1 + y2) / 2.0
+
+    return worldToLatLon(centerX, centerY)
+}
+
+fun moveMap(
+    map: com.yandex.mapkit.map.Map,
+    cameraState: CameraState,
+    animationType: Animation.Type = Animation.Type.SMOOTH,
+    animationDuration: Float = 0.5f
+) {
+    map.move(
+        CameraPosition(
+            cameraState.target,
+            cameraState.zoom,
+            cameraState.azimuth,
+            cameraState.tilt
+        ),
+        Animation(animationType, animationDuration)
+    )
+}
+
+fun moveMap(
     map: com.yandex.mapkit.map.Map,
     target: com.yandex.mapkit.geometry.Point,
     zoom: Float,
@@ -290,46 +547,32 @@ private fun moveMap(
     animationDuration: Float = 0.5f
 ) {
     map.move(
-        com.yandex.mapkit.map.CameraPosition(target, zoom, azimuth, tilt),
+        CameraPosition(
+            target,
+            zoom,
+            azimuth,
+            tilt
+        ),
         Animation(animationType, animationDuration)
     )
 }
 
 
-private fun moveMap(
-    map: com.yandex.mapkit.map.Map,
-    target: com.yandex.mapkit.geometry.Point,
-    zoom: Float,
-    azimuth: Float = 0f,
-    tilt: Float = 0f,
-    animation: Animation? = Animation(
-        Animation.Type.SMOOTH,
-        0.5f
-    )
-) {
-    val cameraPosition = CameraPosition(target, zoom, azimuth, tilt)
-    if (animation != null) {
-        map.move(cameraPosition, animation)
-    } else {
-        map.move(cameraPosition)
-    }
-}
 private class ClusterCountImageProvider(
     private val count: Int,
     private val backgroundColor: Int,
     private val textColor: Int,
     private val context: Context,
-    private val strokeColor: Int = Color.WHITE,   // цвет обводки
-    private val strokeWidthDp: Float = 2f         // толщина
+    private val strokeColor: Int = Color.WHITE,
+    private val strokeWidthDp: Float = 2f
 ) : ImageProvider() {
 
     override fun getId(): String = "cluster_$count"
 
     override fun getImage(): Bitmap {
         val density = context.resources.displayMetrics.density
-
         val sizePx = (44f * density).toInt().coerceAtLeast(1)
-        val bitmap = Bitmap.createBitmap(sizePx, sizePx, Bitmap.Config.ARGB_8888)
+        val bitmap = createBitmap(sizePx, sizePx)
         val canvas = Canvas(bitmap)
 
         val radius = sizePx / 2f
@@ -352,10 +595,7 @@ private class ClusterCountImageProvider(
             style = Paint.Style.FILL
         }
 
-        // 1. Основной круг
         canvas.drawCircle(radius, radius, radius, bgPaint)
-
-        // 2. Обводка (чуть меньше радиус, чтобы не обрезалась)
         canvas.drawCircle(
             radius,
             radius,
@@ -363,7 +603,6 @@ private class ClusterCountImageProvider(
             strokePaint
         )
 
-        // 3. Текст
         val fm = textPaint.fontMetrics
         val textY = radius - (fm.ascent + fm.descent) / 2f
         canvas.drawText(count.toString(), radius, textY, textPaint)

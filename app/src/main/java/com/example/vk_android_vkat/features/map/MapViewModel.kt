@@ -1,15 +1,15 @@
+
 package com.example.vk_android_vkat.features.map
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.vk_android_vkat.features.explore.domain.RouteRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-
-import androidx.lifecycle.viewModelScope
-import com.example.vk_android_vkat.features.explore.domain.RouteRepository
-
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+
 
 
 class MapViewModel(
@@ -22,7 +22,6 @@ class MapViewModel(
     init {
         loadMarkers()
     }
-
 
     private fun loadMarkers() {
         viewModelScope.launch {
@@ -48,9 +47,5 @@ class MapViewModel(
                     }
                 }
         }
-    }
-
-    fun refresh() {
-        loadMarkers()
     }
 }

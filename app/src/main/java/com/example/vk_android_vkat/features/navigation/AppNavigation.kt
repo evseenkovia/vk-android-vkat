@@ -215,10 +215,6 @@ fun NavGraphBuilder.mapGraph(navController: NavHostController) {
     navigation<MapGraph>(startDestination = Map) {
 
         composable<Map>(
-            enterTransition = { slideInVertically() { it } },
-            exitTransition = { slideOutVertically() { -it } },
-            popEnterTransition = { slideInVertically() { -it } },
-            popExitTransition = { slideOutVertically() { it } }
         ) { backStackEntry ->
             val viewModel: MapViewModel = koinViewModel()
             val state by viewModel.state.collectAsStateWithLifecycle()
@@ -233,7 +229,7 @@ fun NavGraphBuilder.mapGraph(navController: NavHostController) {
 
         composable<RouteInfo>(
             enterTransition = { slideInVertically { it } },
-            exitTransition = { slideOutVertically { it } }
+            popExitTransition = { slideOutVertically { it } },
         )
             { backStackEntry ->
             val routeId = backStackEntry.toRoute<RouteInfo>().routeId
