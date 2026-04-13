@@ -4,26 +4,30 @@ import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.PointF
+import android.util.Log
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.platform.LocalContext
-import androidx.core.content.ContextCompat
-import androidx.compose.ui.viewinterop.AndroidView
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.example.vk_android_vkat.R
-import com.example.vk_android_vkat.features.editor.EditorEvent
-import com.example.vk_android_vkat.features.editor.EditorState
-import com.example.vk_android_vkat.features.editor.domain.RoutePointModel
 import com.yandex.mapkit.MapKitFactory
 import com.yandex.mapkit.geometry.Point
 import com.yandex.mapkit.location.LocationListener
@@ -34,50 +38,64 @@ import com.yandex.mapkit.location.UseInBackground
 import com.yandex.mapkit.map.CameraPosition
 import com.yandex.mapkit.map.IconStyle
 import com.yandex.mapkit.map.MapObjectCollection
-import com.yandex.mapkit.map.PlacemarkMapObject
+import com.yandex.mapkit.map.MapObjectTapListener
+import com.yandex.mapkit.map.TextStyle
 import com.yandex.mapkit.mapview.MapView
-import com.yandex.mapkit.user_location.UserLocationLayer
 import com.yandex.runtime.image.ImageProvider
 
 @Composable
 fun MapScreen(
     state: MapState,
-    onEvent: (MapEvent) -> Unit,
+    onRouteClick: (Int) -> Unit
 ) {
     val context = LocalContext.current
-    val mapView = remember { MapView(context) }
+
+    //Переменные
+    val mapView = remember {
+        Log.d("MapScreen", "Creating new MapView")
+        MapView(context.applicationContext)
+    }
     val map = mapView.mapWindow.map
 
-    // Состояние камеры
+    val userLocationLayer = remember {
+        Log.d("MapScreen", "Creating UserLocationLayer")
+        MapKitFactory.getInstance().createUserLocationLayer(mapView.mapWindow)
+    }
+
+    LaunchedEffect(userLocationLayer) {
+        userLocationLayer.apply {
+            setDefaultSource()
+            isVisible = true
+            isAutoZoomEnabled = true
+            isHeadingModeActive = false
+        }
+    }
+
+    //Камера + локация
     var cameraLat by rememberSaveable { mutableDoubleStateOf(55.753089) }
-    var cameraLon by rememberSaveable { mutableDoubleStateOf(37.622651) }
+    var cameraLng by rememberSaveable { mutableDoubleStateOf(37.622651) }
     var cameraZoom by rememberSaveable { mutableFloatStateOf(10f) }
     var initialLocationSet by rememberSaveable { mutableStateOf(false) }
-
     val defaultZoom = 15f
 
     fun setLocation(point: Point) {
         cameraLat = point.latitude
-        cameraLon = point.longitude
+        cameraLng = point.longitude
         cameraZoom = defaultZoom
         initialLocationSet = true
     }
 
-    // Локация пользователя
-    var userLocationLayer by remember { mutableStateOf<UserLocationLayer?>(null) }
     val locationManager = remember {
         MapKitFactory.getInstance().createLocationManager()
     }
-
     val hasLocationPermission = ContextCompat.checkSelfPermission(
         context,
         Manifest.permission.ACCESS_FINE_LOCATION
     ) == PackageManager.PERMISSION_GRANTED
 
+    //Оновление локации
     DisposableEffect(hasLocationPermission) {
-        if (hasLocationPermission) {
-            userLocationLayer = createUserLocationLayer(mapView)
-        }
+        if (!hasLocationPermission) return@DisposableEffect onDispose {}
 
         val listener = object : LocationListener {
             override fun onLocationUpdated(location: com.yandex.mapkit.location.Location) {
@@ -86,7 +104,6 @@ fun MapScreen(
                     setLocation(point)
                 }
             }
-
             override fun onLocationStatusUpdated(status: LocationStatus) = Unit
         }
 
@@ -94,47 +111,44 @@ fun MapScreen(
             UseInBackground.DISALLOW,
             Purpose.STATIC_DISPLAY_LOCATION
         )
-
         locationManager.subscribeForLocationUpdates(settings, listener)
-
         onDispose {
             locationManager.unsubscribe(listener)
-
-            val currentCamera = map.cameraPosition
-            cameraLat = currentCamera.target.latitude
-            cameraLon = currentCamera.target.longitude
-            cameraZoom = currentCamera.zoom
         }
     }
 
-    LaunchedEffect(userLocationLayer) {
-        userLocationLayer?.apply {
-            setDefaultSource()
-            isVisible = true
-            isAutoZoomEnabled = true
-            isHeadingModeActive = false
+    //lifecycle mapView
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            when (event) {
+                Lifecycle.Event.ON_START -> {
+                    Log.d("MapScreen", "ON_START: MapKit")
+                    mapView.onStart()
+                }
+                Lifecycle.Event.ON_STOP -> {
+                    Log.d("MapScreen", "ON_STOP: MapView")
+                    mapView.onStop()
+                    //Сохранение текущего положения
+                    val current = map.cameraPosition
+                    cameraLat = current.target.latitude
+                    cameraLng = current.target.longitude
+                    cameraZoom = current.zoom
+                }
+                else -> Unit
+            }
         }
-    }
-
-    DisposableEffect(Unit) {
-        MapKitFactory.getInstance().onStart()
-        mapView.onStart()
-
+        lifecycleOwner.lifecycle.addObserver(observer)
         onDispose {
-            val currentCamera = map.cameraPosition
-            cameraLat = currentCamera.target.latitude
-            cameraLon = currentCamera.target.longitude
-            cameraZoom = currentCamera.zoom
-
-            mapView.onStop()
-            MapKitFactory.getInstance().onStop()
+            lifecycleOwner.lifecycle.removeObserver(observer)
         }
     }
 
-    LaunchedEffect(cameraLat, cameraLon, cameraZoom) {
+    //Обновление координат
+    LaunchedEffect(cameraLat, cameraLng, cameraZoom) {
         map.move(
             CameraPosition(
-                Point(cameraLat, cameraLon),
+                Point(cameraLat, cameraLng),
                 cameraZoom,
                 0f,
                 0f
@@ -142,64 +156,76 @@ fun MapScreen(
         )
     }
 
-    // Отображение точек
-    LaunchedEffect(state.points) {
-        if (!initialLocationSet && state.points.isNotEmpty()) {
-            setLocation(
-                Point(
-                    state.points.last().latitude,
-                    state.points.last().longitude
-                )
-            )
-        }
-
+    val haloColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.8f).toArgb()
+    val tapListeners = remember { mutableStateListOf<MapObjectTapListener>() }
+    //Обновление Маркеров
+    LaunchedEffect(state.markers) {
+        Log.d("MapScreen", "Updating markers: ${state.markers.size}")
         val mapObjects = map.mapObjects
         mapObjects.clear()
+        tapListeners.clear()
 
-        state.points.forEachIndexed { index, point ->
-            addPlacemark(
+        state.markers.forEach { marker ->
+            val routeId = marker.id
+            addRouteStartPlacemark(
                 mapObjects = mapObjects,
-                point = Point(point.latitude, point.longitude),
+                point = Point(marker.lat, marker.lng),
+                title = marker.title,
                 context = context,
-                isSaved = true,
-                isLast = index == state.points.lastIndex
+                textHaloColor = haloColor,
+                onTap = { _, _ ->
+                    Log.d("MapScreen", "Marker tapped: ${marker.title}")
+                    onRouteClick(routeId)
+                },
+                tapListeners = tapListeners
             )
         }
-
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        AndroidView(factory = { mapView })
+        AndroidView(
+            factory = { mapView },
+            modifier = Modifier.fillMaxSize()
+        )
     }
 }
 
-private fun createUserLocationLayer(mapView: MapView): UserLocationLayer {
-    return MapKitFactory.getInstance().createUserLocationLayer(mapView.mapWindow)
-}
-
-
-private fun addPlacemark(
+private fun addRouteStartPlacemark(
     mapObjects: MapObjectCollection,
     point: Point,
+    title: String,
     context: Context,
-    isSaved: Boolean,
-    isLast: Boolean
-): PlacemarkMapObject {
-    val iconRes = when {
-        isLast -> R.drawable.location_last
-        isSaved -> R.drawable.location
-        else -> R.drawable.location_current
-    }
-
-    return mapObjects.addPlacemark().apply {
+    textHaloColor: Int,
+    onTap: (Point, String) -> Unit,
+    tapListeners: MutableList<MapObjectTapListener>
+) {
+    val placemark = mapObjects.addPlacemark().apply {
         geometry = point
         setIcon(
-            ImageProvider.fromResource(context, iconRes),
+            ImageProvider.fromResource(context, R.drawable.location),
             IconStyle().apply {
-                anchor = PointF(0.5f, 0.5f)
-                flat = false
+                anchor = PointF(0.5f, 1.0f)
                 scale = 0.4f
+                flat = false
             }
         )
+        setText(
+            title,
+            TextStyle().apply {
+                size = 14f
+                color = ContextCompat.getColor(context, android.R.color.black)
+                placement = TextStyle.Placement.BOTTOM
+                offset = 8f
+                outlineWidth = 12f
+                outlineColor = textHaloColor
+            }
+        )
+
+        val listener = MapObjectTapListener { _, tappedPoint ->
+            onTap(tappedPoint, title)
+            true
+        }
+        tapListeners.add(listener)
+        addTapListener(listener)
     }
 }

@@ -7,6 +7,7 @@ import com.example.vk_android_vkat.features.explore.data.local.toRouteModel
 import com.example.vk_android_vkat.features.explore.domain.RouteModel
 import com.example.vk_android_vkat.features.explore.domain.RouteRepository
 import com.example.vk_android_vkat.features.explore.domain.filter.RouteFilter
+import com.example.vk_android_vkat.features.map.RouteStartPoint
 
 class RouteRepositoryMock (// ссылка на экземпляр Room
     private val database: AppDatabase
@@ -105,6 +106,23 @@ class RouteRepositoryMock (// ссылка на экземпляр Room
             } else {
                 route.copy(isFavourite = false)
             }
+        }
+    }
+    override suspend fun getRouteStartPoints(): Result<List<RouteStartPoint>> {
+        return try {
+            val points = mockRoutes.mapNotNull { route ->
+                route.points.firstOrNull()?.let { firstPoint ->
+                    RouteStartPoint(
+                        id = route.id,
+                        title = route.title,
+                        lat = firstPoint.latitude,
+                        lng = firstPoint.longitude
+                    )
+                }
+            }
+            Result.success(points)
+        } catch (e: Exception) {
+            Result.failure(e)
         }
     }
 }

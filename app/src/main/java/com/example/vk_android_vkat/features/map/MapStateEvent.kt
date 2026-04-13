@@ -1,11 +1,15 @@
 package com.example.vk_android_vkat.features.map
 
-import com.example.vk_android_vkat.features.editor.domain.RoutePointModel
 
 data class MapState(
-    val points: List<RoutePointModel> = emptyList(),
+    val markers: List<RouteStartPoint> = emptyList(),
+    val isLoading: Boolean = false,
+    val error: String? = null
 )
 
-sealed interface MapEvent{
-
-}
+data class RouteStartPoint(
+    val id: Int,
+    val title: String,
+    val lat: Double,
+    val lng: Double
+)

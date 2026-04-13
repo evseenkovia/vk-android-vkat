@@ -65,6 +65,7 @@ android {
 
 dependencies {
     implementation(libs.androidx.foundation)
+    implementation(libs.androidx.animation)
     // Compose BOM for all compose libraries
     val composeBom = platform("androidx.compose:compose-bom:2026.03.00")
     implementation(composeBom)

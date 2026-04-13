@@ -1,6 +1,7 @@
 package com.example.vk_android_vkat.features.explore.domain
 
 import com.example.vk_android_vkat.features.explore.domain.filter.RouteFilter
+import com.example.vk_android_vkat.features.map.RouteStartPoint
 
 interface RouteRepository {
 
@@ -17,4 +18,5 @@ interface RouteRepository {
     suspend fun getAllFavourites() : Result<List<RouteModel>>
 
     suspend fun deleteFromFavourites(id: Int)
+    suspend fun getRouteStartPoints(): Result<List<RouteStartPoint>>
 }

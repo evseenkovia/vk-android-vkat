@@ -6,6 +6,8 @@ import com.example.vk_android_vkat.features.explore.data.remote.RouteRepositoryM
 import com.example.vk_android_vkat.features.explore.domain.RouteRepository
 import com.example.vk_android_vkat.features.explore.routeinfo.ui.RouteInfoViewModel
 import com.example.vk_android_vkat.features.explore.ui.ExploreViewModel
+import com.example.vk_android_vkat.features.map.MapViewModel
+import com.yandex.mapkit.mapview.MapView
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
@@ -29,6 +31,7 @@ val appModule = module {
 
     // ViewModel - специальный тип для ViewModel
     viewModel<ExploreViewModel> { ExploreViewModel(get()) }
+    viewModel<MapViewModel> { MapViewModel(get()) }
     viewModel<RouteInfoViewModel> { (routeId: Int) ->
         RouteInfoViewModel(routeId, get())
     }
