@@ -1,5 +1,8 @@
 package com.example.vk_android_vkat.features.explore.routeinfo.ui
 
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -43,6 +46,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -51,6 +55,8 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.example.vk_android_vkat.R
 import com.example.vk_android_vkat.data.mockRoutes
+import com.example.vk_android_vkat.features.explore.domain.RouteModel
+import androidx.core.net.toUri
 
 @Preview(showBackground = true)
 @Composable
@@ -145,6 +151,7 @@ fun RouteInfoLoadedScreenState(
     onEvent: (RouteInfoEvent) -> Unit
 ){
     val route = state.routeData ?: return
+    val localContext = LocalContext.current
 
     val titleTextSize = MaterialTheme.typography.titleLarge
     val bodyTextSize = MaterialTheme.typography.bodyLarge
@@ -391,7 +398,7 @@ fun RouteInfoLoadedScreenState(
                 .align(Alignment.BottomCenter)
                 .padding(16.dp)
                 .fillMaxWidth(0.9f),
-            onClick = {},
+            onClick = {openRouteInYandexMaps(localContext,state.routeData)},
             containerColor = MaterialTheme.colorScheme.primary
         ) {
             Text(
@@ -404,3 +411,26 @@ fun RouteInfoLoadedScreenState(
     }
 }
 
+fun openRouteInYandexMaps(
+    context: Context,
+    route: RouteModel
+) {
+    val points = route.points
+    if (points.isEmpty()) return
+
+    val rtext = points.joinToString("~") { point ->
+        "${point.latitude},${point.longitude}"
+    }
+
+    val uri = "https://yandex.ru/maps/?rtext=$rtext&rtt=pd".toUri()
+
+    val intent = Intent(Intent.ACTION_VIEW, uri).apply {
+        setPackage("ru.yandex.yandexmaps")
+    }
+
+    try {
+        context.startActivity(intent)
+    } catch (e: Exception) {
+        context.startActivity(Intent(Intent.ACTION_VIEW, uri))
+    }
+}
