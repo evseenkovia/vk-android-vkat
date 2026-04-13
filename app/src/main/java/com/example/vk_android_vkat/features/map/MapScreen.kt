@@ -3,6 +3,10 @@ package com.example.vk_android_vkat.features.map
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Paint
 import android.graphics.PointF
 import android.util.Log
 import androidx.compose.foundation.layout.Box
@@ -14,7 +18,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -28,6 +31,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.example.vk_android_vkat.R
+import com.yandex.mapkit.Animation
 import com.yandex.mapkit.MapKitFactory
 import com.yandex.mapkit.geometry.Point
 import com.yandex.mapkit.location.LocationListener
@@ -36,12 +40,18 @@ import com.yandex.mapkit.location.Purpose
 import com.yandex.mapkit.location.SubscriptionSettings
 import com.yandex.mapkit.location.UseInBackground
 import com.yandex.mapkit.map.CameraPosition
+import com.yandex.mapkit.map.Cluster
+import com.yandex.mapkit.map.ClusterListener
+import com.yandex.mapkit.map.ClusterTapListener
+import com.yandex.mapkit.map.ClusterizedPlacemarkCollection
 import com.yandex.mapkit.map.IconStyle
-import com.yandex.mapkit.map.MapObjectCollection
 import com.yandex.mapkit.map.MapObjectTapListener
 import com.yandex.mapkit.map.TextStyle
 import com.yandex.mapkit.mapview.MapView
 import com.yandex.runtime.image.ImageProvider
+
+private const val CLUSTER_RADIUS = 60.0
+private const val CLUSTER_MIN_ZOOM = 15
 
 @Composable
 fun MapScreen(
@@ -50,13 +60,12 @@ fun MapScreen(
 ) {
     val context = LocalContext.current
 
-    //Переменные
     val mapView = remember {
         Log.d("MapScreen", "Creating new MapView")
         MapView(context.applicationContext)
     }
     val map = mapView.mapWindow.map
-
+    val tapListeners = remember { mutableListOf<MapObjectTapListener>() }
     val userLocationLayer = remember {
         Log.d("MapScreen", "Creating UserLocationLayer")
         MapKitFactory.getInstance().createUserLocationLayer(mapView.mapWindow)
@@ -71,7 +80,6 @@ fun MapScreen(
         }
     }
 
-    //Камера + локация
     var cameraLat by rememberSaveable { mutableDoubleStateOf(55.753089) }
     var cameraLng by rememberSaveable { mutableDoubleStateOf(37.622651) }
     var cameraZoom by rememberSaveable { mutableFloatStateOf(10f) }
@@ -93,7 +101,6 @@ fun MapScreen(
         Manifest.permission.ACCESS_FINE_LOCATION
     ) == PackageManager.PERMISSION_GRANTED
 
-    //Оновление локации
     DisposableEffect(hasLocationPermission) {
         if (!hasLocationPermission) return@DisposableEffect onDispose {}
 
@@ -117,19 +124,18 @@ fun MapScreen(
         }
     }
 
-    //lifecycle mapView
     val lifecycleOwner = LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             when (event) {
                 Lifecycle.Event.ON_START -> {
-                    Log.d("MapScreen", "ON_START: MapKit")
+                    Log.d("MapScreen", "ON_START: MapView")
                     mapView.onStart()
                 }
                 Lifecycle.Event.ON_STOP -> {
                     Log.d("MapScreen", "ON_STOP: MapView")
                     mapView.onStop()
-                    //Сохранение текущего положения
+
                     val current = map.cameraPosition
                     cameraLat = current.target.latitude
                     cameraLng = current.target.longitude
@@ -144,7 +150,6 @@ fun MapScreen(
         }
     }
 
-    //Обновление координат
     LaunchedEffect(cameraLat, cameraLng, cameraZoom) {
         map.move(
             CameraPosition(
@@ -157,29 +162,80 @@ fun MapScreen(
     }
 
     val haloColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.8f).toArgb()
-    val tapListeners = remember { mutableStateListOf<MapObjectTapListener>() }
-    //Обновление Маркеров
+
+    val clusterTapListener = remember {
+        ClusterTapListener { cluster ->
+            zoomToCluster(map, cluster)
+            true
+        }
+    }
+
+    val clusterBgColor = MaterialTheme.colorScheme.secondary.toArgb()
+    val clusterTextColor = MaterialTheme.colorScheme.onSecondary.toArgb()
+
+    val clusterListener = remember(context, clusterBgColor, clusterTextColor) {
+        ClusterListener { cluster ->
+            cluster.appearance.setIcon(
+                ClusterCountImageProvider(
+                    count = cluster.size,
+                    backgroundColor = clusterBgColor,
+                    textColor = clusterTextColor,
+                    context = context
+                )
+            )
+            cluster.addClusterTapListener(clusterTapListener)
+        }
+    }
+
+    val routeClusterCollection = remember(map) {
+        map.mapObjects.addClusterizedPlacemarkCollection(clusterListener)
+    }
     LaunchedEffect(state.markers) {
         Log.d("MapScreen", "Updating markers: ${state.markers.size}")
-        val mapObjects = map.mapObjects
-        mapObjects.clear()
+
+        routeClusterCollection.clear()
         tapListeners.clear()
 
         state.markers.forEach { marker ->
             val routeId = marker.id
-            addRouteStartPlacemark(
-                mapObjects = mapObjects,
-                point = Point(marker.lat, marker.lng),
-                title = marker.title,
-                context = context,
-                textHaloColor = haloColor,
-                onTap = { _, _ ->
-                    Log.d("MapScreen", "Marker tapped: ${marker.title}")
-                    onRouteClick(routeId)
-                },
-                tapListeners = tapListeners
-            )
+
+            val listener = MapObjectTapListener { _, _ ->
+                Log.d("MapScreen", "Marker tapped: ${marker.title}")
+                onRouteClick(routeId)
+                true
+            }
+
+            tapListeners.add(listener)
+
+            routeClusterCollection.addPlacemark().apply {
+                geometry = Point(marker.lat, marker.lng)
+
+                setIcon(
+                    ImageProvider.fromResource(context, R.drawable.location),
+                    IconStyle().apply {
+                        anchor = PointF(0.5f, 1.0f)
+                        scale = 0.4f
+                        flat = false
+                    }
+                )
+
+                setText(
+                    marker.title,
+                    TextStyle().apply {
+                        size = 14f
+                        color = ContextCompat.getColor(context, android.R.color.black)
+                        placement = TextStyle.Placement.BOTTOM
+                        offset = 8f
+                        outlineWidth = 12f
+                        outlineColor = haloColor
+                    }
+                )
+
+                addTapListener(listener)
+            }
         }
+
+        routeClusterCollection.clusterPlacemarks(CLUSTER_RADIUS, CLUSTER_MIN_ZOOM)
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -189,43 +245,97 @@ fun MapScreen(
         )
     }
 }
-
-private fun addRouteStartPlacemark(
-    mapObjects: MapObjectCollection,
-    point: Point,
-    title: String,
-    context: Context,
-    textHaloColor: Int,
-    onTap: (Point, String) -> Unit,
-    tapListeners: MutableList<MapObjectTapListener>
+private fun zoomToCluster(
+    map: com.yandex.mapkit.map.Map,
+    cluster: Cluster,
+    zoomOffset: Float = 1.5f,
+    maxZoom: Float = 19f
 ) {
-    val placemark = mapObjects.addPlacemark().apply {
-        geometry = point
-        setIcon(
-            ImageProvider.fromResource(context, R.drawable.location),
-            IconStyle().apply {
-                anchor = PointF(0.5f, 1.0f)
-                scale = 0.4f
-                flat = false
-            }
-        )
-        setText(
-            title,
-            TextStyle().apply {
-                size = 14f
-                color = ContextCompat.getColor(context, android.R.color.black)
-                placement = TextStyle.Placement.BOTTOM
-                offset = 8f
-                outlineWidth = 12f
-                outlineColor = textHaloColor
-            }
-        )
+    val points = cluster.placemarks.map { it.geometry }
+    if (points.isEmpty()) return
 
-        val listener = MapObjectTapListener { _, tappedPoint ->
-            onTap(tappedPoint, title)
-            true
+    val (minLat, maxLat) = points.minOf { it.latitude } to points.maxOf { it.latitude }
+    val (minLon, maxLon) = points.minOf { it.longitude } to points.maxOf { it.longitude }
+
+    val center = Point(
+        (minLat + maxLat) / 2.0,
+        (minLon + maxLon) / 2.0
+    )
+
+    val newZoom = (map.cameraPosition.zoom + zoomOffset).coerceAtMost(maxZoom)
+
+    moveMap(map, center, newZoom)
+}
+
+private fun moveMap(
+    map: com.yandex.mapkit.map.Map,
+    target: com.yandex.mapkit.geometry.Point,
+    zoom: Float,
+    azimuth: Float = 0f,
+    tilt: Float = 0f,
+    animationType: Animation.Type = Animation.Type.SMOOTH,
+    animationDuration: Float = 0.5f
+) {
+    map.move(
+        com.yandex.mapkit.map.CameraPosition(target, zoom, azimuth, tilt),
+        Animation(animationType, animationDuration)
+    )
+}
+
+
+private fun moveMap(
+    map: com.yandex.mapkit.map.Map,
+    target: com.yandex.mapkit.geometry.Point,
+    zoom: Float,
+    azimuth: Float = 0f,
+    tilt: Float = 0f,
+    animation: Animation? = Animation(
+        Animation.Type.SMOOTH,
+        0.5f
+    )
+) {
+    val cameraPosition = CameraPosition(target, zoom, azimuth, tilt)
+    if (animation != null) {
+        map.move(cameraPosition, animation)
+    } else {
+        map.move(cameraPosition)
+    }
+}
+private class ClusterCountImageProvider(
+    private val count: Int,
+    private val backgroundColor: Int,
+    private val textColor: Int,
+    private val context: Context
+) : ImageProvider() {
+
+    override fun getId(): String = "cluster_$count"
+
+    override fun getImage(): Bitmap {
+        val density = context.resources.displayMetrics.density
+
+        val sizePx = (44f * density).toInt().coerceAtLeast(1)
+        val bitmap = Bitmap.createBitmap(sizePx, sizePx, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+
+        val bgPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = backgroundColor
+            style = Paint.Style.FILL
         }
-        tapListeners.add(listener)
-        addTapListener(listener)
+
+        val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = textColor
+            textAlign = Paint.Align.CENTER
+            textSize = 14f * density
+            style = Paint.Style.FILL
+        }
+
+        val radius = sizePx / 2f
+        canvas.drawCircle(radius, radius, radius, bgPaint)
+
+        val fm = textPaint.fontMetrics
+        val textY = radius - (fm.ascent + fm.descent) / 2f
+        canvas.drawText(count.toString(), radius, textY, textPaint)
+
+        return bitmap
     }
 }
