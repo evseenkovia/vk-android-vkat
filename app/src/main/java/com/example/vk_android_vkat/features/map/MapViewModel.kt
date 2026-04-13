@@ -1,13 +1,14 @@
 package com.example.vk_android_vkat.features.map
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
-class MapViewModel : ViewModel() {
+class MapViewModel(
 
-    private val _text = MutableLiveData<String>().apply {
-        value = "This is map Fragment"
-    }
-    val text: LiveData<String> = _text
+) : ViewModel() {
+    private val _state = MutableStateFlow(MapState())
+    val state: StateFlow<MapState> = _state.asStateFlow()
+    fun onEvent(event: MapEvent){}
 }

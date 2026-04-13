@@ -27,6 +27,7 @@ import com.example.vk_android_vkat.features.explore.ui.ExploreScreen
 import com.example.vk_android_vkat.features.explore.ui.ExploreViewModel
 import com.example.vk_android_vkat.features.favourite.ui.FavouriteScreen
 import com.example.vk_android_vkat.features.map.MapScreen
+import com.example.vk_android_vkat.features.map.MapViewModel
 import com.example.vk_android_vkat.features.profile.ProfileItemUi
 import com.example.vk_android_vkat.features.profile.ProfileScreen
 import com.example.vk_android_vkat.features.profile.ProfileSection
@@ -212,7 +213,10 @@ fun NavGraphBuilder.mapGraph(navController: NavHostController) {
 
         composable<Map> { backStackEntry ->
             val details = backStackEntry.toRoute<Map>()
-            MapScreen()
+            val viewModel: MapViewModel = viewModel(
+            )
+            val state by viewModel.state.collectAsStateWithLifecycle()
+            MapScreen(state, viewModel::onEvent)
         }
     }
 }
