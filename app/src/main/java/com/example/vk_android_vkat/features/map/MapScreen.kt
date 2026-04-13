@@ -9,6 +9,7 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.PointF
 import android.util.Log
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
@@ -25,6 +26,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
@@ -65,6 +67,7 @@ fun MapScreen(
         MapView(context.applicationContext)
     }
     val map = mapView.mapWindow.map
+
     val tapListeners = remember { mutableListOf<MapObjectTapListener>() }
     val userLocationLayer = remember {
         Log.d("MapScreen", "Creating UserLocationLayer")
@@ -170,17 +173,21 @@ fun MapScreen(
         }
     }
 
-    val clusterBgColor = MaterialTheme.colorScheme.secondary.toArgb()
-    val clusterTextColor = MaterialTheme.colorScheme.onSecondary.toArgb()
+    //Цвета
+    val clusterBgColor = MaterialTheme.colorScheme.primary.toArgb()
+    val textColor = MaterialTheme.colorScheme.onSurface.toArgb()
+    val clusterStrokeColor = MaterialTheme.colorScheme.onSurface.toArgb()
 
-    val clusterListener = remember(context, clusterBgColor, clusterTextColor) {
+    val clusterListener = remember(context, clusterBgColor, textColor) {
         ClusterListener { cluster ->
             cluster.appearance.setIcon(
                 ClusterCountImageProvider(
                     count = cluster.size,
                     backgroundColor = clusterBgColor,
-                    textColor = clusterTextColor,
-                    context = context
+                    textColor = textColor,
+                    context = context,
+                    strokeColor = clusterStrokeColor,
+                    strokeWidthDp = 4.0f,
                 )
             )
             cluster.addClusterTapListener(clusterTapListener)
@@ -223,7 +230,7 @@ fun MapScreen(
                     marker.title,
                     TextStyle().apply {
                         size = 14f
-                        color = ContextCompat.getColor(context, android.R.color.black)
+                        color = textColor
                         placement = TextStyle.Placement.BOTTOM
                         offset = 8f
                         outlineWidth = 12f
@@ -243,6 +250,12 @@ fun MapScreen(
             factory = { mapView },
             modifier = Modifier.fillMaxSize()
         )
+    }
+
+    // Темная тема
+    val isDark = isSystemInDarkTheme()
+    LaunchedEffect(isDark) {
+        map.isNightModeEnabled = isDark
     }
 }
 private fun zoomToCluster(
@@ -305,7 +318,9 @@ private class ClusterCountImageProvider(
     private val count: Int,
     private val backgroundColor: Int,
     private val textColor: Int,
-    private val context: Context
+    private val context: Context,
+    private val strokeColor: Int = Color.WHITE,   // цвет обводки
+    private val strokeWidthDp: Float = 2f         // толщина
 ) : ImageProvider() {
 
     override fun getId(): String = "cluster_$count"
@@ -317,21 +332,38 @@ private class ClusterCountImageProvider(
         val bitmap = Bitmap.createBitmap(sizePx, sizePx, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
 
+        val radius = sizePx / 2f
+
         val bgPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             color = backgroundColor
             style = Paint.Style.FILL
         }
 
+        val strokePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = strokeColor
+            style = Paint.Style.STROKE
+            strokeWidth = strokeWidthDp * density
+        }
+
         val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             color = textColor
             textAlign = Paint.Align.CENTER
-            textSize = 14f * density
+            textSize = 24f * density
             style = Paint.Style.FILL
         }
 
-        val radius = sizePx / 2f
+        // 1. Основной круг
         canvas.drawCircle(radius, radius, radius, bgPaint)
 
+        // 2. Обводка (чуть меньше радиус, чтобы не обрезалась)
+        canvas.drawCircle(
+            radius,
+            radius,
+            radius - strokePaint.strokeWidth / 2f,
+            strokePaint
+        )
+
+        // 3. Текст
         val fm = textPaint.fontMetrics
         val textY = radius - (fm.ascent + fm.descent) / 2f
         canvas.drawText(count.toString(), radius, textY, textPaint)

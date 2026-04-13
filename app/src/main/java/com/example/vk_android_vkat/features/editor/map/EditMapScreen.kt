@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.PointF
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -217,6 +218,11 @@ fun EditMapScreen(
                 Icon(Icons.Default.Check, contentDescription = "Подтвердить")
             }
         }
+    }
+    // Темная тема
+    val isDark = isSystemInDarkTheme()
+    LaunchedEffect(isDark) {
+        map.isNightModeEnabled = isDark
     }
 }
 
