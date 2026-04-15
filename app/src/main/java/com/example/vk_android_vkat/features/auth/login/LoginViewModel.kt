@@ -91,8 +91,7 @@ class LoginViewModel(
                 val response = authRepository.login(email, password)
 
                 response
-                    .onSuccess { token ->
-                        println("token = $token")
+                    .onSuccess {
                         _state.update {
                             it.copy(
                                 isLoading = false,

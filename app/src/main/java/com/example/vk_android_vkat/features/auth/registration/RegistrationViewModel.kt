@@ -117,9 +117,7 @@ class RegistrationViewModel(
                 val response = repository.signUp(email, password)
 
                 response
-                    .onSuccess { token ->
-                        println("token = $token")
-                        // todo -> что делать с токеном, если мы редиректим на логин???
+                    .onSuccess {
                         _state.update {
                             it.copy(
                                 isLoading = false,

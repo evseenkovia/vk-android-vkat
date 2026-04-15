@@ -1,38 +1,43 @@
 package com.example.vk_android_vkat.features.auth.data
 
 class AuthRepositoryImpl(
-    val authService: AuthService
+    val authService: AuthService,
+    val tokenManager: TokenManager
 ) : AuthRepository {
 
-    override suspend fun login(
-        login: String,
-        password: String
-    ): Result<String> {
+    override suspend fun login(login: String, password: String): Result<Unit> {
         val request = AuthRequest(login, password)
-        println("ОТПРАВЛЯЮ: $request")
         val response = authService.login(request)
-
         if (response.isSuccessful) {
-            println("УСПЕХ: токен получен")
-            return Result.success(response.body()?.token ?: "")
+            // Сохраняем токен после успешного логина
+            response.body()?.token?.let {
+                tokenManager.saveAuthData(
+                    accessToken = it,
+                    login = login
+                )
+            }
+            return Result.success(Unit)
         } else {
-            val errorMsg = response.body()?.toString() ?: "Unknown error"
-            println("ОШИБКА СЕРВЕРА (код ${response.code()}): $errorMsg")
+            val errorMsg = response.errorBody().toString()
             return Result.failure(Exception(errorMsg))
         }
     }
 
-    override suspend fun signUp(
-        login: String,
-        password: String
-    ): Result<String> {
+    override suspend fun signUp(login: String, password: String): Result<Unit> {
         val request = AuthRequest(login, password)
         val response = authService.signUp(request)
 
         if (response.isSuccessful) {
-            return Result.success(response.body()?.token ?: "")
+            // Сохраняем токен после успешной регистрации
+            response.body()?.token?.let {
+                tokenManager.saveAuthData(
+                    accessToken = it,
+                    login = login
+                )
+            }
+            return Result.success(Unit)
         } else {
-            val errorMsg = response.body()?.toString() ?: "Unknown error"
+            val errorMsg = response.errorBody().toString()
             return Result.failure(Exception(errorMsg))
         }
     }
