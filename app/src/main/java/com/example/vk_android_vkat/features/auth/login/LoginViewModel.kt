@@ -6,6 +6,7 @@ import com.example.vk_android_vkat.data.delayTime
 import com.example.vk_android_vkat.data.mockEmail
 import com.example.vk_android_vkat.data.mockPassword
 import com.example.vk_android_vkat.features.auth.AuthError
+import com.example.vk_android_vkat.features.auth.data.AuthRepository
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,7 +15,9 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class LoginViewModel : ViewModel() {
+class LoginViewModel(
+    val authRepository: AuthRepository
+) : ViewModel() {
 
     sealed class LoginEffect {
         object LoginSuccess : LoginEffect()
@@ -30,9 +33,21 @@ class LoginViewModel : ViewModel() {
 
     // функция определяет
     fun onEvent(event: LoginEvent) {
-        when(event) {
-            is LoginEvent.EmailChanged -> _state.update { it.copy(email = event.email, emailError = null) }
-            is LoginEvent.PasswordChanged -> _state.update { it.copy(password = event.password, passwordError = null) }
+        when (event) {
+            is LoginEvent.EmailChanged -> _state.update {
+                it.copy(
+                    email = event.email,
+                    emailError = null
+                )
+            }
+
+            is LoginEvent.PasswordChanged -> _state.update {
+                it.copy(
+                    password = event.password,
+                    passwordError = null
+                )
+            }
+
             LoginEvent.LoginClicked -> login()
             LoginEvent.RegisterClicked -> viewModelScope.launch { _effect.send(LoginEffect.GoToRegistration) }
             LoginEvent.ForgotPasswordClicked -> viewModelScope.launch { _effect.send(LoginEffect.GoToPasswordRecovery) }
@@ -51,29 +66,53 @@ class LoginViewModel : ViewModel() {
             val emailErr = when {
                 email.isBlank() -> AuthError.EmailBlank
                 !email.contains("@") -> AuthError.EmailInvalid
-                email != mockEmail -> AuthError.EmailNotFound
+//                email != mockEmail -> AuthError.EmailNotFound
                 else -> null
             }
 
             val passwordErr = when {
                 password.isBlank() -> AuthError.PasswordBlank
-                email == mockEmail && password != mockPassword -> AuthError.PasswordInvalid
+//                email == mockEmail && password != mockPassword -> AuthError.PasswordInvalid
                 else -> null
             }
 
             val hasErrors = emailErr != null || passwordErr != null
 
-            _state.update {
-                it.copy(
-                    isLoading = false,
-                    emailError = emailErr,
-                    passwordError = passwordErr,
-                    isUserLoggedIn = !hasErrors
-                )
-            }
+            if (hasErrors) {
+                _state.update {
+                    it.copy(
+                        isLoading = false,
+                        emailError = emailErr,
+                        passwordError = passwordErr,
+                        isUserLoggedIn = false
+                    )
+                }
+            } else {
+                val response = authRepository.login(email, password)
 
-            if(!hasErrors){
-                _effect.send(LoginEffect.LoginSuccess)
+                response
+                    .onSuccess { token ->
+                        println("token = $token")
+                        _state.update {
+                            it.copy(
+                                isLoading = false,
+                                emailError = null,
+                                passwordError = null,
+                                isUserLoggedIn = true
+                            )
+                        }
+                        _effect.send(LoginEffect.LoginSuccess)
+                    }
+                    .onFailure { e ->
+                        _state.update {
+                            it.copy(
+                                isLoading = false,
+                                emailError = null,
+                                passwordError = AuthError.EmailNotFound,
+                            )
+                        }
+
+                    }
             }
         }
     }

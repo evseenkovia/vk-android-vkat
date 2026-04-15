@@ -75,4 +75,6 @@ dependencies {
     ksp(libs.androidx.room.compiler)
     implementation(libs.koin.android)
     implementation(libs.koin.androidx.compose)
+    implementation(libs.retrofit)
+    implementation(libs.converter.gson)
 }
