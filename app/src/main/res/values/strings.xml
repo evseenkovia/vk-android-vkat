@@ -59,5 +59,6 @@
     <string name="register_success">Регистрация успешна</string>
     <string name="password_reset_sent">Ссылка на восстановление отправлена</string>
     <string name="name">Имя</string>
+    <string name="network_error">Ошибка сети. Попробуйте позже</string>
 
 </resources>

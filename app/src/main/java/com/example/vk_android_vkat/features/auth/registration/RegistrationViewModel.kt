@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.vk_android_vkat.data.delayTime
 import com.example.vk_android_vkat.features.auth.AuthError
+import com.example.vk_android_vkat.features.auth.data.AuthRepository
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -12,7 +13,9 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class RegistrationViewModel : ViewModel() {
+class RegistrationViewModel(
+    val repository: AuthRepository
+) : ViewModel() {
 
     sealed class RegistrationEffect {
         object RegistrationSuccess : RegistrationEffect()
@@ -26,19 +29,54 @@ class RegistrationViewModel : ViewModel() {
     val state = _state.asStateFlow()
 
     fun onEvent(event: RegistrationEvent) {
-        when(event) {
-            is RegistrationEvent.NameChanged -> _state.update { it.copy(name = event.name, nameError = null) }
-            is RegistrationEvent.EmailChanged -> _state.update { it.copy(email = event.email, emailError = null) }
-            is RegistrationEvent.PasswordChanged -> _state.update { it.copy(password = event.password, passwordError = null) }
-            is RegistrationEvent.ConfirmPasswordChanged -> _state.update { it.copy(confirmPassword = event.confirm, confirmPasswordError = null) }
-            RegistrationEvent.ClearErrors -> _state.update { it.copy(emailError = null, passwordError = null, confirmPasswordError = null) }
+        when (event) {
+            is RegistrationEvent.NameChanged -> _state.update {
+                it.copy(
+                    name = event.name,
+                    nameError = null
+                )
+            }
+
+            is RegistrationEvent.EmailChanged -> _state.update {
+                it.copy(
+                    email = event.email,
+                    emailError = null
+                )
+            }
+
+            is RegistrationEvent.PasswordChanged -> _state.update {
+                it.copy(
+                    password = event.password,
+                    passwordError = null
+                )
+            }
+
+            is RegistrationEvent.ConfirmPasswordChanged -> _state.update {
+                it.copy(
+                    confirmPassword = event.confirm,
+                    confirmPasswordError = null
+                )
+            }
+
+            RegistrationEvent.ClearErrors -> _state.update {
+                it.copy(
+                    emailError = null,
+                    passwordError = null,
+                    confirmPasswordError = null
+                )
+            }
+
             RegistrationEvent.RegisterClicked -> register()
-            RegistrationEvent.LoginClicked -> viewModelScope.launch { _effect.send(RegistrationEffect.GoToLogin) }
+            RegistrationEvent.LoginClicked -> viewModelScope.launch {
+                _effect.send(
+                    RegistrationEffect.GoToLogin
+                )
+            }
         }
     }
 
     private fun register() {
-        _state.update { it.copy(isLoading = true) }
+        _state.update { it.copy(isLoading = true, emailError = null, passwordError = null) }
 
         viewModelScope.launch {
             delay(delayTime)
@@ -65,18 +103,40 @@ class RegistrationViewModel : ViewModel() {
 
             val hasErrors = emailErr != null || passwordErr != null || confirmErr != null
 
-            _state.update {
-                it.copy(
-                    isLoading = false,
-                    emailError = emailErr,
-                    passwordError = passwordErr,
-                    confirmPasswordError = confirmErr,
-                    isRegistered = !hasErrors
-                )
-            }
+            if (hasErrors) {
+                _state.update {
+                    it.copy(
+                        isLoading = false,
+                        emailError = emailErr,
+                        passwordError = passwordErr,
+                        confirmPasswordError = confirmErr,
+                        isRegistered = false
+                    )
+                }
+            } else {
+                val response = repository.signUp(email, password)
 
-            if(!hasErrors){
-                _effect.send(RegistrationEffect.RegistrationSuccess)
+                response
+                    .onSuccess {
+                        _state.update {
+                            it.copy(
+                                isLoading = false,
+                                emailError = null,
+                                passwordError = null,
+                            )
+                        }
+                        _effect.send(RegistrationEffect.RegistrationSuccess)
+                    }
+                    .onFailure { e ->
+                        _state.update {
+                            it.copy(
+                                isLoading = false,
+                                emailError = null,
+                                passwordError = null,
+                                // todo -> вывести сообщение об ошибке
+                            )
+                        }
+                    }
             }
         }
     }
