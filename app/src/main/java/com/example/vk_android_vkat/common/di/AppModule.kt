@@ -10,6 +10,7 @@ import com.example.vk_android_vkat.features.auth.login.LoginViewModel
 import com.example.vk_android_vkat.features.auth.registration.RegistrationViewModel
 import com.example.vk_android_vkat.features.explore.data.local.AppDatabase
 import com.example.vk_android_vkat.features.explore.data.remote.RouteRepositoryMock
+import com.example.vk_android_vkat.features.explore.data.remote.RouteService
 import com.example.vk_android_vkat.features.explore.domain.RouteRepository
 import com.example.vk_android_vkat.features.explore.routeinfo.ui.RouteInfoViewModel
 import com.example.vk_android_vkat.features.explore.ui.ExploreViewModel
@@ -38,8 +39,12 @@ val appModule = module {
     // DAO - factory (новый экземпляр при каждом запросе, легковесный)
     factory { get<AppDatabase>().routeDao() }
 
+    single<RouteService> {
+        get<Retrofit>().create(RouteService::class.java)
+    }
+
     // Repository - single или factory в зависимости от потребностей
-    single<RouteRepository> { RouteRepositoryMock(get()) }
+    single<RouteRepository> { RouteRepositoryMock(get(), get()) }
 
     viewModel<ExploreViewModel> { ExploreViewModel(get()) }
     viewModel<RouteInfoViewModel> { (routeId: Int) ->

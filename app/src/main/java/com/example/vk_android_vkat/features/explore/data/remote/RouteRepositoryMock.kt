@@ -8,46 +8,58 @@ import com.example.vk_android_vkat.features.explore.domain.RouteModel
 import com.example.vk_android_vkat.features.explore.domain.RouteRepository
 import com.example.vk_android_vkat.features.explore.domain.filter.RouteFilter
 
-class RouteRepositoryMock (// ссылка на экземпляр Room
-    private val database: AppDatabase
+class RouteRepositoryMock(
+    private val database: AppDatabase,
+    private val routeService: RouteService
 ) : RouteRepository {
 
     private val routes = mockRoutes // тестовые данные
 
     override suspend fun getAllRoutes(): Result<List<RouteModel>> {
         // Запрос к API
-        val routes = mockRoutes
-        return if (routes.isNotEmpty()){
-            val favouriteRoutes = checkFavourites(routes)
-            Result.success(favouriteRoutes)
+        val response = routeService.getRoutes()
+        if (response.isSuccessful) {
+            val loadedRoutes = response.body()?.list?.toRouteModelList()
+            if (!loadedRoutes.isNullOrEmpty()) {
+                val favouriteRoutes = checkFavourites(loadedRoutes)
+                return Result.success(favouriteRoutes)
+            } else {
+                return Result.failure(Exception("Маршруты на сервере не найдены"))
+            }
         } else {
-            Result.failure(Exception("Ошибка загрузки маршрутов"))
+            val error = response.errorBody()?.toString()
+            return Result.failure(Exception(error))
         }
     }
 
     override suspend fun getRouteById(id: Int): Result<RouteModel> {
-        return routes.find { it.id == id }
-            ?.let {
-                // Проверяем, есть ли маршрут в избранном
+        val response = routeService.getRouteById(id)
+        if (response.isSuccessful) {
+            val route = response.body()?.toRouteModel()
+            return route?.let {
                 checkFavourites(it)
-                Result.success(it) }
-            ?: Result.failure(Exception("Маршрут с id = $id не найден" ))
+                Result.success(it)
+            } ?: Result.failure(Exception("Маршрут с id = $id не найден"))
+        } else {
+            val error = response.errorBody()?.toString()
+            return Result.failure(Exception(error))
+        }
     }
 
+    // todo -> переписать фильтры на стороне сервера
     override suspend fun getRouteByFilter(filter: RouteFilter): Result<List<RouteModel>> {
         val favRoutes = database.routeDao().getAll()
         val filteredRoutes = routes.filter {
             it.rating >= filter.rating.start && it.rating <= filter.rating.endInclusive &&
-            it.durationHours >= filter.duration.start && it.durationHours <= filter.duration.endInclusive &&
-            it.distanceKm >= filter.distance.start && it.distanceKm <= filter.distance.endInclusive
+                    it.durationHours >= filter.duration.start && it.durationHours <= filter.duration.endInclusive &&
+                    it.distanceKm >= filter.distance.start && it.distanceKm <= filter.distance.endInclusive
             //todo -> дописать еще фильтры
         }
-        return if (filteredRoutes.isNotEmpty()){
+        return if (filteredRoutes.isNotEmpty()) {
             // Проверяем, есть ли маршруты в избранном
             checkFavourites(filteredRoutes)
             Result.success(filteredRoutes)
-        }
-        else
+        } else
             Result.failure(Exception("По заданным фильтрам результаты не найдены"))
     }
 
@@ -81,7 +93,7 @@ class RouteRepositoryMock (// ссылка на экземпляр Room
         return if (favourites.isNotEmpty()) {
             Result.success(favourites)
         } else {
-            Result.failure(Exception("В Избранном пусто "))
+            Result.failure(Exception("В Избранном пусто"))
         }
     }
 
@@ -90,12 +102,12 @@ class RouteRepositoryMock (// ссылка на экземпляр Room
         database.routeDao().deleteById(id)
     }
 
-    suspend fun checkFavourites(route: RouteModel){
+    suspend fun checkFavourites(route: RouteModel) {
         val localRoute = database.routeDao().getRouteById(route.id)
         route.isFavourite = localRoute?.isFavourite ?: false
     }
 
-    suspend fun checkFavourites(routes : List<RouteModel>) : List<RouteModel> {
+    suspend fun checkFavourites(routes: List<RouteModel>): List<RouteModel> {
         val ids = routes.map { it.id }.toIntArray()
         val favRoutes = database.routeDao().loadAllByIds(ids)
         val favIds = favRoutes.map { it.id }.toSet()
