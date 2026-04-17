@@ -41,6 +41,7 @@ import coil.compose.rememberAsyncImagePainter
 import com.example.vk_android_vkat.R
 import com.example.vk_android_vkat.features.editor.domain.RoutePointModel
 import com.example.vk_android_vkat.features.navigation.EditMapScreen
+import com.example.vk_android_vkat.features.navigation.ScreenTeg
 
 @Composable
 fun EditorScreen(
@@ -53,6 +54,14 @@ fun EditorScreen(
     ) { uri: Uri? ->
         onEvent(EditorEvent.ImageSelected(uri))
     }
+
+    // Проверка, что все обязательные поля маршрута заполнены
+    val isRouteFormValid = state.routeName.trim().isNotEmpty() &&
+            state.routeDescription.trim().isNotEmpty() &&
+            state.selectedImageUri != null
+
+    // Проверка, что добавлена хотя бы одна точка
+    val hasPoints = state.points.isNotEmpty()
 
     Scaffold { innerPadding ->
         LazyColumn(
@@ -139,9 +148,26 @@ fun EditorScreen(
             item {
                 Button(
                     onClick = { navController.navigate(EditMapScreen) },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = isRouteFormValid
                 ) {
                     Text(stringResource(R.string.add_point))
+                }
+            }
+
+            // Кнопка "Завершить" появляется только если есть хотя бы одна точка
+            // ... внутри LazyColumn
+
+            if (hasPoints) {
+                item {
+                    Button(
+                        onClick = {
+                            navController.navigate(ScreenTeg)
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(stringResource(R.string.finish_route))
+                    }
                 }
             }
         }

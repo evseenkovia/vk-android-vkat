@@ -19,6 +19,7 @@ import com.example.vk_android_vkat.features.editor.map.EditMapScreen
 import com.example.vk_android_vkat.features.editor.EditorScreen
 import com.example.vk_android_vkat.features.editor.EditorViewModel
 import com.example.vk_android_vkat.features.editor.domain.RoutePointModel
+import com.example.vk_android_vkat.features.editor.map.ScreenTegScreen
 import com.example.vk_android_vkat.features.explore.routeinfo.ui.RouteInfoEffect
 import com.example.vk_android_vkat.features.explore.routeinfo.ui.RouteInfoScreen
 import com.example.vk_android_vkat.features.explore.routeinfo.ui.RouteInfoViewModel
@@ -86,7 +87,8 @@ object EditMapScreen
 
 @Serializable
 object EditPointScreen
-
+@Serializable
+object ScreenTeg
 //------ Расширения для графов ------
 
 fun NavGraphBuilder.exploreGraph(navController : NavHostController){
@@ -203,6 +205,10 @@ fun NavGraphBuilder.editorGraph(navController: NavHostController) {
             )
             val state by viewModel.state.collectAsStateWithLifecycle()
             EditPointScreen(state = state,navController,viewModel::onEvent)
+        }
+        composable<ScreenTeg> {
+            // Пока пустой экран
+            ScreenTegScreen()
         }
     }
 }
