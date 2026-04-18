@@ -1,5 +1,6 @@
 package com.example.vk_android_vkat.features.editor.map
 
+import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -9,75 +10,63 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.vk_android_vkat.R
-import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.runtime.Composable
+import com.example.vk_android_vkat.features.editor.EditorEvent
+import com.example.vk_android_vkat.features.editor.EditorViewModel
 
-// Модель данных для тега
 data class TegItem(
     val id: String,
     val name: String
 )
 
-// Группа тегов с заголовком
 data class TegGroup(
     val title: String,
     val items: List<TegItem>
 )
 
 @Composable
-fun ScreenTegScreen() {
-    // Состояние выбранных тегов (по id)
+fun ScreenTegScreen(viewModel: EditorViewModel) {
     val selectedTegs = remember { mutableStateSetOf<String>() }
 
-    // Группы тегов (можно вынести в ресурсы или ViewModel)
     val groups = remember {
         listOf(
-            TegGroup(
-                title = "Местность",
-                items = listOf(
-                    TegItem("urban", "Городские"),
-                    TegItem("historical", "Исторические"),
-                    TegItem("nature", "Природные")
-                )
-            ),
-            TegGroup(
-                title = "Длительность",
-                items = listOf(
-                    TegItem("short", "Короткий"),
-                    TegItem("medium", "Средний"),
-                    TegItem("long", "Длительный")
-                )
-            ),
-            TegGroup(
-                title = "Время суток",
-                items = listOf(
-                    TegItem("day", "Дневной"),
-                    TegItem("evening", "Вечерний"),
-                    TegItem("anytime", "Любое время")
-                )
-            ),
-            TegGroup(
-                title = "Чем заняться",
-                items = listOf(
-                    TegItem("walk", "Погулять"),
-                    TegItem("date", "На свидание"),
-                    TegItem("photo", "Пофоткаться")
-                )
-            )
+            TegGroup("Местность", listOf(
+                TegItem("urban", "Городские"),
+                TegItem("historical", "Исторические"),
+                TegItem("nature", "Природные")
+            )),
+            TegGroup("Длительность", listOf(
+                TegItem("short", "Короткий"),
+                TegItem("medium", "Средний"),
+                TegItem("long", "Длительный")
+            )),
+            TegGroup("Время суток", listOf(
+                TegItem("day", "Дневной"),
+                TegItem("evening", "Вечерний"),
+                TegItem("anytime", "Любое время")
+            )),
+            TegGroup("Чем заняться", listOf(
+                TegItem("walk", "Погулять"),
+                TegItem("date", "На свидание"),
+                TegItem("photo", "Пофоткаться")
+            ))
         )
     }
 
     Scaffold(
         bottomBar = {
-            // Кнопка внизу (пока без действия)
             Button(
-                onClick = { /* пока ничего не делаем */ },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
+                onClick = {
+                    // Вычисляем названия прямо здесь
+                    val tagNames = groups.flatMap { it.items }
+                        .filter { it.id in selectedTegs }
+                        .map { it.name }
+                        .toSet()
+                    Log.d("ScreenTeg", "Selected tags: $tagNames")
+                    viewModel.onEvent(EditorEvent.FinishRouteCreation(tagNames))
+                },
+                modifier = Modifier.fillMaxWidth().padding(16.dp)
             ) {
-                Text(stringResource(R.string.continue_text)) // "Опубликовать"
+                Text("Опубликовать")
             }
         }
     ) { innerPadding ->
@@ -95,8 +84,6 @@ fun ScreenTegScreen() {
                     style = MaterialTheme.typography.headlineMedium
                 )
             }
-
-            // Перебираем группы
             items(groups) { group ->
                 TegGroupSection(
                     group = group,
@@ -120,15 +107,8 @@ fun TegGroupSection(
     selectedTegs: Set<String>,
     onTegClick: (String) -> Unit
 ) {
-    Column(
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        Text(
-            text = group.title,
-            style = MaterialTheme.typography.titleMedium
-        )
-
-        // Чипы в горизонтальном ряду с переносом
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(text = group.title, style = MaterialTheme.typography.titleMedium)
         FlowRow(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -138,27 +118,9 @@ fun TegGroupSection(
                 FilterChip(
                     selected = isSelected,
                     onClick = { onTegClick(teg.id) },
-                    label = { Text(teg.name) },
-                    modifier = Modifier
+                    label = { Text(teg.name) }
                 )
             }
         }
-    }
-}
-
-// Вспомогательный компонент для переноса чипов (можно заменить на Row + wrap)
-@Composable
-fun TegFlowRow(
-    modifier: Modifier = Modifier,
-    horizontalArrangement: Arrangement.Horizontal = Arrangement.Start,
-    verticalArrangement: Arrangement.Vertical = Arrangement.Top,
-    content: @Composable () -> Unit
-) {
-    FlowRow(
-        modifier = modifier,
-        horizontalArrangement = horizontalArrangement,
-        verticalArrangement = verticalArrangement
-    ) {
-        content() // вызов контента внутри лямбды FlowRow
     }
 }

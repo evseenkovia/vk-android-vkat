@@ -18,12 +18,11 @@ class ProfileViewModel : ViewModel() {
         loadProfile()
     }
 
-    fun onEvent(event: ProfileUiEvent){
-        when(event) {
-            is ProfileUiEvent.ItemClicked -> TODO()
-            ProfileUiEvent.Retry -> TODO()
-            is ProfileUiEvent.SwitchChanged -> TODO()
-
+    fun onEvent(event: ProfileUiEvent) {
+        when (event) {
+            is ProfileUiEvent.ItemClicked -> handleNavigation(event.id)
+            ProfileUiEvent.Retry -> loadProfile()
+            is ProfileUiEvent.SwitchChanged -> handleSwitch(event.id, event.checked)
         }
     }
 

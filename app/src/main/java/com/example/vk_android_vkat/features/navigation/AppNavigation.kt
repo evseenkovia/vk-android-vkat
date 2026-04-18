@@ -99,11 +99,6 @@ fun NavGraphBuilder.exploreGraph(navController : NavHostController){
             val viewModel: ExploreViewModel = koinViewModel()
             val uiState by viewModel.state.collectAsStateWithLifecycle()
 
-            // Обновляем экран при изменении состояния
-            LaunchedEffect(viewModel.state) {
-                viewModel.loadRoutes()
-            }
-
             ExploreScreen(
                 state = uiState,
                 onEvent = viewModel::onEvent,
@@ -164,7 +159,7 @@ fun NavGraphBuilder.editorGraph(navController: NavHostController) {
             val parentEntry = remember(backStackEntry) {
                 navController.getBackStackEntry(EditorGraph)
             }
-            val viewModel: EditorViewModel = viewModel(
+            val viewModel: EditorViewModel = koinViewModel(
                 viewModelStoreOwner = parentEntry
             )
             val state by viewModel.state.collectAsStateWithLifecycle()
@@ -179,36 +174,59 @@ fun NavGraphBuilder.editorGraph(navController: NavHostController) {
             val parentEntry = remember(backStackEntry) {
                 navController.getBackStackEntry(EditorGraph)
             }
-            val viewModel: EditorViewModel = viewModel(
+            val viewModel: EditorViewModel = koinViewModel(
                 viewModelStoreOwner = parentEntry
             )
             val state by viewModel.state.collectAsStateWithLifecycle()
             val effect by viewModel.effect.collectAsState(initial = null)
+
             LaunchedEffect(effect) {
-                when(effect) {
+                when (effect) {
                     EditorEffect.NavigateToEditPoint -> navController.navigate(EditPointScreen)
-                    null -> {}
+                    EditorEffect.NavigateBackToExplore -> navController.popBackStack(Explore, inclusive = false)
+                    null -> { /* ничего не делаем */ }
                 }
             }
+
             EditMapScreen(
                 state = state,
                 onEvent = viewModel::onEvent
             )
         }
 
-        composable<EditPointScreen>{backStackEntry->
+        composable<EditPointScreen> { backStackEntry ->
             val parentEntry = remember(backStackEntry) {
                 navController.getBackStackEntry(EditorGraph)
             }
-            val viewModel: EditorViewModel = viewModel(
+            val viewModel: EditorViewModel = koinViewModel(
                 viewModelStoreOwner = parentEntry
             )
             val state by viewModel.state.collectAsStateWithLifecycle()
-            EditPointScreen(state = state,navController,viewModel::onEvent)
+
+            EditPointScreen(
+                state = state,
+                navController = navController,
+                onEvent = viewModel::onEvent
+            )
         }
-        composable<ScreenTeg> {
-            // Пока пустой экран
-            ScreenTegScreen()
+
+        composable<ScreenTeg> { backStackEntry ->
+            val parentEntry = remember(backStackEntry) {
+                navController.getBackStackEntry(EditorGraph)
+            }
+            val viewModel: EditorViewModel = koinViewModel(viewModelStoreOwner = parentEntry)
+            val effect by viewModel.effect.collectAsState(initial = null)
+
+            LaunchedEffect(effect) {
+                when (effect) {
+                    EditorEffect.NavigateBackToExplore -> {
+                        navController.popBackStack(Explore, inclusive = false)
+                    }
+                    else -> {}
+                }
+            }
+
+            ScreenTegScreen(viewModel)
         }
     }
 }

@@ -5,7 +5,7 @@ import androidx.room.Room
 import com.example.vk_android_vkat.BuildConfig
 import com.example.vk_android_vkat.common.di.appModule
 import com.example.vk_android_vkat.features.explore.data.local.AppDatabase
-import com.example.vk_android_vkat.features.explore.data.remote.RouteRepositoryMock
+import com.example.vk_android_vkat.features.explore.data.RouteRepositoryMock
 import com.yandex.mapkit.MapKitFactory
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger

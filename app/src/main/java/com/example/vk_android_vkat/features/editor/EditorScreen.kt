@@ -42,6 +42,7 @@ import com.example.vk_android_vkat.R
 import com.example.vk_android_vkat.features.editor.domain.RoutePointModel
 import com.example.vk_android_vkat.features.navigation.EditMapScreen
 import com.example.vk_android_vkat.features.navigation.ScreenTeg
+import java.io.File
 
 @Composable
 fun EditorScreen(
@@ -52,7 +53,7 @@ fun EditorScreen(
     val galleryLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
-        onEvent(EditorEvent.ImageSelected(uri))
+        onEvent(EditorEvent.ImageSelected(uri.toString()))
     }
 
     // Проверка, что все обязательные поля маршрута заполнены
@@ -94,7 +95,7 @@ fun EditorScreen(
                     ) {
                         if (state.selectedImageUri != null) {
                             Image(
-                                painter = rememberAsyncImagePainter(state.selectedImageUri),
+                                painter = rememberAsyncImagePainter(File(state.selectedImageUri)),
                                 contentDescription = stringResource(R.string.selected_route_photo),
                                 modifier = Modifier.fillMaxSize(),
                                 contentScale = ContentScale.Crop

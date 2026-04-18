@@ -34,13 +34,17 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter
 import com.example.vk_android_vkat.R
+import com.example.vk_android_vkat.common.saveImageToInternalStorage
 import com.example.vk_android_vkat.features.editor.domain.RoutePointModel
 import com.example.vk_android_vkat.features.navigation.Editor
+import java.io.File
+
 @Composable
 fun EditPointScreen(
     state: EditorState,
@@ -67,10 +71,14 @@ fun EditPointScreen(
                 routeDescriptionPoint.trim().isNotEmpty() &&
                 selectedImageUriPoint != null
 
+    val context = LocalContext.current
     val galleryLauncherPoint = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
-        selectedImageUriStringPoint = uri?.toString()
+        uri?.let {
+            val savedPath = saveImageToInternalStorage(context, it)
+            selectedImageUriStringPoint = savedPath
+        }
     }
 
     Scaffold { innerPadding ->
@@ -99,9 +107,9 @@ fun EditPointScreen(
                     contentAlignment = Alignment.Center,
                     modifier = Modifier.fillMaxSize()
                 ) {
-                    if (selectedImageUriPoint != null) {
+                    if (selectedImageUriStringPoint != null) {
                         Image(
-                            painter = rememberAsyncImagePainter(selectedImageUriPoint),
+                            painter = rememberAsyncImagePainter(File(selectedImageUriStringPoint)),
                             contentDescription = stringResource(R.string.selected_point_photo),
                             modifier = Modifier.fillMaxSize(),
                             contentScale = ContentScale.Crop
@@ -143,7 +151,7 @@ fun EditPointScreen(
                     val finalPoint = draft.copy(
                         pointName = routeNamePoint.trim(),
                         pointDescription = routeDescriptionPoint.trim(),
-                        photoUri = selectedImageUriPoint
+                        photoUri = selectedImageUriStringPoint
                     )
 
                     onEvent(EditorEvent.ConfirmDraftPoint(finalPoint))

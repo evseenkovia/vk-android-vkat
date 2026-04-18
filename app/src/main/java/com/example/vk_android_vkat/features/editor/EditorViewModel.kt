@@ -1,14 +1,18 @@
 package com.example.vk_android_vkat.features.editor
 
+import android.content.Context
+import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.vk_android_vkat.features.editor.domain.RoutePointModel
+import com.example.vk_android_vkat.features.explore.data.RouteRepositoryMock
+import com.example.vk_android_vkat.features.explore.domain.RouteModel
+import com.example.vk_android_vkat.features.explore.domain.RouteRepository
 import com.yandex.mapkit.geometry.Point
 import com.yandex.mapkit.search.SearchManagerType
 import com.yandex.mapkit.search.SearchOptions
 import com.yandex.mapkit.search.SearchType
-import com.yandex.mapkit.search.Response
 import com.yandex.mapkit.search.SearchFactory
 import com.yandex.mapkit.search.Session
 import com.yandex.runtime.Error
@@ -20,10 +24,14 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
+import java.io.File
+import java.io.FileOutputStream
 import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
 
-class EditorViewModel : ViewModel() {
+class EditorViewModel(
+    private val routeRepository: RouteRepository,
+    private val context: Context
+) : ViewModel() {
 
     private val _state = MutableStateFlow(EditorState())
     val state: StateFlow<EditorState> = _state.asStateFlow()
@@ -33,6 +41,23 @@ class EditorViewModel : ViewModel() {
 
     private val searchManager = SearchFactory.getInstance()
         .createSearchManager(SearchManagerType.COMBINED)
+
+    private fun saveImageToInternalStorage(uri: Uri): String? {
+        return try {
+            val inputStream = context.contentResolver.openInputStream(uri) ?: return null
+            val fileName = "route_${System.currentTimeMillis()}.jpg"
+            val imagesDir = File(context.filesDir, "route_images")
+            if (!imagesDir.exists()) imagesDir.mkdirs()
+            val outputFile = File(imagesDir, fileName)
+            FileOutputStream(outputFile).use { outputStream ->
+                inputStream.copyTo(outputStream)
+            }
+            outputFile.absolutePath
+        } catch (e: Exception) {
+            Log.e("EditorViewModel", "Failed to save image", e)
+            null
+        }
+    }
 
     fun onEvent(event: EditorEvent) {
         when (event) {
@@ -45,7 +70,11 @@ class EditorViewModel : ViewModel() {
             }
 
             is EditorEvent.ImageSelected -> {
-                _state.update { it.copy(selectedImageUri = event.uri) }
+                val savedPath = event.uriString?.let { uriString ->
+                    val uri = Uri.parse(uriString)
+                    saveImageToInternalStorage(uri)
+                }
+                _state.update { it.copy(selectedImageUri = savedPath) }
             }
 
             is EditorEvent.DraftPointSelected -> {
@@ -86,29 +115,65 @@ class EditorViewModel : ViewModel() {
                     )
                 }
             }
+
+            // Новое событие завершения создания маршрута
+            is EditorEvent.FinishRouteCreation -> {
+                Log.d("EditorVM", "Received tags: ${event.selectedTags}")
+                viewModelScope.launch {
+                    val newRoute = createRouteFromState(event.selectedTags)
+                    Log.d("EditorVM", "Created route with tags: ${newRoute.tags}")
+                    routeRepository.addRoute(newRoute)
+                    _effect.send(EditorEffect.NavigateBackToExplore)
+                }
+            }
         }
     }
 
     private fun RoutePointModel?.orElse(other: RoutePointModel): RoutePointModel = this ?: other
+
     private suspend fun searchAddress(point: Point): String {
         val options = SearchOptions().apply {
             searchTypes = SearchType.GEO.value
         }
-        return suspendCancellableCoroutine { cont ->
+        return kotlinx.coroutines.suspendCancellableCoroutine { cont ->
             val session = searchManager.submit(point, 16, options, object : Session.SearchListener {
                 override fun onSearchResponse(response: com.yandex.mapkit.search.Response) {
                     val first = response.collection.children.firstOrNull()?.obj
                     val address = first?.name ?: first?.descriptionText ?: ""
-                    cont.resume(address)
+                    if (cont.isActive) {
+                        cont.resume(address)
+                    }
                 }
-                override fun onSearchError(error: Error) {
-                    Log.e("null", "Search error: $error")
-                    cont.resume("")
+                override fun onSearchError(error: com.yandex.runtime.Error) {
+                    Log.e("EditorViewModel", "Search error: $error")
+                    if (cont.isActive) {
+                        cont.resume("")
+                    }
                 }
             })
             cont.invokeOnCancellation {
                 session.cancel()
             }
         }
+    }
+
+    /**
+     * Создаёт объект RouteModel на основе текущего состояния редактора и выбранных тегов.
+     */
+    private fun createRouteFromState(selectedTags: Set<String>): RouteModel {
+        val currentState = _state.value
+        return RouteModel(
+            id = routeRepository.getNextId(),
+            title = currentState.routeName.trim(),
+            description = currentState.routeDescription.trim(),
+            distanceKm = 0,                     // заглушка
+            durationHours = 0,                  // заглушка
+            pointsCount = currentState.points.size,
+            rating = 0f,
+            imageUrl = currentState.selectedImageUri.toString(),
+            tags = selectedTags.toList(),
+            points = currentState.points,
+            isFavourite = true
+        )
     }
 }

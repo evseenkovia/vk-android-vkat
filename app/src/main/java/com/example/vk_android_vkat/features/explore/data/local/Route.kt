@@ -2,16 +2,19 @@ package com.example.vk_android_vkat.features.explore.data.local
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.example.vk_android_vkat.features.editor.domain.RoutePointModel
 
-@Entity
+@Entity(tableName = "Route")
 data class Route(
     @PrimaryKey val id: Int,
     val title: String,
     val description: String,
     val distanceKm: Int,
     val durationHours: Int,
-    val pointsCount: Int,   // заглушка для списка мест (возможно новая Entity - переделать под API)
-    val rating: Float,      // расчет из разных отзывов и тд.
-    val imageUrl: String? = null,
-    val isFavourite: Boolean
+    val pointsCount: Int,
+    val rating: Float,
+    val imageUrl: String?,
+    val isFavourite: Boolean,
+    val tags: List<String> = emptyList(),          // <-- добавить
+    val points: List<RoutePointModel> = emptyList() // <-- добавить
 )
