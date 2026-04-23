@@ -1,4 +1,7 @@
 <resources>
+    <string name="finish_route">Завершить</string>
+    <string name="select_tegs">Выберите теги</string>
+    <string name="continue_text">Опубликовать</string>
     <string name="app_name">MyMaps</string>
     <string name="title_explore">Поиск</string>
     <string name="title_favourite">Избранное</string>
@@ -59,5 +62,20 @@
     <string name="register_success">Регистрация успешна</string>
     <string name="password_reset_sent">Ссылка на восстановление отправлена</string>
     <string name="name">Имя</string>
+
+    <!-- Редактор -->
+    <string name="route_creation">Создание маршрута</string>
+    <string name="selected_route_photo">Выбранное фото маршрута</string>
+    <string name="attach_photo">Прикрепить фото</string>
+    <string name="route_name">Название маршрута</string>
+    <string name="route_description">Описание маршрута</string>
+    <string name="add_point">Добавить точку</string>
+    <string name="point_is">Точка %1$d</string>
+    <string name="address_is_not_stated">Адрес не указан</string>
+    <string name="route_point_selection">Задание точки маршрута</string>
+    <string name="selected_point_photo">Выбранное фото точки</string>
+    <string name="point_name">Название точки</string>
+    <string name="point_description">Описание точки</string>
+    <string name="save_point">Сохранить точку</string>
 
 </resources>

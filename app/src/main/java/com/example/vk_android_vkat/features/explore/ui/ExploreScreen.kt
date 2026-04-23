@@ -243,10 +243,10 @@ fun RoutesList(
         columns = GridCells.Fixed(2),
         content = {
             items(routes, key = { it.id }) { route ->
-                RouteCard(
+                RouteCard2(                         // ← было RouteCard
                     route = route,
                     onClick = { onClick(route.id) },
-                    onFavouriteClick = { onFavouriteClick(route.id)}
+                    onFavouriteClick = { onFavouriteClick(route.id) }
                 )
             }
         }
