@@ -85,9 +85,9 @@ fun NavGraphBuilder.exploreGraph(navController : NavHostController){
             val uiState by viewModel.state.collectAsStateWithLifecycle()
 
             // Обновляем экран при изменении состояния
-            LaunchedEffect(viewModel.state) {
-                viewModel.loadRoutes()
-            }
+//            LaunchedEffect(Unit) {
+//                viewModel.loadRoutes()
+//            }
 
             ExploreScreen(
                 state = uiState,

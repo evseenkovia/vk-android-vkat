@@ -8,9 +8,9 @@ interface RouteRepository {
 
     suspend fun getRouteById(id: Int): Result<RouteModel>
 
-    suspend fun getRouteByFilter(filter: RouteFilter): Result<List<RouteModel>>
+    suspend fun getRouteByFilter(filter: RouteFilter,onlyFavourites: Boolean): Result<List<RouteModel>>
 
-    suspend fun findRouteByQuery(query: String?): Result<List<RouteModel>>
+    suspend fun findRouteByQuery(query: String?, onlyFavourites: Boolean): Result<List<RouteModel>>
 
     suspend fun addRouteToFavourites(vararg routeModels: RouteModel)
 

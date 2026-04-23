@@ -23,7 +23,10 @@ android {
         versionCode = 1
         versionName = "1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+
     }
+
 
     buildTypes {
         release {
@@ -48,9 +51,13 @@ android {
         exclude(group = "com.intellij", module = "annotations")
     }
 }
+ksp {
+    arg("room.schemaLocation", "$projectDir/schemas")
+}
 
 dependencies {
     implementation(libs.androidx.foundation)
+    implementation(libs.foundation)
     // Compose BOM for all compose libraries
     val composeBom = platform("androidx.compose:compose-bom:2026.03.00")
     implementation(composeBom)

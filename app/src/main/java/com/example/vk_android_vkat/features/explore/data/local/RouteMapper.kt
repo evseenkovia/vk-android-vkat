@@ -12,6 +12,7 @@ fun Route.toRouteModel() : RouteModel {
         pointsCount = this.pointsCount,
         rating = this.rating,
         imageUrl = this.imageUrl,
+        authorID = this.authorID,
         isFavourite = this.isFavourite
     )
 }
@@ -26,6 +27,7 @@ fun RouteModel.toRoute() : Route {
         pointsCount = this.pointsCount,
         rating = this.rating,
         imageUrl = this.imageUrl,
+        authorID = this.authorID,
         isFavourite = this.isFavourite
     )
 }

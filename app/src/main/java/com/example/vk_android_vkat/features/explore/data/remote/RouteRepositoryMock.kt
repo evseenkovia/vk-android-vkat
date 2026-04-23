@@ -34,9 +34,13 @@ class RouteRepositoryMock (// ссылка на экземпляр Room
             ?: Result.failure(Exception("Маршрут с id = $id не найден" ))
     }
 
-    override suspend fun getRouteByFilter(filter: RouteFilter): Result<List<RouteModel>> {
-        val favRoutes = database.routeDao().getAll()
-        val filteredRoutes = routes.filter {
+    override suspend fun getRouteByFilter(filter: RouteFilter, onlyFavourites: Boolean): Result<List<RouteModel>> {
+        val sourceRoutes = if (onlyFavourites) {
+            getAllFavourites().getOrElse { return Result.failure(it) }
+        } else {
+            routes
+        }
+        val filteredRoutes = sourceRoutes.filter {
             it.rating >= filter.rating.start && it.rating <= filter.rating.endInclusive &&
             it.durationHours >= filter.duration.start && it.durationHours <= filter.duration.endInclusive &&
             it.distanceKm >= filter.distance.start && it.distanceKm <= filter.distance.endInclusive
@@ -51,18 +55,29 @@ class RouteRepositoryMock (// ссылка на экземпляр Room
             Result.failure(Exception("По заданным фильтрам результаты не найдены"))
     }
 
-    override suspend fun findRouteByQuery(query: String?): Result<List<RouteModel>> {
+     override suspend fun findRouteByQuery(query: String?, onlyFavourites: Boolean): Result<List<RouteModel>> {
         return if (query.isNullOrBlank()) {
-            getAllRoutes()
+            if (onlyFavourites) getAllFavourites() else getAllRoutes()
         } else {
-            // Непустой запрос - фильтруем
-            val filteredRoutes = mockRoutes.filter {
+            val sourceRoutes = if (onlyFavourites) {
+                // Ищем только в избранном из локальной БД
+                database.routeDao().getAll().map { it.toRouteModel() }
+            } else {
+                // Ищем во всех маршрутах
+                mockRoutes
+            }
+
+            val filteredRoutes = sourceRoutes.filter {
                 it.title.lowercase().contains(query.lowercase())
             }
 
             if (filteredRoutes.isNotEmpty()) {
-                val filteredFavouriteRoutes = checkFavourites(filteredRoutes)
-                Result.success(filteredFavouriteRoutes)
+                val routesWithFavouriteStatus = if (onlyFavourites) {
+                    filteredRoutes // Они уже все избранные
+                } else {
+                    checkFavourites(filteredRoutes)
+                }
+                Result.success(routesWithFavouriteStatus)
             } else {
                 Result.failure(Exception("Результаты не найдены"))
             }
