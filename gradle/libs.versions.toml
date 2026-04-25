@@ -21,6 +21,7 @@ uiTooling = "1.10.5"
 material3 = "1.4.0"
 foundation = "1.10.5"
 room-version = "2.8.4"
+animation = "1.10.6"
 foundationVersion = "1.10.6"
 
 [libraries]
@@ -48,6 +49,7 @@ androidx-room-compiler = { group = "androidx.room", name = "room-compiler", vers
 androidx-room-ktx = {group = "androidx.room", name = "room-ktx", version.ref = "room-version"}
 androidx-room-paging = {group = "androidx.room", name = "room-paging", version.ref = "room-version"}
 maps-mobile = { module = "com.yandex.android:maps.mobile", version.ref = "mapsMobile" }
+androidx-animation = { group = "androidx.compose.animation", name = "animation", version.ref = "animation" }
 foundation = { group = "androidx.compose.foundation", name = "foundation", version.ref = "foundationVersion" }
 
 [plugins]

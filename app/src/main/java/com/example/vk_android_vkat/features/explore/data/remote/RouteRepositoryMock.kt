@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import com.example.vk_android_vkat.features.map.RouteStartPoint
 
 class RouteRepositoryMock(
     private val database: AppDatabase
@@ -154,6 +155,23 @@ class RouteRepositoryMock(
         return routes.map { route ->
             if (route.id in favIds) route.copy(isFavourite = true)
             else route.copy(isFavourite = false)
+        }
+    }
+    override suspend fun getRouteStartPoints(): Result<List<RouteStartPoint>> {
+        return try {
+            val points = _routes.value.mapNotNull { route ->
+                route.points.firstOrNull()?.let { firstPoint ->
+                    RouteStartPoint(
+                        id = route.id,
+                        title = route.title,
+                        lat = firstPoint.latitude,
+                        lng = firstPoint.longitude
+                    )
+                }
+            }
+            Result.success(points)
+        } catch (e: Exception) {
+            Result.failure(e)
         }
     }
 }

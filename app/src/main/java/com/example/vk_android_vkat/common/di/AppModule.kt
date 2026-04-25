@@ -7,6 +7,8 @@ import com.example.vk_android_vkat.features.explore.data.local.AppDatabase
 import com.example.vk_android_vkat.features.explore.domain.RouteRepository
 import com.example.vk_android_vkat.features.explore.routeinfo.ui.RouteInfoViewModel
 import com.example.vk_android_vkat.features.explore.ui.ExploreViewModel
+import com.example.vk_android_vkat.features.map.MapViewModel
+import com.yandex.mapkit.mapview.MapView
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.module.dsl.viewModel
 import org.koin.core.scope.get
@@ -21,9 +23,7 @@ val appModule = module {
             androidContext(),
             AppDatabase::class.java,
             "mymaps-db"
-        )
-            .fallbackToDestructiveMigration()   // <-- добавить
-            .build()
+        ).fallbackToDestructiveMigration(true).build()
     }
 
     // DAO - factory (новый экземпляр при каждом запросе, легковесный)
@@ -34,6 +34,7 @@ val appModule = module {
 
     // ViewModel - специальный тип для ViewModel
     viewModel<ExploreViewModel> { ExploreViewModel(get()) }
+    viewModel<MapViewModel> { MapViewModel(get()) }
     viewModel<RouteInfoViewModel> { (routeId: Int) ->
         RouteInfoViewModel(routeId, get())
     }

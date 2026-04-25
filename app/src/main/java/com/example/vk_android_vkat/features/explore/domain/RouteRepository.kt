@@ -2,6 +2,7 @@ package com.example.vk_android_vkat.features.explore.domain
 
 import com.example.vk_android_vkat.features.explore.domain.filter.RouteFilter
 import kotlinx.coroutines.flow.StateFlow
+import com.example.vk_android_vkat.features.map.RouteStartPoint
 
 interface RouteRepository {
     val routesFlow: StateFlow<List<RouteModel>>
@@ -21,4 +22,5 @@ interface RouteRepository {
     suspend fun deleteFromFavourites(id: Int)
     suspend fun addRoute(route: RouteModel)
     fun getNextId(): Int
+    suspend fun getRouteStartPoints(): Result<List<RouteStartPoint>>
 }
