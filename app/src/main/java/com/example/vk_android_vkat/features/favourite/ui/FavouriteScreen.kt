@@ -56,6 +56,7 @@ import com.example.vk_android_vkat.features.explore.ui.ExploreEvent
 import com.example.vk_android_vkat.features.explore.ui.ExploreScreen
 import com.example.vk_android_vkat.features.explore.ui.ExploreState
 import com.example.vk_android_vkat.features.explore.ui.RouteCard
+import com.example.vk_android_vkat.features.explore.ui.RouteCard2
 import com.example.vk_android_vkat.features.explore.ui.RoutesList
 import kotlinx.coroutines.launch
 
@@ -283,10 +284,10 @@ fun RoutesList(
         columns = GridCells.Fixed(2),
         content = {
             items(routes, key = { it.id }) { route ->
-                RouteCard(
+                RouteCard2(                    // ← было RouteCard
                     route = route,
                     onClick = { onClick(route.id) },
-                    onFavouriteClick = { onFavouriteClick(route.id)}
+                    onFavouriteClick = { onFavouriteClick(route.id) }
                 )
             }
         }

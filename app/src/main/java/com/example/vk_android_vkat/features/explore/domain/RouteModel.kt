@@ -13,5 +13,6 @@ data class RouteModel(
     val imageUrl: String? = null,
     val tags: List<String> = emptyList(),
     val points: List<RoutePointModel> = emptyList(),
-    var isFavourite: Boolean = false
+    var isFavourite: Boolean = false,
+    val authorID: String? = null
 )

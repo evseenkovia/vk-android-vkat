@@ -4,7 +4,6 @@ import androidx.room.Room
 import com.example.vk_android_vkat.features.editor.EditorViewModel
 import com.example.vk_android_vkat.features.explore.data.RouteRepositoryMock
 import com.example.vk_android_vkat.features.explore.data.local.AppDatabase
-import com.example.vk_android_vkat.features.explore.data.remote.RouteRepositoryMock
 import com.example.vk_android_vkat.features.explore.domain.RouteRepository
 import com.example.vk_android_vkat.features.explore.routeinfo.ui.RouteInfoViewModel
 import com.example.vk_android_vkat.features.explore.ui.ExploreViewModel
