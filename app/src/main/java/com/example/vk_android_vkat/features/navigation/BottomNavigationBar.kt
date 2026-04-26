@@ -9,6 +9,7 @@ import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarDefaults
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemColors
+//import androidx.compose.material3.NavigationBarItemColors
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -23,7 +24,7 @@ import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
-import com.example.vk_android_vkat.common.theme.navigationBarItemColors
+
 import com.google.android.material.color.MaterialColors
 
 @Composable
@@ -37,6 +38,16 @@ fun BottomNavigationBar(navController: NavHostController) {
 
 
     ) {
+        val navigationBarItemColors = NavigationBarItemColors(
+            selectedIconColor = MaterialTheme.colorScheme.primary,
+            selectedTextColor = MaterialTheme.colorScheme.primary,
+            selectedIndicatorColor = Color.Transparent,
+            unselectedIconColor = MaterialTheme.colorScheme.onBackground,
+            unselectedTextColor = MaterialTheme.colorScheme.onBackground,
+            disabledIconColor = MaterialTheme.colorScheme.onBackground,
+            disabledTextColor = MaterialTheme.colorScheme.onBackground
+        )
+
         val entry by navController.currentBackStackEntryAsState()
         val currentDestination = entry?.destination
 

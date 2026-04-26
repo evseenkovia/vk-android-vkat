@@ -349,6 +349,8 @@ fun MapScreen(
                 modifier = Modifier.weight(1.0f).align(Alignment.End),
             ) {
                 SmallFloatingActionButton(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.secondary,
                     onClick = {
                         updateCameraState(
                             cameraState.copy(
@@ -363,6 +365,8 @@ fun MapScreen(
                 }
                 Spacer(modifier = Modifier.height(12.dp))
                 SmallFloatingActionButton(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.secondary,
                     onClick = {
                         updateCameraState(
                             cameraState.copy(
@@ -377,6 +381,8 @@ fun MapScreen(
                 }
             }
             FloatingActionButton(
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.secondary,
                 onClick = {
                     if (permissionState.hasPermission) {
                         userLocation?.let {
