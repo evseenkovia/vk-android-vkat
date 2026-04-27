@@ -91,6 +91,9 @@ fun RouteCard2(
 ) {
     val iconSize = 28.dp
     ElevatedCard(
+        colors = CardDefaults.elevatedCardColors(
+            containerColor = MaterialTheme.colorScheme.secondary
+        ),
         onClick = { onClick() },
         modifier = Modifier
             .aspectRatio(2f / 3f)
@@ -152,12 +155,12 @@ fun RouteCard2(
             Text(
                 text = route.title,
                 style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSecondary
             )
             Text(
                 text = "${route.distanceKm} км | ${route.durationHours} ч",
                 style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSecondary
             )
             Spacer(modifier = Modifier.height(4.dp))
             // Теги (горизонтальный скролл)
@@ -192,13 +195,13 @@ fun RouteCard2(
                             modifier = Modifier.size(iconSize),
                             imageVector = Icons.Outlined.StarBorder,
                             contentDescription = stringResource(R.string.rating),
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            tint = MaterialTheme.colorScheme.onSecondary
                         )
                         Spacer(modifier = Modifier.width(2.dp))
                         Text(
                             text = route.rating.toString(),
                             style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            color = MaterialTheme.colorScheme.onSecondary
                         )
                     }
                 }
@@ -208,13 +211,13 @@ fun RouteCard2(
                         modifier = Modifier.size(iconSize),
                         imageVector = Icons.Filled.LocationOn,
                         contentDescription = "Number of places",
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        tint = MaterialTheme.colorScheme.onSecondary
                     )
                     Spacer(modifier = Modifier.width(2.dp))
                     Text(
                         text = "${route.pointsCount} точек",
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onSecondary
                     )
                 }
             }

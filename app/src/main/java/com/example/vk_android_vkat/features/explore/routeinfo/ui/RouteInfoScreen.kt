@@ -178,7 +178,7 @@ fun RouteInfoLoadedScreenState(
                 Text(
                     text = route.description,
                     style = bodyTextSize,
-                    color = interfaceColor,
+                    color = MaterialTheme.colorScheme.onBackground,
                     textAlign = TextAlign.Justify
                 )
                 Spacer(modifier = Modifier.height(16.dp))
@@ -186,7 +186,7 @@ fun RouteInfoLoadedScreenState(
                     Text(
                         text = "Точки маршрута (${route.points.size})",
                         style = MaterialTheme.typography.titleMedium,
-                        color = interfaceColor
+                        color = MaterialTheme.colorScheme.onBackground
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     route.points.forEach { point ->
