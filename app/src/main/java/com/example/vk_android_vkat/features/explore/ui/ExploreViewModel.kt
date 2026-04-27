@@ -2,6 +2,7 @@ package com.example.vk_android_vkat.features.explore.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.vk_android_vkat.data.mockID
 import com.example.vk_android_vkat.features.explore.data.RouteRepositoryMock
 import com.example.vk_android_vkat.features.explore.domain.RouteModel
 import com.example.vk_android_vkat.features.explore.domain.RouteRepository
@@ -38,7 +39,7 @@ class ExploreViewModel(
         _isFiltering
     ) { routes, filters, query, isFavouriteMode, isFiltering ->
         val filtered = when {
-            isFavouriteMode -> routes.filter { it.isFavourite }
+            isFavouriteMode -> (routes.filter { it.isFavourite } + routes.filter { it.authorID == mockID }).distinctBy { it.id }
             query.isNotBlank() -> routes.filter { it.title.contains(query, ignoreCase = true) }
             isFiltering -> routes.filter {
                 it.rating >= filters.rating.start && it.rating <= filters.rating.endInclusive &&
@@ -114,7 +115,7 @@ class ExploreViewModel(
 
             if (updatedRoute.isFavourite) {
                 repository.addRouteToFavourites(updatedRoute)
-            } else {
+            } else if (updatedRoute.authorID != mockID){
                 repository.deleteFromFavourites(updatedRoute.id)
             }
 

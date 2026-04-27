@@ -13,7 +13,8 @@ fun Route.toRouteModel(): RouteModel = RouteModel(
     imageUrl = imageUrl ?: "",
     tags = tags,
     points = points,
-    isFavourite = isFavourite
+    isFavourite = isFavourite,
+    authorID = authorID
 )
 
 fun RouteModel.toRoute(): Route = Route(
@@ -27,5 +28,6 @@ fun RouteModel.toRoute(): Route = Route(
     imageUrl = imageUrl,
     isFavourite = isFavourite,
     tags = tags,
-    points = points
+    points = points,
+    authorID = authorID
 )

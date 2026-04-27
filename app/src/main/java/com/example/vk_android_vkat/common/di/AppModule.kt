@@ -23,7 +23,9 @@ val appModule = module {
             androidContext(),
             AppDatabase::class.java,
             "mymaps-db"
-        ).fallbackToDestructiveMigration(true).build()
+        )
+            //.fallbackToDestructiveMigration(true)
+            .build()
     }
 
     // DAO - factory (новый экземпляр при каждом запросе, легковесный)

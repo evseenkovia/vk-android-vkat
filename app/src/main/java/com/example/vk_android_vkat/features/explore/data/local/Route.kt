@@ -16,5 +16,6 @@ data class Route(
     val imageUrl: String?,
     val isFavourite: Boolean,
     val tags: List<String> = emptyList(),          // <-- добавить
-    val points: List<RoutePointModel> = emptyList() // <-- добавить
+    val points: List<RoutePointModel> = emptyList(), // <-- добавить
+    val authorID: String?
 )

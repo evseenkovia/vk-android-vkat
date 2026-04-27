@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import com.example.vk_android_vkat.features.map.RouteStartPoint
+import org.koin.core.qualifier._q
 
 class RouteRepositoryMock(
     private val database: AppDatabase
@@ -29,13 +30,14 @@ class RouteRepositoryMock(
         GlobalScope.launch(Dispatchers.IO) {
             val savedEntities = database.routeDao().getAll()
             val savedRoutes = savedEntities.map { it.toRouteModel() }
-            val routesWithFavourites = checkFavourites(savedRoutes)   // ← ключевая строка
-            Log.d("RouteRepo", "Loaded ${routesWithFavourites.size} routes from DB")
-            _routes.value = if (routesWithFavourites.isNotEmpty()) {
-                routesWithFavourites.toMutableList()
-            } else {
-                mockRoutes.toMutableList()
-            }
+            val routesWithFavourites = checkFavourites(savedRoutes)
+            Log.d("RouteRepo", "Loaded ${savedRoutes.size} routes from DB")
+            val mergedRoutes = (savedRoutes + checkFavourites(mockRoutes.toMutableList()))
+                .distinctBy { it.id }
+                .toMutableList()
+
+            _routes.value =
+                    mergedRoutes
         }
     }
 
@@ -73,7 +75,7 @@ class RouteRepositoryMock(
         return _routes.value.find { it.id == id }
             ?.let {
                 // Проверяем, есть ли маршрут в избранном
-                checkFavourites(it)
+                checkIsFavourite(it)
                 Result.success(it)
             }
             ?: Result.failure(Exception("Маршрут с id = $id не найден"))
@@ -134,7 +136,7 @@ class RouteRepositoryMock(
         database.routeDao().deleteById(id)
     }
 
-    suspend fun checkFavourites(route: RouteModel) {
+    suspend fun checkIsFavourite(route: RouteModel) {
         val localRoute = database.routeDao().getRouteById(route.id)
         route.isFavourite = localRoute?.isFavourite ?: false
     }

@@ -173,7 +173,8 @@ class EditorViewModel(
             imageUrl = currentState.selectedImageUri.toString(),
             tags = selectedTags.toList(),
             points = currentState.points,
-            isFavourite = true
+            isFavourite = true,
+            authorID = "1"
         )
     }
 }
