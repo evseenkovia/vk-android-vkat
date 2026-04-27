@@ -2,6 +2,7 @@ package com.example.vk_android_vkat.common.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBarItemColors
 import androidx.compose.material3.Typography
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
@@ -170,29 +171,46 @@ val AppTypography = Typography(
 
 // Светлая тема
 val AppLightColorScheme = lightColorScheme(
-    primary = Color(0xFF6200EE),
-    onPrimary = Color.White,
-    secondary = Color(0xFF3949AB),
-    onSecondary = Color.Black,
-    background = Color.White,
-    onBackground = Color.Black,
+    primary = Color(0xFFD28B5E),
+    onPrimary = Color(0xFF3E2F2C),
+    secondary = Color(0xFFFAEBDD),
+    onSecondary = Color(0xFF3E2F2C),
+    background = Color(0xFFFFF9F3),
+    onBackground = Color(0xFF3E2F2C),
     surface = Color.White,
     onSurface = Color.Black,
     error = Color(0xFFB00020),
-    onError = Color.White
+    onError = Color.White,
+
 )
 
 // Темная тема
 val AppDarkColorScheme = darkColorScheme(
-    primary = Color(0xFF3949AB),
-    onPrimary = Color.Black,
-    secondary = Color(0xFF202B60),
-    onSecondary = Color.Black,
-    background = Color(0xFF121212),
-    onBackground = Color.White,
-    surface = Color(0xFF121212),
-    onSurface = Color.White
+    primary = Color(0xFFB97A50),
+    onPrimary = Color(0xFF2B1F1C),
+
+    secondary = Color(0xFF3E2F2C),
+    onSecondary = Color(0xFFF5E6D8),
+
+    background = Color(0xFF1A1412),
+    onBackground = Color(0xFFEDE0D4),
+
+    surface = Color(0xFF241B18),
+    onSurface = Color(0xFFEDE0D4),
+
+    error = Color(0xFFCF6679),
+    onError = Color(0xFF1B0000)
 )
+
+//val navigationBarItemColors = NavigationBarItemColors(
+//    selectedIconColor = AppLightColorScheme.primary,
+//    selectedTextColor = AppLightColorScheme.primary,
+//    selectedIndicatorColor = Color.Transparent,
+//    unselectedIconColor = AppLightColorScheme.onBackground,
+//    unselectedTextColor = AppLightColorScheme.onBackground,
+//    disabledIconColor = AppLightColorScheme.onBackground,
+//    disabledTextColor = AppLightColorScheme.onBackground
+//)
 
 // Композиционная тема приложения
 @Composable
@@ -207,4 +225,5 @@ fun MyMapsTheme(
         typography = AppTypography,
         content = content
     )
+
 }

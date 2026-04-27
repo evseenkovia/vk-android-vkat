@@ -1,113 +1,70 @@
 package com.example.vk_android_vkat.features.explore.routeinfo.ui
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.BorderStroke
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.AddPhotoAlternate
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.outlined.StarBorder
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ElevatedButton
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import coil.compose.AsyncImage
 import com.example.vk_android_vkat.R
-import com.example.vk_android_vkat.data.mockRoutes
-
-@Preview(showBackground = true)
-@Composable
-fun RouteInfoScreenPreview(){
-    RouteInfoScreen(
-//        state = RouteInfoState(isLoading = true),
-//        state = RouteInfoState(error = "Что-то пошло не так((("),
-        state = RouteInfoState(routeData = mockRoutes[3]),
-        onEvent = {},
-    )
-}
+import com.example.vk_android_vkat.features.editor.domain.RoutePointModel
+import com.example.vk_android_vkat.features.explore.domain.RouteModel
 
 @Composable
 fun RouteInfoScreen(
     state: RouteInfoState,
     onEvent: (RouteInfoEvent) -> Unit
-){
-
-    val topBarUi = if (!state.isLoading && state.error.isNullOrEmpty() && state.routeData != null) {
-        TopBarUiModel(
-            title = state.routeData.title,
-            isFavourite = state.routeData.isFavourite,
-            onFavouriteToggle = { onEvent(RouteInfoEvent.ToggleFavourite) },
-            onBack = { onEvent(RouteInfoEvent.BackClicked) }
-        )
-    } else null
-
-    Scaffold(
-        topBar = { topBarUi?.let { RouteInfoTopBar(it) } },
-        contentWindowInsets = WindowInsets(0, 0, 0, 0),
-    ){ innerPadding ->
-        Box(
-            modifier = Modifier.padding(innerPadding)
-                .fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ){
-            if (state.isLoading)
-                LoadingScreenState()
-            else if (!state.error.isNullOrEmpty())
-                ErrorScreenState(state)
-            else if (state.routeData != null)
-                RouteInfoLoadedScreenState(state, onEvent)
+) {
+    Scaffold(contentWindowInsets = WindowInsets(0, 0, 0, 0)) { innerPadding ->
+        Box(modifier = Modifier.padding(innerPadding).fillMaxSize(), contentAlignment = Alignment.Center) {
+            when {
+                state.isLoading -> LoadingScreenState()
+                !state.error.isNullOrEmpty() -> ErrorScreenState(state)
+                state.routeData != null -> RouteInfoLoadedScreenState(state, onEvent)
+            }
         }
     }
 }
 
 @Composable
-fun LoadingScreenState(){
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ){
+fun LoadingScreenState() {
+    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         CircularProgressIndicator()
     }
 }
 
 @Composable
-fun ErrorScreenState(
-    state: RouteInfoState,
-    onEvent: (RouteInfoEvent) -> Unit = {}
-){
-
+fun ErrorScreenState(state: RouteInfoState) {
     Column(
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
-    ){
-        Text(
-            text = "Что-то пошло не так((("
-        )
+    ) {
+        Text("Что-то пошло не так(((")
         ElevatedButton(
             onClick = {},
             colors = ButtonDefaults.elevatedButtonColors(
@@ -115,9 +72,7 @@ fun ErrorScreenState(
                 contentColor = Color.White
             )
         ) {
-            Text(
-                text = "На главный экран"
-            )
+            Text("На главный экран")
         }
     }
 }
@@ -126,132 +81,239 @@ fun ErrorScreenState(
 fun RouteInfoLoadedScreenState(
     state: RouteInfoState,
     onEvent: (RouteInfoEvent) -> Unit
-){
+) {
     val route = state.routeData ?: return
+    var selectedPoint by remember { mutableStateOf<RoutePointModel?>(null) }
+    val localContext = LocalContext.current
 
     val titleTextSize = MaterialTheme.typography.titleLarge
     val bodyTextSize = MaterialTheme.typography.bodyLarge
     val iconSize = 24.dp
     val interfaceColor = Color.Black
 
-    Box(
-        modifier = Modifier.fillMaxSize()
-    ){
+    Box(modifier = Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
         ) {
-            // Блок с изображением и кнопкой "назад" поверх него
-            Box(
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                // Изображение (позже заменится на карусель)
+            Box(modifier = Modifier.fillMaxWidth()) {
                 AsyncImage(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .aspectRatio(4f / 3f),
+                    modifier = Modifier.fillMaxWidth().aspectRatio(1f),
                     model = route.imageUrl,
                     contentDescription = "Image for route with id = ${route.id}",
                     contentScale = ContentScale.Crop
                 )
-            }
-
-            // Контент под изображением
-            Column(
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
-            ) {
-                // Название маршрута
-                Text(
-                    text = route.title,
-                    style = titleTextSize,
-                    color = interfaceColor
+                Box(
+                    modifier = Modifier
+                        .matchParentSize()
+                        .background(
+                            Brush.verticalGradient(
+                                colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.7f))
+                            )
+                        )
                 )
-
-                Spacer(modifier = Modifier.height(4.dp))
-
-                // Дистанция и время
-                Text(
-                    text = "${route.distanceKm} км | ${route.durationHours} ч",
-                    style = bodyTextSize,
-                    color = interfaceColor
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                // Рейтинг и количество точек в одной строке
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Start,
+                    modifier = Modifier
+                        .statusBarsPadding()
+                        .align(Alignment.TopEnd)
+                        .padding(top = 12.dp, end = 16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Рейтинг
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
+                    IconButton(onClick = { /* TODO */ }) {
                         Icon(
-                            modifier = Modifier.size(iconSize),
-                            imageVector = Icons.Outlined.StarBorder,
-                            contentDescription = stringResource(R.string.rating),
-                            tint = interfaceColor
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(
-                            text = route.rating.toString(),
-                            style = bodyTextSize,
-                            color = interfaceColor
+                            painter = painterResource(R.drawable.ic_comment),
+                            contentDescription = null,
+                            tint = Color.White
                         )
                     }
-
-                    Spacer(modifier = Modifier.width(16.dp))
-
-                    // Количество точек
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
+                    IconButton(onClick = { onEvent(RouteInfoEvent.ToggleFavourite) }) {
                         Icon(
-                            modifier = Modifier.size(iconSize),
-                            imageVector = Icons.Filled.LocationOn,
-                            contentDescription = "Number of places",
-                            tint = interfaceColor
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(
-                            text = "${route.pointsCount} точек",
-                            style = bodyTextSize,
-                            color = interfaceColor
+                            painter = if (route.isFavourite)
+                                painterResource(R.drawable.ic_bookmark_filled)
+                            else
+                                painterResource(R.drawable.ic_bookmark_32dp),
+                            contentDescription = null,
+                            tint = Color.White
                         )
                     }
                 }
-
+                Column(
+                    modifier = Modifier
+                        .align(Alignment.BottomStart)
+                        .padding(16.dp)
+                ) {
+                    Text(text = route.title, style = titleTextSize, color = Color.White)
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "${route.distanceKm} км | ${route.durationHours} ч",
+                        style = bodyTextSize,
+                        color = Color.White
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Outlined.StarBorder,
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.size(iconSize)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(text = route.rating.toString(), color = Color.White, style = bodyTextSize)
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Icon(
+                            imageVector = Icons.Filled.LocationOn,
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.size(iconSize)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(text = "${route.pointsCount} точек", color = Color.White, style = bodyTextSize)
+                    }
+                }
+            }
+            Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
                 Spacer(modifier = Modifier.height(16.dp))
-
-                // Описание
                 Text(
                     text = route.description,
                     style = bodyTextSize,
-                    color = interfaceColor,
+                    color = MaterialTheme.colorScheme.onBackground,
                     textAlign = TextAlign.Justify
                 )
-
-                // Добавляем отступ внизу, чтобы контент не скрывался за FAB
+                Spacer(modifier = Modifier.height(16.dp))
+                if (route.points.isNotEmpty()) {
+                    Text(
+                        text = "Точки маршрута (${route.points.size})",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    route.points.forEach { point ->
+                        PointItem(
+                            point = point,
+                            onClick = { selectedPoint = point }
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                    }
+                }
                 Spacer(modifier = Modifier.height(80.dp))
             }
         }
-
-        // Кнопка "Открыть в картах" всегда внизу
+        IconButton(
+            onClick = { onEvent(RouteInfoEvent.BackClicked) },
+            modifier = Modifier
+                .statusBarsPadding()
+                .padding(top = 12.dp, start = 16.dp)
+                .size(40.dp)
+                .clip(CircleShape)
+                .background(color = MaterialTheme.colorScheme.primary)
+        ) {
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                contentDescription = "Back",
+                tint = MaterialTheme.colorScheme.background
+            )
+        }
         FloatingActionButton(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .padding(16.dp)
                 .fillMaxWidth(0.9f),
-            onClick = {},
+            onClick = {openRouteInYandexMaps(localContext,state.routeData)},
+            containerColor = MaterialTheme.colorScheme.primary
         ) {
             Text(
                 text = "Открыть в картах",
                 textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.onBackground,
                 modifier = Modifier.padding(vertical = 8.dp)
             )
+        }
+        if (selectedPoint != null) {
+            AlertDialog(
+                onDismissRequest = { selectedPoint = null },
+                title = { Text(selectedPoint!!.pointName.ifBlank { "Точка маршрута" }) },
+                text = { Text(selectedPoint!!.pointDescription.ifBlank { "Описание отсутствует" }) },
+                confirmButton = {
+                    TextButton(onClick = { selectedPoint = null }) {
+                        Text("Закрыть")
+                    }
+                }
+            )
+        }
+    }
+}
+
+fun openRouteInYandexMaps(
+    context: Context,
+    route: RouteModel
+) {
+    val points = route.points
+    if (points.isEmpty()) return
+
+    val rtext = points.joinToString("~") { point ->
+        "${point.latitude},${point.longitude}"
+    }
+
+    val uri = "https://yandex.ru/maps/?rtext=$rtext&rtt=pd".toUri()
+
+    val intent = Intent(Intent.ACTION_VIEW, uri).apply {
+        setPackage("ru.yandex.yandexmaps")
+    }
+
+    try {
+        context.startActivity(intent)
+    } catch (e: Exception) {
+        context.startActivity(Intent(Intent.ACTION_VIEW, uri))
+    }
+}
+@Composable
+fun PointItem(point: RoutePointModel, onClick: () -> Unit) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() },
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+        shape = RoundedCornerShape(16.dp)
+    ) {
+        Row(
+            modifier = Modifier.padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Card(
+                modifier = Modifier.size(72.dp),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                if (point.photoUri != null) {
+                    AsyncImage(
+                        model = point.photoUri,
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Icon(
+                            imageVector = Icons.Default.AddPhotoAlternate,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.outline
+                        )
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.width(12.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = point.pointName.ifBlank { "Точка маршрута" },
+                    style = MaterialTheme.typography.titleSmall
+                )
+                Text(
+                    text = point.address.ifBlank { "Адрес не указан" },
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
         }
     }
 }

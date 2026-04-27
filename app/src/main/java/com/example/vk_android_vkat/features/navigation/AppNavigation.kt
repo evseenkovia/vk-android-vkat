@@ -1,16 +1,28 @@
 package com.example.vk_android_vkat.features.navigation
 
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
 import androidx.navigation.toRoute
+import com.example.vk_android_vkat.features.editor.EditPointScreen
+import com.example.vk_android_vkat.features.editor.EditorEffect
 import com.example.vk_android_vkat.features.editor.EditorScreen
+import com.example.vk_android_vkat.features.editor.EditorViewModel
+import com.example.vk_android_vkat.features.editor.map.EditMapScreen
+import com.example.vk_android_vkat.features.editor.domain.RoutePointModel
+import com.example.vk_android_vkat.features.editor.map.ScreenTegScreen
 import com.example.vk_android_vkat.features.explore.routeinfo.ui.RouteInfoEffect
 import com.example.vk_android_vkat.features.explore.routeinfo.ui.RouteInfoScreen
 import com.example.vk_android_vkat.features.explore.routeinfo.ui.RouteInfoViewModel
@@ -19,6 +31,7 @@ import com.example.vk_android_vkat.features.explore.ui.ExploreScreen
 import com.example.vk_android_vkat.features.explore.ui.ExploreViewModel
 import com.example.vk_android_vkat.features.favourite.ui.FavouriteScreen
 import com.example.vk_android_vkat.features.map.MapScreen
+import com.example.vk_android_vkat.features.map.MapViewModel
 import com.example.vk_android_vkat.features.profile.ProfileItemUi
 import com.example.vk_android_vkat.features.profile.ProfileScreen
 import com.example.vk_android_vkat.features.profile.ProfileSection
@@ -73,7 +86,13 @@ object PasswordRecovery
 //------ Экраны деталей ------
 @Serializable
 data class RouteInfo(val routeId: Int)
+@Serializable
+object EditMapScreen
 
+@Serializable
+object EditPointScreen
+@Serializable
+object ScreenTeg
 //------ Расширения для графов ------
 
 fun NavGraphBuilder.exploreGraph(navController : NavHostController){
@@ -83,11 +102,6 @@ fun NavGraphBuilder.exploreGraph(navController : NavHostController){
         composable<Explore> {
             val viewModel: ExploreViewModel = koinViewModel()
             val uiState by viewModel.state.collectAsStateWithLifecycle()
-
-            // Обновляем экран при изменении состояния
-            LaunchedEffect(viewModel.state) {
-                viewModel.loadRoutes()
-            }
 
             ExploreScreen(
                 state = uiState,
@@ -143,21 +157,124 @@ fun NavGraphBuilder.favouriteGraph(navController: NavHostController) {
 }
 
 fun NavGraphBuilder.editorGraph(navController: NavHostController) {
-    navigation<EditorGraph>(startDestination = Editor){
+    navigation<EditorGraph>(startDestination = Editor) {
 
         composable<Editor> { backStackEntry ->
-            val details = backStackEntry.toRoute<Editor>()
-            EditorScreen()
+            val parentEntry = remember(backStackEntry) {
+                navController.getBackStackEntry(EditorGraph)
+            }
+            val viewModel: EditorViewModel = koinViewModel(
+                viewModelStoreOwner = parentEntry
+            )
+            val state by viewModel.state.collectAsStateWithLifecycle()
+            EditorScreen(
+                state = state,
+                navController,
+                onEvent = viewModel::onEvent,
+            )
+        }
+
+        composable<EditMapScreen> { backStackEntry ->
+            val parentEntry = remember(backStackEntry) {
+                navController.getBackStackEntry(EditorGraph)
+            }
+            val viewModel: EditorViewModel = koinViewModel(
+                viewModelStoreOwner = parentEntry
+            )
+            val state by viewModel.state.collectAsStateWithLifecycle()
+            val effect by viewModel.effect.collectAsState(initial = null)
+
+            LaunchedEffect(effect) {
+                when (effect) {
+                    EditorEffect.NavigateToEditPoint -> navController.navigate(EditPointScreen)
+                    EditorEffect.NavigateBackToExplore -> navController.popBackStack(Explore, inclusive = false)
+                    null -> { /* ничего не делаем */ }
+                }
+            }
+
+            EditMapScreen(
+                state = state,
+                onEvent = viewModel::onEvent
+            )
+        }
+
+        composable<EditPointScreen> { backStackEntry ->
+            val parentEntry = remember(backStackEntry) {
+                navController.getBackStackEntry(EditorGraph)
+            }
+            val viewModel: EditorViewModel = koinViewModel(
+                viewModelStoreOwner = parentEntry
+            )
+            val state by viewModel.state.collectAsStateWithLifecycle()
+
+            EditPointScreen(
+                state = state,
+                navController = navController,
+                onEvent = viewModel::onEvent
+            )
+        }
+
+        composable<ScreenTeg> { backStackEntry ->
+            val parentEntry = remember(backStackEntry) {
+                navController.getBackStackEntry(EditorGraph)
+            }
+            val viewModel: EditorViewModel = koinViewModel(viewModelStoreOwner = parentEntry)
+            val effect by viewModel.effect.collectAsState(initial = null)
+
+            LaunchedEffect(effect) {
+                when (effect) {
+                    EditorEffect.NavigateBackToExplore -> {
+                        navController.popBackStack(Explore, inclusive = false)
+                    }
+                    else -> {}
+                }
+            }
+
+            ScreenTegScreen(viewModel)
         }
     }
 }
 
-fun NavGraphBuilder.mapGraph(navController: NavHostController) {
-    navigation<MapGraph>(startDestination = Map){
 
-        composable<Map> { backStackEntry ->
-            val details = backStackEntry.toRoute<Map>()
-            MapScreen()
+fun NavGraphBuilder.mapGraph(navController: NavHostController) {
+    navigation<MapGraph>(startDestination = Map) {
+
+        composable<Map>(
+        ) { backStackEntry ->
+            val viewModel: MapViewModel = koinViewModel()
+            val state by viewModel.state.collectAsStateWithLifecycle()
+            viewModel.loadMarkers()
+
+            MapScreen(
+                state = state,
+                onRouteClick = { routeId ->
+                    navController.navigate(RouteInfo(routeId))
+                }
+            )
+        }
+
+        composable<RouteInfo>(
+            enterTransition = { slideInVertically { it } },
+            popExitTransition = { slideOutVertically { it } },
+        )
+            { backStackEntry ->
+            val routeId = backStackEntry.toRoute<RouteInfo>().routeId
+            val viewModel: RouteInfoViewModel = koinViewModel(
+                parameters = { parametersOf(routeId) }
+            )
+            val effect by viewModel.effect.collectAsState(initial = null)
+
+            LaunchedEffect(effect) {
+                if (effect == RouteInfoEffect.NavigateBack) {
+                    navController.popBackStack()
+                }
+            }
+
+            val state by viewModel.state.collectAsState()
+            RouteInfoScreen(
+                state = state,
+                onEvent = viewModel::onEvent
+            )
         }
     }
 }
