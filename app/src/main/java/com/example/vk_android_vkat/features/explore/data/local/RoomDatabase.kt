@@ -7,10 +7,10 @@ import androidx.room.TypeConverters
 
 @Database(
     entities = [Route::class],
-    version = 2,                           // <-- увеличить
+    version = 3,
     exportSchema = false
 )
-@TypeConverters(Converters::class)        // <-- добавить
+@TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun routeDao() : RouteDao
 }

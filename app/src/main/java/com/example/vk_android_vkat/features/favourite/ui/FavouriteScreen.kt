@@ -50,6 +50,7 @@ import com.example.vk_android_vkat.common.theme.AppLightColorScheme
 import com.example.vk_android_vkat.common.theme.AppTypography
 import com.example.vk_android_vkat.common.theme.PrimaryButton
 import com.example.vk_android_vkat.common.theme.SearchField
+import com.example.vk_android_vkat.data.mockID
 import com.example.vk_android_vkat.features.explore.domain.RouteModel
 import com.example.vk_android_vkat.features.explore.routeinfo.ui.filter.FilterDialog
 import com.example.vk_android_vkat.features.explore.ui.ExploreEvent
@@ -82,7 +83,7 @@ fun FavouriteScreen(
     PullToRefreshBox(
         isRefreshing = isRefreshing,
         onRefresh = {
-            onEvent(ExploreEvent.Retry({ isRefreshing = false }))
+            //onEvent(ExploreEvent.Retry({ isRefreshing = false }))
         }
     ) {
         Scaffold(
@@ -133,7 +134,7 @@ fun FavouriteScreen(
                 ) { page ->
                     when (page) {
                         0 -> RoutesList(
-                            routes = state.routeList,
+                            routes = state.routeList.filter { it.isFavourite },
                             onClick = onRouteClick,
                             onFavouriteClick = { routeID ->
                                 onEvent(ExploreEvent.ToggleFavourite(routeID))
@@ -141,7 +142,7 @@ fun FavouriteScreen(
                         )
 
                         1 -> RoutesList(
-                            routes = state.routeList,
+                            routes = state.routeList.filter { it.authorID == mockID },
                             onClick = onRouteClick,
                             onFavouriteClick = { routeID ->
                                 onEvent(ExploreEvent.ToggleFavourite(routeID))

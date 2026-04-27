@@ -1,5 +1,6 @@
 package com.example.vk_android_vkat.features.explore.ui
 
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -66,6 +67,10 @@ fun ExploreScreen(
     onEvent: (ExploreEvent) -> Unit,
     onRouteClick: (Int) -> Unit = {}
 ) {
+
+
+       Log.d("Explore", "is Favourite = ${state.isFavourite}, routes =${state.routeList.size} ")
+
     // Состояние для диалога фильтров
     var showFilterDialog by remember { mutableStateOf(false) }
     var isRefreshing by remember { mutableStateOf(false) }
@@ -243,7 +248,7 @@ fun RoutesList(
         columns = GridCells.Fixed(2),
         content = {
             items(routes, key = { it.id }) { route ->
-                RouteCard2(                         // ← было RouteCard
+                RouteCard2(
                     route = route,
                     onClick = { onClick(route.id) },
                     onFavouriteClick = { onFavouriteClick(route.id) }
