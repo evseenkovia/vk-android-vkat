@@ -2,6 +2,7 @@ package com.example.vk_android_vkat.features.explore.routeinfo.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.vk_android_vkat.features.explore.data.remote.RouteRepositoryMock
 import com.example.vk_android_vkat.features.explore.domain.RouteRepository
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow

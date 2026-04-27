@@ -2,66 +2,26 @@ package com.example.vk_android_vkat.features.explore.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.vk_android_vkat.data.mockID
-import com.example.vk_android_vkat.features.explore.data.RouteRepositoryMock
-import com.example.vk_android_vkat.features.explore.domain.RouteModel
 import com.example.vk_android_vkat.features.explore.domain.RouteRepository
 import com.example.vk_android_vkat.features.explore.domain.filter.RouteFilter
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.channels.BufferOverflow
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class ExploreViewModel(
     private val repository: RouteRepository
 ) : ViewModel() {
 
-    private val _filters = MutableStateFlow(RouteFilter())
-    private val _searchQuery = MutableStateFlow("")
-    private val _isFavouriteMode = MutableStateFlow(false)
-    private val _isFiltering = MutableStateFlow(false)
-
-    // Основной список маршрутов (реактивно из репозитория)
-    private val baseRoutesFlow: StateFlow<List<RouteModel>> =
-        repository.routesFlow.stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = emptyList()
-        )
-
-    // UI состояние (объединяет базовый список с фильтрами и поиском)
-    @OptIn(FlowPreview::class)
-    val state: StateFlow<ExploreState> = combine(
-        baseRoutesFlow,
-        _filters,
-        _searchQuery,
-        _isFavouriteMode,
-        _isFiltering
-    ) { routes, filters, query, isFavouriteMode, isFiltering ->
-        val filtered = when {
-            isFavouriteMode -> (routes.filter { it.isFavourite } + routes.filter { it.authorID == mockID }).distinctBy { it.id }
-            query.isNotBlank() -> routes.filter { it.title.contains(query, ignoreCase = true) }
-            isFiltering -> routes.filter {
-                it.rating >= filters.rating.start && it.rating <= filters.rating.endInclusive &&
-                        it.durationHours >= filters.duration.start && it.durationHours <= filters.duration.endInclusive &&
-                        it.distanceKm >= filters.distance.start && it.distanceKm <= filters.distance.endInclusive
-            }
-            else -> routes
-        }
-        ExploreState(
-            routeList = filtered,
-            isLoading = false,
-            error = null,
-            searchQuery = query,
-            filters = filters,
-            isFavourite = isFavouriteMode,
-            isFiltering = isFiltering
-        )
-    }.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5000),
-        initialValue = ExploreState(isLoading = true)
-    )
+    private val _state = MutableStateFlow(ExploreState())
+    val state: StateFlow<ExploreState> = _state
 
     private val searchQueryFlow = MutableSharedFlow<String>(
         extraBufferCapacity = 1,
@@ -69,69 +29,221 @@ class ExploreViewModel(
     )
 
     private val delayTime = 500L
+    private val latency = 500L
 
     init {
-        _isFavouriteMode.value = false
+        loadRoutes()
         setupSearchDebounce()
     }
 
+    // Обработка событий с UI
+    @OptIn(FlowPreview::class)
     fun onEvent(event: ExploreEvent) {
         when (event) {
             is ExploreEvent.QueryChanged -> {
-                _searchQuery.value = event.query
+                _state.update { it.copy(searchQuery = event.query) }
                 searchQueryFlow.tryEmit(event.query)
             }
+
             is ExploreEvent.FiltersChanged -> {
-                _filters.value = event.newFilters
+                _state.update { it.copy(filters = event.newFilters) }
             }
+
             ExploreEvent.ApplyFilters -> {
-                _isFiltering.value = true
+                _state.update { it.copy(isFiltering = true) }
+                loadFilteredRoutes()
             }
+
             is ExploreEvent.Retry -> {
-                _searchQuery.value = ""
-                _filters.value = RouteFilter()
-                _isFiltering.value = false
-                _isFavouriteMode.value = false
+                _state.update {
+                    it.copy(
+                        searchQuery = "",
+                        error = null,
+                        isLoading = true,
+                        filters = RouteFilter()
+                    )
+                }
+                loadRoutes()
                 event.onComplete()
             }
+
             ExploreEvent.ClearFilters -> {
-                _filters.value = RouteFilter()
-                _isFiltering.value = false
+                _state.update { it.copy(filters = RouteFilter()) }
             }
+
             is ExploreEvent.ToggleFavourite -> toggleFavourite(event.routeId)
             ExploreEvent.ShowFavourites -> {
-                _isFavouriteMode.value = true
-                _isFiltering.value = false
-                _searchQuery.value = ""
+                switchToFavouriteMode()
             }
         }
     }
 
+    // Переходим в режим Избранное (все запросы и маршруты фильтруются)
+    private fun switchToFavouriteMode() {
+        viewModelScope.launch {
+            _state.update { it.copy(isFavourite = true, error = null) }
+            val favouriteRoutes = repository.getAllFavourites()
+            favouriteRoutes
+                .onSuccess { routes ->
+                    _state.update {
+                        it.copy(
+                            routeList = routes,
+                            isLoading = false
+                        )
+                    }
+                }
+                .onFailure { exception ->
+                    _state.update {
+                        it.copy(
+                            routeList = emptyList(),
+                            error = exception.message,
+                            isLoading = false
+                        )
+                    }
+                }
+        }
+    }
+
+    // Добавляем маршрут в Избранное
     private fun toggleFavourite(routeId: Int) {
         viewModelScope.launch {
-            val currentList = baseRoutesFlow.value
-            val route = currentList.find { it.id == routeId } ?: return@launch
-            val updatedRoute = route.copy(isFavourite = !route.isFavourite)
 
-            if (updatedRoute.isFavourite) {
-                repository.addRouteToFavourites(updatedRoute)
-            } else if (updatedRoute.authorID != mockID){
-                repository.deleteFromFavourites(updatedRoute.id)
+            // Находим маршрут для добавления в Избранное
+            val routeToUpdate = _state.value.routeList.find {
+                it.id == routeId
             }
 
-            // Мгновенно обновляем кеш в репозитории, чтобы UI перерисовался
-            (repository as? RouteRepositoryMock)?.updateRouteFavouriteStatus(routeId, updatedRoute.isFavourite)
+            routeToUpdate?.let { route ->
+                val updatedRoute = route.copy(isFavourite = !route.isFavourite)
+
+                // Сохраняем/удаляем маршрут локально
+                if (updatedRoute.isFavourite)
+                    repository.addRouteToFavourites(updatedRoute)
+                else
+                    repository.deleteFromFavourites(updatedRoute.id)
+
+                // Обновляем состояние
+                _state.update { currentState ->
+                    val newList = currentState.routeList.map {
+                        if (it.id == routeId) updatedRoute else it
+                    }
+                    currentState.copy(routeList = newList)
+                }
+            }
         }
     }
 
-    @OptIn(FlowPreview::class)
+    private fun loadFilteredRoutes() {
+        viewModelScope.launch {
+            _state.update { it.copy(isLoading = true, error = null) }
+
+            delay(delayTime)
+
+            val filters = _state.value.filters
+            val filterResult = repository.getRouteByFilter(filters)
+            filterResult
+                .onSuccess { routes ->
+                    _state.update {
+                        it.copy(
+                            routeList = routes,
+                            error = null,
+                            isFiltering = false,
+                            isLoading = false
+                        )
+                    }
+                }
+                .onFailure { exception ->
+                    _state.update {
+                        it.copy(
+                            error = exception.message ?: "Неизвестная ошибка",
+                            isFiltering = false,
+                            isLoading = false
+                        )
+                    }
+                }
+        }
+    }
+
     private fun setupSearchDebounce() {
         viewModelScope.launch {
             searchQueryFlow
-                .debounce(delayTime)
+                .debounce(latency)
                 .distinctUntilChanged()
-                .collect { query ->
-                    // уже обрабатывается через combine, дополнительно ничего не нужно
+                .collectLatest { query ->
+                    findRouteByQuery(query)
+                }
+        }
+    }
+
+    // Загрузка маршрутов
+    fun loadRoutes() {
+        viewModelScope.launch {
+            _state.update { it.copy(isLoading = true, error = null) }
+
+            val loadedRoutes = repository.getAllRoutes()
+
+            loadedRoutes
+                .onSuccess { routes ->
+                    _state.update {
+                        it.copy(
+                            routeList = routes,
+                            isLoading = false
+                        )
+                    }
+                }
+                .onFailure { exception ->
+                    _state.update {
+                        it.copy(
+                            error = exception.message ?: "Неизвестная ошибка",
+                            isLoading = false
+                        )
+                    }
+                }
+            loadedRoutes
+                .onSuccess { routes ->
+                    _state.update {
+                        it.copy(
+                            routeList = routes,
+                            isLoading = false
+                        )
+                    }
+                }
+                .onFailure { exception ->
+                    _state.update {
+                        it.copy(
+                            error = exception.message ?: "Неизвестная ошибка",
+                            isLoading = false
+                        )
+                    }
+                }
+        }
+    }
+
+    // Текстовый поиск маршрута по названию
+    private fun findRouteByQuery(query: String?) {
+        viewModelScope.launch {
+            _state.update { it.copy(isLoading = true, error = null) }
+
+            delay(delayTime)
+
+            val searchResult = repository.findRouteByQuery(query)
+            searchResult
+                .onSuccess { routes ->
+                    _state.update {
+                        it.copy(
+                            routeList = routes,
+                            isLoading = false
+                        )
+                    }
+                }
+                .onFailure { exception ->
+                    _state.update {
+                        it.copy(
+                            error = exception.message,
+                            routeList = emptyList(),
+                            isLoading = false
+                        )
+                    }
                 }
         }
     }

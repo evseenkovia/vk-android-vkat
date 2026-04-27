@@ -7,9 +7,6 @@ buildscript {
     repositories {
         google()
         mavenCentral()
-        maven {
-            url = uri("https://maven.google.com/")
-        }
     }
     dependencies {
         // Для плагинов Gradle

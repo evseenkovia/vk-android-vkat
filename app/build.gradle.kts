@@ -1,19 +1,8 @@
-import java.util.Properties
-
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.compose.compiler)
     kotlin("plugin.serialization") version "2.3.10"
     id("com.google.devtools.ksp")
-}
-
-val mapkitApiKey: String by lazy {
-    val props = Properties()
-    val localPropsFile = rootProject.file("local.properties")
-    if (localPropsFile.exists()) {
-        props.load(localPropsFile.inputStream())
-    }
-    props.getProperty("MAPKIT_API_KEY", "")
 }
 
 kotlin {
@@ -29,14 +18,12 @@ android {
 
     defaultConfig {
         applicationId = "com.example.vk_android_vkat"
-        minSdk = 26
+        minSdk = 24
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        buildConfigField("String", "MAPKIT_API_KEY", "\"$mapkitApiKey\"")
     }
-
 
     buildTypes {
         release {
@@ -53,7 +40,6 @@ android {
     }
     buildFeatures {
         compose = true
-        buildConfig = true
     }
     compileSdkMinor = 1
 
@@ -62,20 +48,13 @@ android {
         exclude(group = "com.intellij", module = "annotations")
     }
 }
-ksp {
-    arg("room.schemaLocation", "$projectDir/schemas")
-}
 
 dependencies {
     implementation(libs.androidx.foundation)
-    implementation(libs.androidx.animation)
-    implementation(libs.foundation)
-    implementation(libs.foundation)
     // Compose BOM for all compose libraries
     val composeBom = platform("androidx.compose:compose-bom:2026.03.00")
     implementation(composeBom)
     androidTestImplementation(composeBom)
-    implementation(libs.maps.mobile)
     implementation(libs.androidx.material.icons.extended)
     implementation(libs.coil.compose)
     implementation(libs.androidx.lifecycle.livedata.ktx)

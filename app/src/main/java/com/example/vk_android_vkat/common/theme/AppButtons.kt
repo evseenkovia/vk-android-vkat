@@ -49,10 +49,10 @@ object AppButtonDefaults {
 
     @Composable
     fun secondaryButtonColors() = ButtonDefaults.buttonColors(
-        containerColor = MaterialTheme.colorScheme.secondary,
-        contentColor = MaterialTheme.colorScheme.onSecondary,
-        disabledContainerColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.5f),
-        disabledContentColor = MaterialTheme.colorScheme.onSecondary.copy(alpha = 0.5f)
+        containerColor = MaterialTheme.colorScheme.secondaryContainer,
+        contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+        disabledContainerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f),
+        disabledContentColor = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.5f)
     )
 
     @Composable

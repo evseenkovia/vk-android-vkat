@@ -1,6 +1,5 @@
 package com.example.vk_android_vkat.features.explore.ui
 
-import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -26,7 +25,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -35,8 +33,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -67,10 +63,6 @@ fun ExploreScreen(
     onEvent: (ExploreEvent) -> Unit,
     onRouteClick: (Int) -> Unit = {}
 ) {
-
-
-       Log.d("Explore", "is Favourite = ${state.isFavourite}, routes =${state.routeList.size} ")
-
     // Состояние для диалога фильтров
     var showFilterDialog by remember { mutableStateOf(false) }
     var isRefreshing by remember { mutableStateOf(false) }
@@ -158,8 +150,8 @@ fun ExploreTopBar(
                     onClick = {}
                 ) {
                     Icon(
-                        tint = MaterialTheme.colorScheme.onBackground,
-                        painter = painterResource(R.drawable.ic_map_pin_24dp),
+                        tint = MaterialTheme.colorScheme.onSurface,
+                        imageVector = Icons.Outlined.LocationOn,
                         contentDescription = "Locations nearby"
                     )
                 }
@@ -174,9 +166,6 @@ fun ExploreTopBar(
                     )
                 }
             },
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = MaterialTheme.colorScheme.background),
-
         )
     }
 }
@@ -248,10 +237,10 @@ fun RoutesList(
         columns = GridCells.Fixed(2),
         content = {
             items(routes, key = { it.id }) { route ->
-                RouteCard2(
+                RouteCard(
                     route = route,
                     onClick = { onClick(route.id) },
-                    onFavouriteClick = { onFavouriteClick(route.id) }
+                    onFavouriteClick = { onFavouriteClick(route.id)}
                 )
             }
         }

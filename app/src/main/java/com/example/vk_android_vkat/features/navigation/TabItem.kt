@@ -20,19 +20,22 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import com.example.vk_android_vkat.R
 
 data class TabItem(
     val graphRoute: Any,
-    val selectedIcon: @Composable (Modifier) -> Unit,
-    val unselectedIcon: @Composable (Modifier) -> Unit,
+    val selectedIcon: ImageVector,
+    val unselectedIcon: ImageVector,
     @StringRes val labelRes: Int
 ) {
     @Composable
-    fun IconComposable(isSelected: Boolean, modifier: Modifier = Modifier) {
-        if (isSelected) selectedIcon(modifier) else unselectedIcon(modifier)
+    fun IconComposable(isSelected: Boolean) {
+        Icon(
+            modifier = Modifier.size(24.dp),
+            imageVector = if (isSelected) selectedIcon else unselectedIcon,
+            contentDescription = stringResource(labelRes)
+        )
     }
 }
 
@@ -40,81 +43,30 @@ data class TabItem(
 val bottomNavDestinations = listOf(
     TabItem(
         ExploreGraph,
-        selectedIcon = {
-            Icon(
-                painter = painterResource(R.drawable.ic_explore_30dp),
-                contentDescription = null
-            )
-        },
-        unselectedIcon = {
-            Icon(
-                painter = painterResource(R.drawable.ic_explore_30dp),
-                contentDescription = null
-            )
-        },
-        labelRes = R.string.title_explore
-    ),
+        Icons.Filled.Explore,
+        Icons.Outlined.Explore,
+        R.string.title_explore),
     TabItem(
         FavouriteGraph,
-        selectedIcon = {
-            Icon(
-                painter = painterResource(R.drawable.ic_bookmark_32dp),
-                contentDescription = null
-            )
-        },
-        unselectedIcon = {
-            Icon(
-                painter = painterResource(R.drawable.ic_bookmark_32dp),
-                contentDescription = null
-            )
-        },
+        Icons.Filled.Bookmark,
+        Icons.Outlined.BookmarkBorder,
         R.string.title_favourite),
     TabItem(
         graphRoute = EditorGraph,
-        selectedIcon = {
-            Icon(
-                Icons.Filled.Add,
-                contentDescription = null
-            )
-        },
-        unselectedIcon = {
-            Icon(
-                Icons.Outlined.Add,
-                contentDescription = null
-            )
-        },
+        selectedIcon = Icons.Filled.Add,
+        unselectedIcon = Icons.Outlined.Add,
         labelRes = R.string.title_add
     ),
     TabItem(
         graphRoute = MapGraph,
-        selectedIcon = {
-            Icon(
-                painter = painterResource(R.drawable.ic_map_32dp),
-                contentDescription = null
-            )
-        },
-        unselectedIcon = {
-            Icon(
-                painter = painterResource(R.drawable.ic_map_32dp),
-                contentDescription = null
-            )
-        },
+        selectedIcon = Icons.Filled.Map,
+        unselectedIcon = Icons.Outlined.Map,
         labelRes = R.string.title_map
     ),
     TabItem(
         graphRoute = ProfileGraph,
-        selectedIcon = {
-            Icon(
-                painter = painterResource(R.drawable.ic_user_32dp),
-                contentDescription = null
-            )
-        },
-        unselectedIcon = {
-            Icon(
-                painter = painterResource(R.drawable.ic_user_32dp),
-                contentDescription = null
-            )
-        },
+        selectedIcon = Icons.Filled.Person,
+        unselectedIcon = Icons.Outlined.Person,
         labelRes = R.string.title_profile
     )
 )

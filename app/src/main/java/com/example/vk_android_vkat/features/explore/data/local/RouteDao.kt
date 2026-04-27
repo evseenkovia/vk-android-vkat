@@ -15,13 +15,11 @@ interface RouteDao {
     @Query("SELECT * FROM route WHERE route.id IN (:routeIds)")
     suspend fun loadAllByIds(routeIds: IntArray): List<Route>
 
-
     @Query("SELECT * FROM route WHERE route.id = :routeId")
     suspend fun getRouteById(routeId: Int): Route?
 
-
-    @Query("SELECT * FROM route WHERE title LIKE :title")
-    suspend fun findByTitle(title: String): List<Route>?
+    @Query("SELECT * FROM route WHERE title LIKE :title LIMIT 1")
+    suspend fun findByTitle(title: String): Route?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(vararg routes: Route)
