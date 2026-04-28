@@ -31,6 +31,9 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
@@ -63,6 +66,33 @@ fun EditorScreen(
 
     // Проверка, что добавлена хотя бы одна точка
     val hasPoints = state.points.isNotEmpty()
+    val approximateDistance by remember {
+        derivedStateOf { DistanceUtils.approxWalkDist(state.points) }
+    }
+    val walkingTimeMinutes by remember {
+        derivedStateOf { DistanceUtils.estimatedWalkingTimeMinutes(state.points) }
+    }
+    val distanceText = remember(approximateDistance) {
+        when {
+            approximateDistance < 1000.0 -> "${approximateDistance.toInt()} м"
+            else -> "%.1f км".format(approximateDistance / 1000.0)
+        }
+    }
+    val timeText = remember(walkingTimeMinutes) {
+        if (walkingTimeMinutes < 1) {
+            "меньше минуты"
+        } else {
+            val totalMinutes = walkingTimeMinutes.toInt()
+            if (totalMinutes < 60) {
+                "$totalMinutes мин"
+            } else {
+                val hours = totalMinutes / 60
+                val minutes = totalMinutes % 60
+                if (minutes == 0) "$hours ч"
+                else "$hours ч $minutes мин"
+            }
+        }
+    }
 
     Scaffold { innerPadding ->
         LazyColumn(
@@ -146,6 +176,25 @@ fun EditorScreen(
                 )
             }
 
+            if (state.points.size > 1) {
+                item {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = "Примерная длина: $distanceText",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        Text(
+                            text = "~ $timeText",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
+            }
             item {
                 Button(
                     onClick = { navController.navigate(EditMapScreen) },
@@ -155,10 +204,8 @@ fun EditorScreen(
                     Text(stringResource(R.string.add_point))
                 }
             }
-
             // Кнопка "Завершить" появляется только если есть хотя бы одна точка
             // ... внутри LazyColumn
-
             if (hasPoints) {
                 item {
                     Button(
