@@ -174,9 +174,9 @@ fun MapScreen(
                 override fun onLocationUpdated(location: com.yandex.mapkit.location.Location) {
                     val point = location.position
                     userLocation = point
-                    if (!initialLocationSet) {
-                        setLocation(point)
-                    }
+//                    if (!initialLocationSet) {
+//                        setLocation(point)
+//                    }
                 }
 
                 override fun onLocationStatusUpdated(status: LocationStatus) = Unit

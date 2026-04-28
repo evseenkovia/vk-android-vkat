@@ -129,9 +129,9 @@ fun EditMapScreen(
                     val point = location.position
                     userLocation = point
 
-                    if (!initialLocationSet) {
-                        setLocation(point)
-                    }
+//                    if (!initialLocationSet) {
+//                        setLocation(point)
+//                    }
                 }
 
                 override fun onLocationStatusUpdated(status: LocationStatus) = Unit
