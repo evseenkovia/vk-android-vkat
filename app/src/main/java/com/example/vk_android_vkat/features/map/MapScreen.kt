@@ -50,6 +50,10 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.example.vk_android_vkat.R
 import com.yandex.mapkit.Animation
 import com.yandex.mapkit.MapKitFactory
+import com.yandex.mapkit.ScreenPoint
+import com.yandex.mapkit.ScreenRect
+import com.yandex.mapkit.geometry.BoundingBox
+import com.yandex.mapkit.geometry.Geometry
 import com.yandex.mapkit.geometry.Point
 import com.yandex.mapkit.location.LocationListener
 import com.yandex.mapkit.location.LocationStatus
@@ -62,6 +66,7 @@ import com.yandex.mapkit.map.ClusterListener
 import com.yandex.mapkit.map.ClusterTapListener
 import com.yandex.mapkit.map.IconStyle
 import com.yandex.mapkit.map.MapObjectTapListener
+import com.yandex.mapkit.map.Rect
 import com.yandex.mapkit.map.TextStyle
 import com.yandex.mapkit.mapview.MapView
 import com.yandex.runtime.image.ImageProvider
@@ -245,9 +250,7 @@ fun MapScreen(
                 cameraState = currentCameraState,
                 onCameraStateChange = ::updateCameraState,
                 cluster = cluster,
-                paddingPx = 96 * 3,
-                minZoom = 3f,
-                maxZoom = 19f
+                paddingDp = 32
             )
             true
         }
@@ -420,15 +423,12 @@ fun MapScreen(
         }
     }
 }
-
 private fun zoomToCluster(
     mapView: MapView,
     cameraState: CameraState,
     onCameraStateChange: (CameraState) -> Unit,
     cluster: Cluster,
-    paddingPx: Int = 96,
-    minZoom: Float = 3f,
-    maxZoom: Float = 19f
+    paddingDp: Int = 96
 ) {
     val points = cluster.placemarks.map { it.geometry }
     if (points.isEmpty()) return
@@ -438,91 +438,35 @@ private fun zoomToCluster(
     val minLon = points.minOf { it.longitude }
     val maxLon = points.maxOf { it.longitude }
 
+    val boundingBox = BoundingBox(Point(minLat, minLon), Point(maxLat, maxLon))
+    val geometry = Geometry.fromBoundingBox(boundingBox)
+
     val width = mapView.width
     val height = mapView.height
+    if (width <= 0 || height <= 0) return
 
-    val squareSide = if (width > 0 && height > 0) {
-        (minOf(width, height) - 2 * paddingPx).coerceAtLeast(1)
-    } else {
-        1
-    }
+    val density = mapView.context.resources.displayMetrics.density
+    val paddingPx = (paddingDp * density).toInt()
 
-    val zoom = calculateZoomForBounds(
-        minLat = minLat,
-        maxLat = maxLat,
-        minLon = minLon,
-        maxLon = maxLon,
-        viewWidthPx = squareSide,
-        viewHeightPx = squareSide,
-        minZoom = minZoom,
-        maxZoom = maxZoom
+
+    val topLeft = ScreenPoint(paddingPx.toFloat(), paddingPx.toFloat())
+    val bottomRight = ScreenPoint(
+        (width - paddingPx).toFloat(),
+        (height - paddingPx).toFloat()
     )
+    val screenRect = ScreenRect(topLeft, bottomRight)
 
-    val center = mercatorCenter(
-        minLat = minLat,
-        maxLat = maxLat,
-        minLon = minLon,
-        maxLon = maxLon
-    )
+    val cameraPosition = mapView.mapWindow.map.cameraPosition(geometry, screenRect)
 
     onCameraStateChange(
         cameraState.copy(
-            latitude = center.latitude,
-            longitude = center.longitude,
-            zoom = zoom
+            latitude = cameraPosition.target.latitude,
+            longitude = cameraPosition.target.longitude,
+            zoom = cameraPosition.zoom,
+            azimuth = cameraPosition.azimuth,
+            tilt = cameraPosition.tilt
         )
     )
-}
-
-private fun calculateZoomForBounds(
-    minLat: Double,
-    maxLat: Double,
-    minLon: Double,
-    maxLon: Double,
-    viewWidthPx: Int,
-    viewHeightPx: Int,
-    minZoom: Float,
-    maxZoom: Float
-): Float {
-    val (x1, y1) = latLonToWorld(minLat, minLon)
-    val (x2, y2) = latLonToWorld(maxLat, maxLon)
-
-    val dx = abs(x2 - x1).coerceAtLeast(1e-9)
-    val dy = abs(y2 - y1).coerceAtLeast(1e-9)
-
-    val zoomX = log2(viewWidthPx / (256.0 * dx))
-    val zoomY = log2(viewHeightPx / (256.0 * dy))
-
-    return min(zoomX, zoomY).toFloat().coerceIn(minZoom, maxZoom)
-}
-
-private fun latLonToWorld(lat: Double, lon: Double): Pair<Double, Double> {
-    val x = (lon + 180.0) / 360.0
-    val sinLat = kotlin.math.sin(Math.toRadians(lat)).coerceIn(-0.9999, 0.9999)
-    val y = 0.5 - ln((1.0 + sinLat) / (1.0 - sinLat)) / (4.0 * PI)
-    return x to y
-}
-
-private fun worldToLatLon(x: Double, y: Double): Point {
-    val lon = x * 360.0 - 180.0
-    val n = PI - 2.0 * PI * y
-    val lat = Math.toDegrees(atan(sinh(n)))
-    return Point(lat, lon)
-}
-
-private fun mercatorCenter(
-    minLat: Double,
-    maxLat: Double,
-    minLon: Double,
-    maxLon: Double
-): Point {
-    val (x1, y1) = latLonToWorld(minLat, minLon)
-    val (x2, y2) = latLonToWorld(maxLat, maxLon)
-
-    val centerX = (x1 + x2) / 2.0
-    val centerY = (y1 + y2) / 2.0
-
-    return worldToLatLon(centerX, centerY)
 }
 
 fun moveMap(
