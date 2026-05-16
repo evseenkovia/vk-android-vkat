@@ -110,4 +110,11 @@ dependencies {
     // VK ID
     implementation("com.vk.id:vkid:2.7.0")
     implementation("com.vk.id:onetap-compose:2.7.0")
+
+    implementation("io.ktor:ktor-client-core:3.5.0")
+    implementation("io.ktor:ktor-client-android:3.5.0")  // Движок для Android
+    implementation("io.ktor:ktor-client-content-negotiation:3.5.0")
+    implementation("io.ktor:ktor-serialization-kotlinx-json:3.5.0")
+
+
 }

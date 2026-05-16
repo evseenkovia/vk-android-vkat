@@ -6,7 +6,7 @@ data class ProfileContentUi(
 )
 
 data class ProfileHeaderUi(
-    val avatarUrl: String,
+    val avatarUrl: String? = null,
     val userName: String,
     val email: String
 )

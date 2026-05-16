@@ -1,5 +1,6 @@
 package com.example.vk_android_vkat.features.auth.login
 
+import android.util.Log
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -45,6 +46,7 @@ import com.example.vk_android_vkat.config.getOneTapFailCallback
 import com.example.vk_android_vkat.config.getOneTapSuccessCallback
 import com.vk.id.AccessToken
 import com.vk.id.VKIDAuthFail
+import com.vk.id.auth.VKIDAuthUiParams
 import com.vk.id.onetap.common.OneTapOAuth
 import com.vk.id.onetap.common.OneTapStyle
 import com.vk.id.onetap.common.button.style.OneTapButtonCornersStyle
@@ -111,6 +113,9 @@ fun LoginScreen(
                     OneTapStyle.Light(cornersStyle = OneTapButtonCornersStyle.Rounded)
                 },
                 onAuth = { oAuth, accessToken ->
+                    Log.d("Login", "Token received: ${accessToken.token.take(20)}...")
+                    Log.d("Login", "User ID: ${accessToken.userID}")
+                    Log.d("Login", "Scopes: ${accessToken.scopes}")
                     onEvent(LoginEvent.VKAuthSuccess(accessToken))
                 },
                 onFail = { oAuth, fail ->
@@ -124,6 +129,9 @@ fun LoginScreen(
                 },
                 signInAnotherAccountButtonEnabled = true,
                 oAuths = setOf(OneTapOAuth.MAIL, OneTapOAuth.OK),
+                authParams = VKIDAuthUiParams.Builder().apply {
+                    this.scopes = setOf("email", "phone")
+                }.build()
             )
             token?.let {
                 Spacer(modifier = Modifier.height(32.dp))

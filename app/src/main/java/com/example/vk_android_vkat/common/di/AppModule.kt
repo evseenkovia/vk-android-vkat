@@ -1,6 +1,8 @@
 package com.example.vk_android_vkat.common.di
 
 import androidx.room.Room
+import com.example.vk_android_vkat.common.utils.TokenManager
+import com.example.vk_android_vkat.features.auth.login.LoginViewModel
 import com.example.vk_android_vkat.features.editor.EditorViewModel
 import com.example.vk_android_vkat.features.explore.data.RouteRepositoryMock
 import com.example.vk_android_vkat.features.explore.data.local.AppDatabase
@@ -8,10 +10,10 @@ import com.example.vk_android_vkat.features.explore.domain.RouteRepository
 import com.example.vk_android_vkat.features.explore.routeinfo.ui.RouteInfoViewModel
 import com.example.vk_android_vkat.features.explore.ui.ExploreViewModel
 import com.example.vk_android_vkat.features.map.MapViewModel
-import com.yandex.mapkit.mapview.MapView
+import com.example.vk_android_vkat.features.profile.ProfileViewModel
+import com.example.vk_android_vkat.features.profile.data.VKUserRepository
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.module.dsl.viewModel
-import org.koin.core.scope.get
 import org.koin.dsl.module
 
 
@@ -28,6 +30,12 @@ val appModule = module {
             .build()
     }
 
+    single { TokenManager(androidContext()) }
+
+    single { VKUserRepository(get()) }
+
+    viewModel { ProfileViewModel(get(), get()) }
+
     // DAO - factory (новый экземпляр при каждом запросе, легковесный)
     factory { get<AppDatabase>().routeDao() }
 
@@ -41,4 +49,6 @@ val appModule = module {
         RouteInfoViewModel(routeId, get())
     }
     viewModel { EditorViewModel(get(),androidContext()) }
+
+    viewModel { LoginViewModel(get()) }
 }

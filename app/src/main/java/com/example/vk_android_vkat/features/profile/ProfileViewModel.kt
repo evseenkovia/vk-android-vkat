@@ -1,18 +1,19 @@
 package com.example.vk_android_vkat.features.profile
-
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.vk_android_vkat.data.mockProfile
+import com.example.vk_android_vkat.common.utils.TokenManager
+import com.example.vk_android_vkat.features.profile.data.VKUserRepository
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class ProfileViewModel : ViewModel() {
+class ProfileViewModel(
+    private val vkUserRepository: VKUserRepository,
+    private val tokenManager: TokenManager
+) : ViewModel() {
 
     private val _state = MutableStateFlow<ProfileUiState>(ProfileUiState.Loading)
-    val state: StateFlow<ProfileUiState> = _state.asStateFlow()
+    val state = _state.asStateFlow()
 
     init {
         loadProfile()
@@ -27,13 +28,72 @@ class ProfileViewModel : ViewModel() {
     }
 
     private fun loadProfile() {
-        // Пока мок-данные
-        _state.value = mockProfile
+        val currentState = _state.value
+        if (currentState is ProfileUiState.Content) {
+            // Данные уже есть, не перезагружаем
+            return
+        }
+
+        viewModelScope.launch {
+            _state.value = ProfileUiState.Loading
+
+            try {
+                val vkUser = vkUserRepository.getUserInfo()
+
+                if (vkUser != null) {
+                    val profileContent = ProfileContentUi(
+                        header = ProfileHeaderUi(
+                            userName = "${vkUser.firstName} ${vkUser.lastName}".trim(),
+                            email = vkUser.email ?: "Email не указан",
+                            avatarUrl = vkUser.avatarUrl
+                        ),
+                        sections = getProfileSections()
+                    )
+                    _state.value = ProfileUiState.Content(profileContent)
+                } else {
+                    _state.value = ProfileUiState.Error("Не удалось загрузить данные пользователя")
+                }
+            } catch (e: Exception) {
+                _state.value = ProfileUiState.Error("Ошибка загрузки: ${e.message}")
+            }
+        }
+    }
+
+    /**
+     * Секции для отображения в профиле
+     */
+    private fun getProfileSections(): List<ProfileItemUi> {
+        return listOf(
+            ProfileItemUi.Info(
+                title = "О приложении",
+                subtitle = "Версия 1.0.0"
+            ),
+            ProfileItemUi.Switch(
+                title = "Уведомления",
+                checked = true
+            ),
+            ProfileItemUi.Navigation(
+                title = "Конфиденциальность",
+                section = ProfileSection.Privacy
+            ),
+            ProfileItemUi.Navigation(
+                title = "Выйти из аккаунта",
+                section = ProfileSection.About
+            )
+        )
     }
 
     private fun handleNavigation(item: ProfileItemUi) {
-        // Здесь можно отправлять событие навигации через Channel, SharedFlow или NavController
-        // Пример: navigateTo(item)
+        when (item.title) {
+            "Выйти из аккаунта" -> logout()
+        }
+    }
+
+    private fun logout() {
+        viewModelScope.launch {
+            tokenManager.clearToken()
+            // Отправьте эффект для перехода на экран входа
+        }
     }
 
     private fun handleSwitch(item: ProfileItemUi, checked: Boolean) {
@@ -41,13 +101,12 @@ class ProfileViewModel : ViewModel() {
 
         val newSections = currentContent.sections.map { sectionItem ->
             when {
-                sectionItem is ProfileItemUi.Switch && sectionItem == item ->
-                    sectionItem.copy(checked = checked) // безопасно, copy есть только у Switch
+                sectionItem is ProfileItemUi.Switch && sectionItem.title == item.title ->
+                    sectionItem.copy(checked = checked)
                 else -> sectionItem
             }
         }
 
         _state.value = ProfileUiState.Content(currentContent.copy(sections = newSections))
     }
-
 }

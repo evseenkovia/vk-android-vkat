@@ -2,6 +2,7 @@ package com.example.vk_android_vkat.features.auth.login
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.vk_android_vkat.common.utils.TokenManager
 import com.example.vk_android_vkat.data.delayTime
 import com.example.vk_android_vkat.data.mockEmail
 import com.example.vk_android_vkat.data.mockPassword
@@ -15,7 +16,9 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class LoginViewModel : ViewModel() {
+class LoginViewModel(
+    private val tokenManager: TokenManager
+) : ViewModel() {
 
     sealed class LoginEffect {
         object LoginSuccess : LoginEffect()
@@ -119,7 +122,7 @@ class LoginViewModel : ViewModel() {
 
     private suspend fun handleVKAuthSuccess(accessToken: AccessToken) {
         // Сохраняем токен
-//        tokenManager.saveToken(accessToken)
+        tokenManager.saveToken(accessToken)
 
         _state.update {
             it.copy(

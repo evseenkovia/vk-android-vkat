@@ -282,7 +282,7 @@ fun NavGraphBuilder.mapGraph(navController: NavHostController) {
 fun NavGraphBuilder.profileGraph(navController: NavHostController) {
     navigation<ProfileGraph>(startDestination = Profile){
         composable<Profile> {
-            val viewModel: ProfileViewModel = viewModel()
+            val viewModel: ProfileViewModel = koinViewModel()
             val uiState by viewModel.state.collectAsState()
 
             ProfileScreen(
@@ -296,11 +296,11 @@ fun NavGraphBuilder.profileGraph(navController: NavHostController) {
                                 is ProfileItemUi.Navigation -> {
                                     val section = event.id.section
                                     when (section) {
-                                        ProfileSection.Account -> TODO("Account screen")
-                                        ProfileSection.Notifications -> TODO("Notifications screen")
-                                        ProfileSection.Privacy -> TODO("Privacy screen")
-                                        ProfileSection.Appearance -> TODO("Appearance screen")
-                                        ProfileSection.About -> TODO("About screen")
+                                        ProfileSection.Account -> {}
+                                        ProfileSection.Notifications -> {}
+                                        ProfileSection.Privacy -> {}
+                                        ProfileSection.Appearance -> {}
+                                        ProfileSection.About -> {}
                                     }
                                 }
 

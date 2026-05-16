@@ -14,6 +14,7 @@ import com.example.vk_android_vkat.features.auth.recovery.PasswordRecoveryScreen
 import com.example.vk_android_vkat.features.auth.recovery.RecoveryViewModel
 import com.example.vk_android_vkat.features.auth.registration.RegistrationScreen
 import com.example.vk_android_vkat.features.auth.registration.RegistrationViewModel
+import org.koin.androidx.compose.koinViewModel
 
 fun NavGraphBuilder.authGraph(navController: NavController) {
 
@@ -22,7 +23,7 @@ fun NavGraphBuilder.authGraph(navController: NavController) {
         // ------------------- LOGIN SCREEN -------------------
         composable<Login> { backStackEntry ->
 
-            val viewModel: LoginViewModel = viewModel()
+            val viewModel: LoginViewModel = koinViewModel()
             val state by viewModel.state.collectAsState()
             val effect by viewModel.effect.collectAsState(initial = null)
 
