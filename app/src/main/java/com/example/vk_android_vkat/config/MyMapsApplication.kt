@@ -1,11 +1,10 @@
 package com.example.vk_android_vkat.config
 
 import android.app.Application
-import androidx.room.Room
 import com.example.vk_android_vkat.BuildConfig
 import com.example.vk_android_vkat.common.di.appModule
-import com.example.vk_android_vkat.features.explore.data.local.AppDatabase
 import com.example.vk_android_vkat.features.explore.data.RouteRepositoryMock
+import com.vk.id.VKID
 import com.yandex.mapkit.MapKitFactory
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
@@ -23,6 +22,8 @@ class MyMapsApplication : Application() {
         MapKitFactory.setApiKey(BuildConfig.MAPKIT_API_KEY)
         MapKitFactory.setLocale("ru_RU") //Для Русского текста в адресах
         MapKitFactory.initialize(this)
+        // Инициализация VK SDK
+        VKID.init(this)
 
         startKoin {
             // Логирование (опционально)

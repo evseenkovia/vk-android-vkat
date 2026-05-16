@@ -1,5 +1,6 @@
 package com.example.vk_android_vkat.features.auth.login
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -25,6 +26,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -38,6 +40,15 @@ import com.example.vk_android_vkat.common.theme.PasswordField
 import com.example.vk_android_vkat.common.theme.PrimaryButton
 import com.example.vk_android_vkat.common.theme.SecondaryButton
 import com.example.vk_android_vkat.common.theme.TextButton
+import com.example.vk_android_vkat.config.UseToken
+import com.example.vk_android_vkat.config.getOneTapFailCallback
+import com.example.vk_android_vkat.config.getOneTapSuccessCallback
+import com.vk.id.AccessToken
+import com.vk.id.VKIDAuthFail
+import com.vk.id.onetap.common.OneTapOAuth
+import com.vk.id.onetap.common.OneTapStyle
+import com.vk.id.onetap.common.button.style.OneTapButtonCornersStyle
+import com.vk.id.onetap.compose.onetap.OneTap
 
 @Preview(showBackground = true)
 @Composable
@@ -87,6 +98,27 @@ fun LoginScreen(
             )
 
             Spacer(modifier = Modifier.height(24.dp))
+
+            val context = LocalContext.current
+            // for demo purpose only, use secured place to keep token
+            var token: AccessToken? by remember { mutableStateOf(null) }
+
+            OneTap(
+                modifier = Modifier.fillMaxWidth(),
+                style = if (isSystemInDarkTheme()) {
+                    OneTapStyle.Dark(cornersStyle = OneTapButtonCornersStyle.Rounded)
+                } else {
+                    OneTapStyle.Light(cornersStyle = OneTapButtonCornersStyle.Rounded)
+                },
+                onAuth = getOneTapSuccessCallback(context) { token = it },
+                onFail = getOneTapFailCallback(context),
+                signInAnotherAccountButtonEnabled = true,
+                oAuths = setOf(OneTapOAuth.MAIL, OneTapOAuth.OK),
+            )
+            token?.let {
+                Spacer(modifier = Modifier.height(32.dp))
+                UseToken(it)
+            }
 
             PrimaryButton(
                 text = stringResource(R.string.sign_in_do),

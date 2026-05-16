@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.compose.compiler)
     kotlin("plugin.serialization") version "2.3.10"
     id("com.google.devtools.ksp")
+    id("vkid.manifest.placeholders")
 }
 
 val mapkitApiKey: String by lazy {
@@ -35,6 +36,15 @@ android {
         versionName = "1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField("String", "MAPKIT_API_KEY", "\"$mapkitApiKey\"")
+
+        addManifestPlaceholders(
+            mapOf(
+                "VKIDClientID" to "1233445", // ID вашего приложения (app_id).
+                "VKIDClientSecret" to "000000000000", // Ваш защищенный ключ (client_secret).
+                "VKIDRedirectHost" to "vk.ru", // Обычно используется vk.ru.
+                "VKIDRedirectScheme" to "vk1233445", // Должно быть vk{ID приложения}.
+            )
+        )
     }
 
 
@@ -96,4 +106,8 @@ dependencies {
     ksp(libs.androidx.room.compiler)
     implementation(libs.koin.android)
     implementation(libs.koin.androidx.compose)
+
+    // VK ID
+    implementation("com.vk.id:vkid:2.7.0")
+    implementation("com.vk.id:onetap-compose:2.7.0")
 }
