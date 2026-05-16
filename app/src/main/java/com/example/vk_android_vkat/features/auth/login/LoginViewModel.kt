@@ -6,6 +6,7 @@ import com.example.vk_android_vkat.data.delayTime
 import com.example.vk_android_vkat.data.mockEmail
 import com.example.vk_android_vkat.data.mockPassword
 import com.example.vk_android_vkat.features.auth.AuthError
+import com.vk.id.AccessToken
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -36,6 +37,8 @@ class LoginViewModel : ViewModel() {
             LoginEvent.LoginClicked -> login()
             LoginEvent.RegisterClicked -> viewModelScope.launch { _effect.send(LoginEffect.GoToRegistration) }
             LoginEvent.ForgotPasswordClicked -> viewModelScope.launch { _effect.send(LoginEffect.GoToPasswordRecovery) }
+            is LoginEvent.VKAuthSuccess -> viewModelScope.launch { handleVKAuthSuccess(event.accessToken) }
+            is LoginEvent.VKAuthError -> handleVKAuthError(event.error)
         }
     }
 
@@ -75,6 +78,66 @@ class LoginViewModel : ViewModel() {
             if(!hasErrors){
                 _effect.send(LoginEffect.LoginSuccess)
             }
+        }
+    }
+
+    // VK Авторизация
+//    private fun startVKAuth() {
+//        _state.update { it.copy(isVKAuthInProgress = true, vkAuthError = null) }
+//
+//        viewModelScope.launch {
+//            try {
+//                // Создаем колбэк
+//                val callback = object : VKIDAuthCallback {
+//                    override fun onAuth(accessToken: AccessToken) {
+//                        // Успешная авторизация
+//                        viewModelScope.launch {
+//                            handleVKAuthSuccess(accessToken)
+//                        }
+//                    }
+//
+//                    override fun onFail(fail: VKIDAuthFail) {
+//                        // Ошибка авторизации
+//                        viewModelScope.launch {
+//                            handleVKAuthError(fail.description)
+//                        }
+//                    }
+//                }
+//
+//                // Запускаем авторизацию с параметрами
+//                VKID.instance.authorize(
+//                    callback = callback,
+//                    params = VKIDAuthParams {
+//                        scopes = setOf("wall", "photos", "friends")
+//                    }
+//                )
+//            } catch (e: Exception) {
+//                handleVKAuthError(e.message ?: "Unknown error")
+//            }
+//        }
+//    }
+
+    private suspend fun handleVKAuthSuccess(accessToken: AccessToken) {
+        // Сохраняем токен
+//        tokenManager.saveToken(accessToken)
+
+        _state.update {
+            it.copy(
+                isVKAuthInProgress = false,
+                isUserLoggedIn = true
+            )
+        }
+
+        // Отправляем эффект навигации
+        _effect.send(LoginEffect.LoginSuccess)
+    }
+
+    private fun handleVKAuthError(error: String) {
+        _state.update {
+            it.copy(
+                isVKAuthInProgress = false,
+                vkAuthError = error
+            )
         }
     }
 }

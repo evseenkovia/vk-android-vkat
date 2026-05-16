@@ -52,7 +52,7 @@ import com.vk.id.onetap.compose.onetap.OneTap
 
 @Preview(showBackground = true)
 @Composable
-fun LoginScreenPreview(){
+fun LoginScreenPreview() {
     LoginScreen(
         state = LoginState(),
         onEvent = {}
@@ -99,8 +99,8 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
+            // кнопка VK ID
             val context = LocalContext.current
-            // for demo purpose only, use secured place to keep token
             var token: AccessToken? by remember { mutableStateOf(null) }
 
             OneTap(
@@ -110,8 +110,18 @@ fun LoginScreen(
                 } else {
                     OneTapStyle.Light(cornersStyle = OneTapButtonCornersStyle.Rounded)
                 },
-                onAuth = getOneTapSuccessCallback(context) { token = it },
-                onFail = getOneTapFailCallback(context),
+                onAuth = { oAuth, accessToken ->
+                    onEvent(LoginEvent.VKAuthSuccess(accessToken))
+                },
+                onFail = { oAuth, fail ->
+                    val errorMessage = when (fail) {
+                        is VKIDAuthFail.Canceled -> "Авторизация отменена"
+                        is VKIDAuthFail.FailedOAuth -> "Ошибка OAuth"
+                        is VKIDAuthFail.FailedApiCall -> "Ошибка сети или API"
+                        else -> "Неизвестная ошибка"
+                    }
+                    onEvent(LoginEvent.VKAuthError(errorMessage))
+                },
                 signInAnotherAccountButtonEnabled = true,
                 oAuths = setOf(OneTapOAuth.MAIL, OneTapOAuth.OK),
             )
@@ -119,6 +129,8 @@ fun LoginScreen(
                 Spacer(modifier = Modifier.height(32.dp))
                 UseToken(it)
             }
+
+            Spacer(modifier = Modifier.height(24.dp))
 
             PrimaryButton(
                 text = stringResource(R.string.sign_in_do),

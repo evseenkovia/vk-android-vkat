@@ -24,7 +24,7 @@ val appModule = module {
             AppDatabase::class.java,
             "mymaps-db"
         )
-            //.fallbackToDestructiveMigration(true)
+            .fallbackToDestructiveMigration(true)
             .build()
     }
 
