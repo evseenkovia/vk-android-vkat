@@ -40,7 +40,7 @@ android {
         addManifestPlaceholders(
             mapOf(
                 "VKIDClientID" to "54595531", // ID вашего приложения (app_id).
-                "VKIDClientSecret" to "LOuFLlllLF4w4IPHkewt", // Ваш защищенный ключ (client_secret).
+                "VKIDClientSecret" to "insert_key", // Ваш защищенный ключ (client_secret).
                 "VKIDRedirectHost" to "vk.ru", // Обычно используется vk.ru.
                 "VKIDRedirectScheme" to "vk54595531", // Должно быть vk{ID приложения}.
             )

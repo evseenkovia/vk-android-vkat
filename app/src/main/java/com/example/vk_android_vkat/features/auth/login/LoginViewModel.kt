@@ -84,41 +84,7 @@ class LoginViewModel(
         }
     }
 
-    // VK Авторизация
-//    private fun startVKAuth() {
-//        _state.update { it.copy(isVKAuthInProgress = true, vkAuthError = null) }
-//
-//        viewModelScope.launch {
-//            try {
-//                // Создаем колбэк
-//                val callback = object : VKIDAuthCallback {
-//                    override fun onAuth(accessToken: AccessToken) {
-//                        // Успешная авторизация
-//                        viewModelScope.launch {
-//                            handleVKAuthSuccess(accessToken)
-//                        }
-//                    }
-//
-//                    override fun onFail(fail: VKIDAuthFail) {
-//                        // Ошибка авторизации
-//                        viewModelScope.launch {
-//                            handleVKAuthError(fail.description)
-//                        }
-//                    }
-//                }
-//
-//                // Запускаем авторизацию с параметрами
-//                VKID.instance.authorize(
-//                    callback = callback,
-//                    params = VKIDAuthParams {
-//                        scopes = setOf("wall", "photos", "friends")
-//                    }
-//                )
-//            } catch (e: Exception) {
-//                handleVKAuthError(e.message ?: "Unknown error")
-//            }
-//        }
-//    }
+
 
     private suspend fun handleVKAuthSuccess(accessToken: AccessToken) {
         // Сохраняем токен

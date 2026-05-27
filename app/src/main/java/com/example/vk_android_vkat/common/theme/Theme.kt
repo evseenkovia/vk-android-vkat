@@ -2,7 +2,6 @@ package com.example.vk_android_vkat.common.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBarItemColors
 import androidx.compose.material3.Typography
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
@@ -202,15 +201,7 @@ val AppDarkColorScheme = darkColorScheme(
     onError = Color(0xFF1B0000)
 )
 
-//val navigationBarItemColors = NavigationBarItemColors(
-//    selectedIconColor = AppLightColorScheme.primary,
-//    selectedTextColor = AppLightColorScheme.primary,
-//    selectedIndicatorColor = Color.Transparent,
-//    unselectedIconColor = AppLightColorScheme.onBackground,
-//    unselectedTextColor = AppLightColorScheme.onBackground,
-//    disabledIconColor = AppLightColorScheme.onBackground,
-//    disabledTextColor = AppLightColorScheme.onBackground
-//)
+
 
 // Композиционная тема приложения
 @Composable

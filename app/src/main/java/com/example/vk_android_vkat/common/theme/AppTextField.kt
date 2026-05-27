@@ -2,7 +2,6 @@ package com.example.vk_android_vkat.common.theme
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
@@ -238,32 +237,7 @@ fun NameField(
     )
 }
 
-/**
- * Поле для ввода телефона
- */
-//@Composable
-//fun PhoneField(
-//    value: String,
-//    onValueChange: (String) -> Unit,
-//    modifier: Modifier = Modifier,
-//    errorMessage: String? = null,
-//    enabled: Boolean = true,
-//    imeAction: ImeAction = ImeAction.Next,
-//    onImeAction: () -> Unit = {}
-//) {
-//    AppTextField(
-//        value = value,
-//        onValueChange = onValueChange,
-//        modifier = modifier,
-//        label = stringResource(R.string.phone),
-//        leadingIcon = Icons.Outlined.Phone,
-//        errorMessage = errorMessage,
-//        enabled = enabled,
-//        keyboardType = KeyboardType.Phone,
-//        imeAction = imeAction,
-//        onImeAction = onImeAction
-//    )
-//}
+
 
 /**
  * Поле для ввода текста (многострочное)
