@@ -137,7 +137,7 @@ fun RouteCard2(
                     .background(Color.Black.copy(alpha = 0.5f))
             ) {
                 Icon(
-                    modifier = Modifier.size(20.dp),
+                    modifier = Modifier.size(25.dp),
                     imageVector = if (route.isFavourite)
                         Icons.Filled.Bookmark
                     else
@@ -155,7 +155,9 @@ fun RouteCard2(
             Text(
                 text = route.title,
                 style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSecondary
+                color = MaterialTheme.colorScheme.onSecondary,
+                lineHeight = 14.sp
+
             )
             Text(
                 text = "${route.distanceKm} км | ${route.durationHours} ч",

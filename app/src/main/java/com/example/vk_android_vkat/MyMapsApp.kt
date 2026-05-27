@@ -33,7 +33,7 @@ fun MyMapsApp() {
         ){
             RootNavGraph(
                 navController = navController,
-                isUserLoggedIn = false,
+                isUserLoggedIn = true,
             )
         }
     }
